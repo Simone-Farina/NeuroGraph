@@ -13,7 +13,9 @@ export function ChatInput({ value, onChange, onSubmit, disabled = false }: ChatI
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
-      onSubmit();
+      if (value.trim()) {
+        onSubmit();
+      }
     }
   };
 

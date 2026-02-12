@@ -5,17 +5,7 @@ import { z } from 'zod';
 import { createServerSupabaseClient } from '@/lib/auth/supabase';
 import { CHAT_SYSTEM_PROMPT, MAX_CONTEXT_MESSAGES } from '@/lib/ai/prompts';
 import { getChatModel } from '@/lib/ai/providers';
-
-const messageSchema = z.object({
-  id: z.string().optional(),
-  role: z.enum(['user', 'assistant']),
-  content: z.string().min(1),
-});
-
-const postSchema = z.object({
-  conversationId: z.string().uuid().optional(),
-  messages: z.array(messageSchema).min(1),
-});
+import { suggestCrystallizationTool } from '@/lib/ai/tools';
 
 function createConversationTitle(input: string) {
   const trimmed = input.trim();
@@ -82,6 +72,11 @@ export async function GET(request: NextRequest) {
   }
 }
 
+const postSchema = z.object({
+  conversationId: z.string().uuid().optional(),
+  messages: z.array(z.any()).min(1),
+});
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createServerSupabaseClient();
@@ -93,7 +88,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const parsed = postSchema.safeParse(await request.json());
+    const body = await request.json();
+    const parsed = postSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
         { error: 'Invalid request payload', issues: parsed.error.flatten() },
@@ -101,10 +97,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const incomingMessages = parsed.data.messages.slice(-MAX_CONTEXT_MESSAGES);
-    const latestUserMessage = [...incomingMessages].reverse().find((m) => m.role === 'user');
+    const uiMessages = parsed.data.messages as UIMessage[];
+    const trimmedMessages = uiMessages.slice(-MAX_CONTEXT_MESSAGES);
 
-    if (!latestUserMessage) {
+    // Find the latest user message text for conversation title & DB persistence
+    const latestUserMessage = [...trimmedMessages]
+      .reverse()
+      .find((m) => m.role === 'user');
+
+    const latestUserText = latestUserMessage?.parts
+      ?.filter((p): p is { type: 'text'; text: string } => p.type === 'text')
+      .map((p) => p.text)
+      .join(' ')
+      .trim();
+
+    if (!latestUserText) {
       return NextResponse.json({ error: 'A user message is required' }, { status: 400 });
     }
 
@@ -115,7 +122,7 @@ export async function POST(request: NextRequest) {
         .from('conversations')
         .insert({
           user_id: user.id,
-          title: createConversationTitle(latestUserMessage.content),
+          title: createConversationTitle(latestUserText),
         })
         .select('id')
         .single();
@@ -130,10 +137,11 @@ export async function POST(request: NextRequest) {
       conversationId = createdConversation.id;
     }
 
+    // Persist the user message
     const { error: insertUserMessageError } = await supabase.from('messages').insert({
       conversation_id: conversationId,
       role: 'user',
-      content: latestUserMessage.content,
+      content: latestUserText,
     });
 
     if (insertUserMessageError) {
@@ -142,18 +150,16 @@ export async function POST(request: NextRequest) {
 
     const model = getChatModel();
 
-    const modelMessages = await convertToModelMessages(
-      incomingMessages.map((message) => ({
-        role: message.role,
-        parts: [{ type: 'text', text: message.content }],
-      })) as Array<Omit<UIMessage, 'id'>>
-    );
+    const modelMessages = await convertToModelMessages(trimmedMessages);
 
     let assistantText = '';
     const response = streamText({
       model,
       system: CHAT_SYSTEM_PROMPT,
       messages: modelMessages,
+      tools: {
+        suggest_crystallization: suggestCrystallizationTool,
+      },
       onChunk(event) {
         if (event.chunk.type === 'text-delta') {
           assistantText += event.chunk.text;
@@ -170,7 +176,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return response.toTextStreamResponse({
+    return response.toUIMessageStreamResponse({
       headers: {
         'X-Conversation-Id': conversationId,
       },

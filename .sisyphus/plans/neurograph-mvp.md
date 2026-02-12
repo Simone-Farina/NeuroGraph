@@ -583,7 +583,7 @@ type Message = {
 
 ---
 
-- [ ] 4. AI Chat — Streaming + Multi-Provider
+- [x] 4. AI Chat — Streaming + Multi-Provider
 
   **What to do**:
   - Create chat API route at `src/app/api/chat/route.ts` using Vercel AI SDK
@@ -711,7 +711,7 @@ type Message = {
 
 ---
 
-- [ ] 5. Graph Visualization — React Flow Split View
+- [x] 5. Graph Visualization — React Flow Split View
 
   **What to do**:
   - Build the main split-view layout:
@@ -829,7 +829,7 @@ type Message = {
 
 ---
 
-- [ ] 6. Crystallization Flow — Suggest + Confirm + Save
+- [x] 6. Crystallization Flow — Suggest + Confirm + Save
 
   **What to do**:
   - This is the **core innovation**: connecting chat to graph. Implementation:
