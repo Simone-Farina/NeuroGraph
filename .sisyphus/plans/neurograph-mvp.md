@@ -958,7 +958,7 @@ type Message = {
 
 ---
 
-- [ ] 7. YouTube URL Transcript Extraction
+- [x] 7. YouTube URL Transcript Extraction
 
   **What to do**:
   - Create YouTube utility in `src/lib/youtube/`:

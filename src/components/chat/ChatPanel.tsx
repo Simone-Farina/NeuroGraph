@@ -6,13 +6,41 @@ import { DefaultChatTransport } from 'ai';
 
 import { ChatInput } from '@/components/chat/ChatInput';
 import { MessageList } from '@/components/chat/MessageList';
+import { extractFirstYouTubeUrl, isYouTubeUrl } from '@/lib/youtube';
 import { useGraphStore } from '@/stores/graphStore';
 import type { ConversationSummary } from '@/types/chat';
+
+type SuggestionInput = {
+  title: string;
+  definition: string;
+  core_insight: string;
+  bloom_level: string;
+};
+
+type SuggestionToolPart = {
+  type: `tool-${string}`;
+  toolCallId: string;
+  providerExecuted?: boolean;
+  input?: SuggestionInput;
+};
+
+function isToolPartWithId(part: unknown, toolCallId: string): part is SuggestionToolPart {
+  if (!part || typeof part !== 'object') return false;
+
+  const candidate = part as { type?: unknown; toolCallId?: unknown };
+  return (
+    typeof candidate.type === 'string' &&
+    candidate.type.startsWith('tool-') &&
+    typeof candidate.toolCallId === 'string' &&
+    candidate.toolCallId === toolCallId
+  );
+}
 
 export function ChatPanel() {
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [input, setInput] = useState('');
+  const [isFetchingTranscript, setIsFetchingTranscript] = useState(false);
   const conversationIdRef = useRef(conversationId);
 
   // Keep the ref in sync
@@ -100,13 +128,50 @@ export function ChatPanel() {
     }
   }, [messages.length, conversationId, loadConversations]);
 
-  const handleSend = useCallback(() => {
+  const handleSend = useCallback(async () => {
     const text = input.trim();
-    if (!text || status !== 'ready') return;
+    if (!text || status !== 'ready' || isFetchingTranscript) return;
 
-    sendMessage({ text });
+    let finalText = text;
+
+    if (isYouTubeUrl(text)) {
+      const youtubeUrl = extractFirstYouTubeUrl(text);
+
+      if (youtubeUrl) {
+        try {
+          setIsFetchingTranscript(true);
+
+          const response = await fetch('/api/youtube', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: youtubeUrl }),
+          });
+
+          if (response.ok) {
+            const payload = (await response.json()) as {
+              transcript?: unknown;
+              title?: unknown;
+              videoId?: unknown;
+            };
+
+            if (typeof payload.transcript === 'string' && payload.transcript.trim()) {
+              const title = typeof payload.title === 'string' ? payload.title : null;
+              const videoId = typeof payload.videoId === 'string' ? payload.videoId : 'unknown-video';
+              const titleLine = title ? `Title: ${title}` : `Video ID: ${videoId}`;
+
+              finalText = `[The user shared a YouTube video. Here is the transcript:\n${titleLine}\n\n${payload.transcript}\n\n]\n\nUser message: ${text}`;
+            }
+          }
+        } catch {
+        } finally {
+          setIsFetchingTranscript(false);
+        }
+      }
+    }
+
+    sendMessage({ text: finalText });
     setInput('');
-  }, [input, status, sendMessage]);
+  }, [input, status, isFetchingTranscript, sendMessage]);
 
   const handleNewConversation = useCallback(() => {
     setMessages([]);
@@ -120,12 +185,7 @@ export function ChatPanel() {
 
       // 1. Find the message and tool invocation
       const message = messages.find((m) =>
-        m.parts.some(
-          (p) =>
-            p.type.startsWith('tool-') &&
-            'toolCallId' in p &&
-            (p as any).toolCallId === toolCallId
-        )
+        m.parts.some((part) => isToolPartWithId(part, toolCallId))
       );
 
       if (!message) {
@@ -133,14 +193,9 @@ export function ChatPanel() {
         return;
       }
 
-      const part = message.parts.find(
-        (p) =>
-          p.type.startsWith('tool-') &&
-          'toolCallId' in p &&
-          (p as any).toolCallId === toolCallId
-      ) as any;
+      const part = message.parts.find((messagePart) => isToolPartWithId(messagePart, toolCallId));
 
-      if (!part || !part.input) {
+      if (!part?.input) {
         console.error('Tool part or input not found');
         return;
       }
@@ -153,12 +208,7 @@ export function ChatPanel() {
         return;
       }
 
-      const input = part.input as {
-        title: string;
-        definition: string;
-        core_insight: string;
-        bloom_level: string;
-      };
+      const input = part.input;
 
       try {
         // 3. Call API
@@ -207,20 +257,17 @@ export function ChatPanel() {
           prev.map((msg) => ({
             ...msg,
             parts: msg.parts.map((p) => {
-              if (
-                p.type.startsWith('tool-') &&
-                'toolCallId' in p &&
-                (p as any).toolCallId === toolCallId
-              ) {
-                const toolPart = p as any;
-                return {
-                  type: toolPart.type,
-                  toolCallId: toolPart.toolCallId,
-                  providerExecuted: toolPart.providerExecuted,
-                  input: toolPart.input,
-                  state: 'output-available',
-                  output: { status: 'crystallized' },
-                };
+                if (
+                  isToolPartWithId(p, toolCallId)
+                ) {
+                  return {
+                    type: p.type,
+                    toolCallId: p.toolCallId,
+                    providerExecuted: p.providerExecuted,
+                    input: p.input,
+                    state: 'output-available',
+                    output: { status: 'crystallized' },
+                  };
               }
               return p;
             }),
@@ -268,7 +315,7 @@ export function ChatPanel() {
     );
   }, [setMessages]);
 
-  const isLoading = status === 'streaming' || status === 'submitted';
+  const isLoading = status === 'streaming' || status === 'submitted' || isFetchingTranscript;
 
   return (
     <section className="chat-panel flex h-[calc(100vh-73px)] border-r border-neural-gray-700 bg-neural-gray-900/30">

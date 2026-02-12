@@ -33,5 +33,5 @@ export const suggestCrystallizationTool = tool({
   description:
     'Suggest crystallizing a durable insight from the conversation into a knowledge node. ' +
     'Call this when the user demonstrates genuine analytical depth — not for surface-level facts.',
-  inputSchema: parameters as any,
+  inputSchema: parameters,
 });

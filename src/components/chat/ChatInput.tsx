@@ -1,6 +1,6 @@
-'use client';
-
 import { KeyboardEvent } from 'react';
+
+import { isYouTubeUrl } from '@/lib/youtube';
 
 type ChatInputProps = {
   value: string;
@@ -10,6 +10,8 @@ type ChatInputProps = {
 };
 
 export function ChatInput({ value, onChange, onSubmit, disabled = false }: ChatInputProps) {
+  const hasYouTubeUrl = isYouTubeUrl(value);
+
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
@@ -30,7 +32,14 @@ export function ChatInput({ value, onChange, onSubmit, disabled = false }: ChatI
         className="w-full resize-none rounded-xl border border-neural-gray-700 bg-neural-gray-800 px-3 py-2 text-sm text-neural-light outline-none transition focus:border-neural-cyan"
         disabled={disabled}
       />
-      <div className="mt-3 flex justify-end">
+      <div className="mt-3 flex items-center justify-between gap-3">
+        {hasYouTubeUrl ? (
+          <span className="rounded-full border border-neural-cyan/40 bg-neural-cyan/10 px-2.5 py-1 text-xs font-medium text-neural-cyan">
+            🎬 YouTube video detected
+          </span>
+        ) : (
+          <span />
+        )}
         <button
           type="button"
           onClick={onSubmit}
