@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Next.js build artifacts
+.next/
+out/
+
+# Local environment and secrets
+.env.local
+.env.*.local
+
+# Test artifacts
+playwright-report/
+test-results/
+coverage/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Editor / OS files
+.DS_Store
+.idea/
+.vscode/
+
+# Local environment switching state
+.dev-environment.local
+
+# Keep only project plan markdown from Sisyphus
+.sisyphus/*
+!.sisyphus/plans/
+!.sisyphus/plans/**/*.md
