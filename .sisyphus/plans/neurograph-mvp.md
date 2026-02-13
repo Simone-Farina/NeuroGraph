@@ -1065,7 +1065,7 @@ type Message = {
 
 ---
 
-- [ ] 8. Edge Creation — AI-Suggested + Vector Similarity
+- [x] 8. Edge Creation — AI-Suggested + Vector Similarity
 
   **What to do**:
   - When a new crystal is created (Task 6), automatically find and suggest related crystals:
@@ -1155,6 +1155,16 @@ type Message = {
   - Message: `feat(edges): add AI-suggested edge creation with vector similarity`
   - Files: `src/app/api/crystals/[id]/edges/`, updated graph components
   - Pre-commit: `bun run build`
+
+  **Post-Task Stabilization (2026-02-14)**:
+  - Fixed Tailwind runtime styling regression by aligning toolchain to v3 config pattern (`tailwindcss@3`, `postcss.config.js`).
+  - Locked split-view layout to 35% chat / 65% graph for human test sessions.
+  - Added chat/graph scroll containment (`overflow-hidden` at page + panel boundaries) so only chat message area scrolls.
+  - Fixed crystallization runtime issues:
+    - guard for streamed tool invocations with temporary missing `input`
+    - optional `source_message_ids` handling for non-UUID live message ids
+    - graph reactivity sync between Zustand and React Flow local state
+  - Verification: `npm run build` passes after stabilization changes.
 
 ---
 
