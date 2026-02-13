@@ -26,6 +26,6 @@ export function getChatModel() {
       return google('gemini-1.5-pro-latest');
     case 'openai':
     default:
-      return openai('gpt-4o-mini');
+      return openai('gpt-4o');
   }
 }

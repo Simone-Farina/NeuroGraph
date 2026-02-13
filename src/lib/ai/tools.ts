@@ -1,6 +1,8 @@
 import { tool } from 'ai';
 import { z } from 'zod';
 
+const relationshipTypeSchema = z.enum(['PREREQUISITE', 'RELATED', 'BUILDS_ON']);
+
 const parameters = z.object({
   title: z
     .string()
@@ -20,6 +22,19 @@ const parameters = z.object({
   bloom_level: z
     .enum(['Remember', 'Understand', 'Apply', 'Analyze', 'Evaluate', 'Create'])
     .describe("Bloom's taxonomy level that best describes the depth of understanding"),
+  related_crystals: z
+    .array(
+      z.object({
+        id: z.string().uuid().describe('Existing crystal id to potentially connect to'),
+        title: z.string().min(1).max(120).describe('Existing crystal title').optional(),
+        relationship_type: relationshipTypeSchema.describe(
+          'Relationship from the new crystal to this existing crystal'
+        ),
+      })
+    )
+    .max(5)
+    .optional()
+    .describe('Optional graph connection suggestions using existing crystal ids'),
 });
 
 /**

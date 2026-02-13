@@ -148,6 +148,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: insertUserMessageError.message }, { status: 500 });
     }
 
+    let crystalCatalog = '- none yet';
+    const { data: existingCrystals, error: existingCrystalsError } = await supabase
+      .from('crystals')
+      .select('id, title')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(40);
+
+    if (!existingCrystalsError && existingCrystals && existingCrystals.length > 0) {
+      crystalCatalog = existingCrystals.map((crystal) => `- ${crystal.id}: ${crystal.title}`).join('\n');
+    }
+
+    const systemPrompt = `${CHAT_SYSTEM_PROMPT}\n\n## Existing Crystal Catalog\nUse this catalog to populate related_crystals when suggesting crystallization.\nOnly use ids from this list:\n${crystalCatalog}`;
+
     const model = getChatModel();
 
     const modelMessages = await convertToModelMessages(trimmedMessages);
@@ -155,7 +169,7 @@ export async function POST(request: NextRequest) {
     let assistantText = '';
     const response = streamText({
       model,
-      system: CHAT_SYSTEM_PROMPT,
+      system: systemPrompt,
       messages: modelMessages,
       tools: {
         suggest_crystallization: suggestCrystallizationTool,

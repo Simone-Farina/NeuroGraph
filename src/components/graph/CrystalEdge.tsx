@@ -1,6 +1,11 @@
 'use client';
 
-import { BaseEdge, Edge, EdgeLabelRenderer, EdgeProps, getBezierPath } from '@xyflow/react';
+import {
+  BaseEdge,
+  Edge,
+  EdgeProps,
+  getBezierPath,
+} from '@xyflow/react';
 
 type CrystalEdgeData = {
   typeLabel?: 'PREREQUISITE' | 'RELATED' | 'BUILDS_ON';
@@ -16,9 +21,10 @@ export function CrystalEdge({
   targetY,
   sourcePosition,
   targetPosition,
+  markerEnd,
   data,
 }: EdgeProps<CrystalFlowEdge>) {
-  const [edgePath, labelX, labelY] = getBezierPath({
+  const [edgePath] = getBezierPath({
     sourceX,
     sourceY,
     sourcePosition,
@@ -28,21 +34,47 @@ export function CrystalEdge({
   });
 
   const typeLabel = data?.typeLabel ?? 'RELATED';
+  const styleByType: Record<
+    NonNullable<CrystalEdgeData['typeLabel']>,
+    {
+      stroke: string;
+      strokeWidth: number;
+      strokeDasharray?: string;
+      showArrow: boolean;
+    }
+  > = {
+    PREREQUISITE: {
+      stroke: '#22d3ee',
+      strokeWidth: 1.8,
+      showArrow: true,
+    },
+    RELATED: {
+      stroke: '#a78bfa',
+      strokeWidth: 1.6,
+      strokeDasharray: '6 4',
+      showArrow: false,
+    },
+    BUILDS_ON: {
+      stroke: '#f59e0b',
+      strokeWidth: 1.8,
+      strokeDasharray: '2 4',
+      showArrow: true,
+    },
+  };
+  const { showArrow, ...edgeStyle } = styleByType[typeLabel];
+
+  // Glow style based on edge color
+  const glowStyle = {
+    ...edgeStyle,
+    strokeWidth: edgeStyle.strokeWidth * 4,
+    strokeOpacity: 0.15,
+    filter: 'blur(3px)',
+  };
 
   return (
     <>
-      <BaseEdge id={id} path={edgePath} style={{ stroke: '#4b5563', strokeWidth: 1.5 }} />
-      <EdgeLabelRenderer>
-        <div
-          style={{
-            position: 'absolute',
-            transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
-          }}
-          className="rounded border border-neural-gray-700 bg-neural-gray-900 px-1.5 py-0.5 text-[10px] text-neural-light/70"
-        >
-          {typeLabel}
-        </div>
-      </EdgeLabelRenderer>
+      <BaseEdge id={`${id}-glow`} path={edgePath} style={glowStyle} />
+      <BaseEdge id={id} path={edgePath} style={edgeStyle} markerEnd={showArrow ? markerEnd : undefined} />
     </>
   );
 }

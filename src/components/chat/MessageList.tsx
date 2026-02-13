@@ -19,7 +19,7 @@ export function MessageList({ messages, onCrystallize, onDismiss }: MessageListP
   }
 
   return (
-    <div className="space-y-4 px-5 py-5">
+    <div className="space-y-6 px-5 py-6">
       {messages.map((message) => {
         const isUser = message.role === 'user';
 
@@ -28,16 +28,22 @@ export function MessageList({ messages, onCrystallize, onDismiss }: MessageListP
             key={message.id}
             className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
           >
-            <div className="max-w-[88%]">
+            <div className={`max-w-[85%] ${isUser ? 'ml-12' : 'mr-12'}`}>
+              <div className={`mb-1.5 flex items-center gap-2 ${isUser ? 'justify-end' : 'justify-start'}`}>
+                <span className={`text-[10px] font-bold uppercase tracking-wider ${isUser ? 'text-neural-cyan' : 'text-neural-purple'}`}>
+                  {isUser ? 'You' : 'NeuroGraph'}
+                </span>
+              </div>
+              
               {message.parts.map((part, index) => {
                 if (part.type === 'text') {
                   if (!part.text) return null;
                   return (
                     <div
                       key={index}
-                      className={`rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm ${isUser
-                          ? 'bg-neural-cyan/20 border border-neural-cyan/40 text-neural-light'
-                          : 'bg-neural-gray-800 border border-neural-gray-700 text-neural-light/90'
+                      className={`rounded-2xl px-5 py-3.5 text-sm leading-7 shadow-sm backdrop-blur-sm ${isUser
+                          ? 'bg-neural-cyan/10 border border-neural-cyan/20 text-neural-light rounded-tr-sm'
+                          : 'bg-white/5 border border-white/10 text-neural-light/90 rounded-tl-sm'
                         }`}
                     >
                       {part.text}
@@ -64,6 +70,11 @@ export function MessageList({ messages, onCrystallize, onDismiss }: MessageListP
                           definition?: string;
                           core_insight?: string;
                           bloom_level?: string;
+                          related_crystals?: Array<{
+                            id: string;
+                            title?: string;
+                            relationship_type: 'PREREQUISITE' | 'RELATED' | 'BUILDS_ON';
+                          }>;
                         }}
                         state={toolPart.state}
                         onCrystallize={() => onCrystallize?.(toolPart.toolCallId)}
