@@ -7,8 +7,7 @@ import { CHAT_SYSTEM_PROMPT, MAX_CONTEXT_MESSAGES } from '@/lib/ai/prompts';
 import { getChatModel } from '@/lib/ai/providers';
 import { suggestCrystallizationTool } from '@/lib/ai/tools';
 
-import { generateEmbedding } from '@/lib/ai/embeddings';
-import { crystalQueries } from '@/lib/db/queries';
+import { getRelevantContext } from '@/lib/ai/rag';
 
 function createConversationTitle(input: string) {
   const trimmed = input.trim();
@@ -158,33 +157,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: insertUserMessageError.message }, { status: 500 });
     }
 
-    let ragContext = '';
-    let ragCatalog = '- none yet';
-
-    try {
-        const embedding = await generateEmbedding(latestUserText);
-        const similarCrystals = await crystalQueries.findSimilar(embedding, user.id, 5, 0.3);
-        
-        if (similarCrystals.length > 0) {
-            ragContext = `\n\n## Relevant Knowledge Context\nYou have previously crystallized these insights which are semantically relevant to the current conversation:\n${similarCrystals.map(c => `- ${c.title}: ${c.definition} (Core Insight: ${c.core_insight})`).join('\n')}`;
-            ragCatalog = similarCrystals.map((crystal) => `- ${crystal.id}: ${crystal.title}`).join('\n');
-        }
-    } catch (e) {
-        console.error('RAG error:', e);
-    }
-
-    if (ragCatalog === '- none yet') {
-        const { data: existingCrystals, error: existingCrystalsError } = await supabase
-          .from('crystals')
-          .select('id, title')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-          .limit(40);
-
-        if (!existingCrystalsError && existingCrystals && existingCrystals.length > 0) {
-          ragCatalog = existingCrystals.map((crystal) => `- ${crystal.id}: ${crystal.title}`).join('\n');
-        }
-    }
+    const { ragContext, ragCatalog } = await getRelevantContext(latestUserText, user.id, supabase);
 
     const systemPrompt = `${CHAT_SYSTEM_PROMPT}${ragContext}\n\n## Existing Crystal Catalog\nUse this catalog to populate related_crystals when suggesting crystallization.\nOnly use ids from this list:\n${ragCatalog}`;
 
