@@ -2,6 +2,7 @@
 
 import { AuthProvider, useAuth } from '@/lib/auth/AuthContext';
 import { motion } from 'framer-motion';
+import { ReviewBadge } from '@/components/ReviewBadge';
 
 function LogoutButton() {
   const { signOut, user } = useAuth();
@@ -45,6 +46,10 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
             <span className="hidden sm:inline-block px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-neural-cyan/10 text-neural-cyan border border-neural-cyan/20">
               Beta
             </span>
+          </div>
+
+          <div className="flex-1 flex justify-center">
+            <ReviewBadge />
           </div>
           
           <div className="flex items-center gap-4">

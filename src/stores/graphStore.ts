@@ -8,6 +8,9 @@ type GraphStore = {
   setGraph: (nodes: Node[], edges: Edge[]) => void;
   addNode: (node: Node) => void;
   addEdge: (edge: Edge) => void;
+  removeNode: (nodeId: string) => void;
+  removeEdge: (edgeId: string) => void;
+  updateNode: (nodeId: string, data: Partial<Node['data']>) => void;
   setSelectedNode: (nodeId: string | null) => void;
 };
 
@@ -23,6 +26,22 @@ export const useGraphStore = create<GraphStore>((set) => ({
   addEdge: (edge) =>
     set((state) => ({
       edges: [...state.edges, edge],
+    })),
+  removeNode: (nodeId) =>
+    set((state) => ({
+      nodes: state.nodes.filter((n) => n.id !== nodeId),
+      edges: state.edges.filter((e) => e.source !== nodeId && e.target !== nodeId),
+      selectedNodeId: state.selectedNodeId === nodeId ? null : state.selectedNodeId,
+    })),
+  removeEdge: (edgeId) =>
+    set((state) => ({
+      edges: state.edges.filter((e) => e.id !== edgeId),
+    })),
+  updateNode: (nodeId, data) =>
+    set((state) => ({
+      nodes: state.nodes.map((node) =>
+        node.id === nodeId ? { ...node, data: { ...node.data, ...data } } : node
+      ),
     })),
   setSelectedNode: (selectedNodeId) => set({ selectedNodeId }),
 }));

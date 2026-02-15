@@ -195,6 +195,15 @@ export const conversationQueries = {
     if (error) throw error;
     return data;
   },
+
+  async delete(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('conversations')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+  },
 };
 
 export const messageQueries = {

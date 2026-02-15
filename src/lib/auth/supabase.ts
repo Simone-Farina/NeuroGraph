@@ -50,34 +50,3 @@ export async function createServerSupabaseClient() {
     }
   );
 }
-
-/**
- * Create a Supabase client for use in Middleware
- * This is a special client that can update cookies in the response
- */
-export function createMiddlewareClient(request: Request) {
-  let response = new Response(null, {
-    status: 200,
-    headers: request.headers,
-  });
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return request.headers.get('cookie')?.split('; ').find(c => c.startsWith(name + '='))?.split('=')[1];
-        },
-        set(name: string, value: string, options: CookieOptions) {
-          response.headers.append('Set-Cookie', `${name}=${value}; Path=/; ${options.maxAge ? `Max-Age=${options.maxAge};` : ''} ${options.httpOnly ? 'HttpOnly;' : ''} ${options.sameSite ? `SameSite=${options.sameSite};` : ''}`);
-        },
-        remove(name: string, options: CookieOptions) {
-          response.headers.append('Set-Cookie', `${name}=; Path=/; Max-Age=0; ${options.httpOnly ? 'HttpOnly;' : ''} ${options.sameSite ? `SameSite=${options.sameSite};` : ''}`);
-        },
-      },
-    }
-  );
-
-  return { supabase, response };
-}

@@ -2,7 +2,7 @@
 
 import '@xyflow/react/dist/style.css';
 
-import { useEffect } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import {
   Background,
   Controls,
@@ -13,11 +13,16 @@ import {
   ReactFlowProvider,
   useEdgesState,
   useNodesState,
+  useReactFlow,
+  Position,
 } from '@xyflow/react';
+import dagre from '@dagrejs/dagre';
 
 import { CrystalEdge } from '@/components/graph/CrystalEdge';
 import { CrystalNode } from '@/components/graph/CrystalNode';
 import { useGraphStore } from '@/stores/graphStore';
+import { calculateRetrievability } from '@/lib/ai/fsrs';
+import { Crystal } from '@/types/database';
 
 const nodeTypes = {
   crystal: CrystalNode,
@@ -27,21 +32,109 @@ const edgeTypes = {
   crystalEdge: CrystalEdge,
 };
 
+const nodeWidth = 200;
+const nodeHeight = 80;
+
+/**
+ * Calculates the layout of the graph using Dagre.
+ * Uses a Top-to-Bottom (TB) rank direction.
+ */
+const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
+  const dagreGraph = new dagre.graphlib.Graph();
+  dagreGraph.setDefaultEdgeLabel(() => ({}));
+  dagreGraph.setGraph({ rankdir: 'TB' });
+
+  nodes.forEach((node) => {
+    dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
+  });
+
+  edges.forEach((edge) => {
+    dagreGraph.setEdge(edge.source, edge.target);
+  });
+
+  dagre.layout(dagreGraph);
+
+  const layoutedNodes = nodes.map((node) => {
+    const nodeWithPosition = dagreGraph.node(node.id);
+    return {
+      ...node,
+      targetPosition: Position.Top,
+      sourcePosition: Position.Bottom,
+      position: {
+        x: nodeWithPosition.x - nodeWidth / 2,
+        y: nodeWithPosition.y - nodeHeight / 2,
+      },
+    };
+  });
+
+  return { nodes: layoutedNodes, edges };
+};
+
 function GraphCanvas() {
   const nodes = useGraphStore((state) => state.nodes);
   const edges = useGraphStore((state) => state.edges);
   const setGraph = useGraphStore((state) => state.setGraph);
+  const updateNode = useGraphStore((state) => state.updateNode);
+  const { fitView } = useReactFlow();
 
-  const [flowNodes, setFlowNodes, onNodesChange] = useNodesState(nodes);
-  const [flowEdges, setFlowEdges, onEdgesChange] = useEdgesState(edges);
+  const [flowNodes, setFlowNodes, onNodesChange] = useNodesState([]);
+  const [flowEdges, setFlowEdges, onEdgesChange] = useEdgesState([]);
+
+  const onLayout = useCallback(
+    (nodes: Node[], edges: Edge[]) => {
+      const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
+        nodes,
+        edges,
+      );
+
+      setFlowNodes([...layoutedNodes]);
+      setFlowEdges([...layoutedEdges]);
+      
+      window.requestAnimationFrame(() => {
+        fitView();
+      });
+    },
+    [setFlowNodes, setFlowEdges, fitView],
+  );
 
   useEffect(() => {
-    setFlowNodes(nodes);
-  }, [nodes, setFlowNodes]);
+    onLayout(nodes, edges);
+  }, [nodes, edges, onLayout]);
 
+  // Periodic retrievability update
   useEffect(() => {
-    setFlowEdges(edges);
-  }, [edges, setFlowEdges]);
+    const updateRetrievability = () => {
+      const now = new Date();
+      const currentNodes = useGraphStore.getState().nodes;
+      
+      currentNodes.forEach(node => {
+        // We need to cast data to any to access the extra fields we stored
+        const data = node.data as any;
+        
+        if (data.stability !== undefined) {
+          // Construct a partial Crystal object for calculation
+          const crystalPartial = {
+            stability: data.stability,
+            last_review: data.last_review,
+            state: data.state || 'Review', // Default to Review if not present to ensure calculation runs
+          } as Crystal;
+
+          const newRetrievability = calculateRetrievability(crystalPartial, now);
+          
+          // Only update if there's a significant change (e.g., > 0.1%) to avoid thrashing
+          if (Math.abs(newRetrievability - (data.retrievability || 0)) > 0.001) {
+            updateNode(node.id, { retrievability: newRetrievability });
+          }
+        }
+      });
+    };
+
+    // Run immediately and then every minute
+    updateRetrievability();
+    const interval = setInterval(updateRetrievability, 60 * 1000);
+    
+    return () => clearInterval(interval);
+  }, [updateNode]);
 
   useEffect(() => {
     const loadGraph = async () => {
@@ -52,16 +145,18 @@ function GraphCanvas() {
       const crystals = payload.crystals || [];
       const crystalEdges = payload.edges || [];
 
-      const mappedNodes: Node[] = crystals.slice(0, 200).map((crystal: any, index: number) => ({
+      const mappedNodes: Node[] = crystals.slice(0, 200).map((crystal: any) => ({
         id: crystal.id,
         type: 'crystal',
-        position: {
-          x: 120 + (index % 4) * 220,
-          y: 100 + Math.floor(index / 4) * 140,
-        },
+        position: { x: 0, y: 0 },
         data: {
           title: crystal.title,
           retrievability: crystal.retrievability,
+          last_reviewed_at: crystal.last_reviewed_at,
+          // Store extra fields needed for local recalculation
+          stability: crystal.stability,
+          last_review: crystal.last_review,
+          state: crystal.state,
         },
       }));
 
@@ -84,6 +179,9 @@ function GraphCanvas() {
     };
 
     loadGraph();
+    const interval = setInterval(loadGraph, 5 * 60 * 1000);
+
+    return () => clearInterval(interval);
   }, [setGraph]);
 
   if (!flowNodes.length) {

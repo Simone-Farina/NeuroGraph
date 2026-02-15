@@ -215,6 +215,43 @@ export function ChatPanel() {
     }
   }, [setMessages]);
 
+  const handleNewConversation = useCallback(() => {
+    if (noticeTimeoutRef.current) {
+      clearTimeout(noticeTimeoutRef.current);
+      noticeTimeoutRef.current = null;
+    }
+
+    setMessages([]);
+    setConversationId(null);
+    setInput('');
+    setConnectionNotice(null);
+    setEdgeSuggestions([]);
+  }, [setMessages]);
+
+  const handleDeleteConversation = useCallback(async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    if (!confirm('Are you sure you want to delete this conversation?')) return;
+
+    try {
+      const response = await fetch(`/api/conversations/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setConversations((prev) => prev.filter((c) => c.id !== id));
+        if (conversationId === id) {
+          handleNewConversation();
+        }
+      } else {
+        const error = await response.json();
+        alert('Failed to delete conversation: ' + (error.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Failed to delete conversation', error);
+      alert('An error occurred while deleting the conversation.');
+    }
+  }, [conversationId, handleNewConversation]);
+
   // Load conversations on mount
   useEffect(() => {
     loadConversations();
@@ -316,19 +353,6 @@ export function ChatPanel() {
     setInput('');
   }, [input, status, isFetchingTranscript, sendMessage]);
 
-  const handleNewConversation = useCallback(() => {
-    if (noticeTimeoutRef.current) {
-      clearTimeout(noticeTimeoutRef.current);
-      noticeTimeoutRef.current = null;
-    }
-
-    setMessages([]);
-    setConversationId(null);
-    setInput('');
-    setConnectionNotice(null);
-    setEdgeSuggestions([]);
-  }, [setMessages]);
-
   const handleCrystallize = useCallback(
     async (toolCallId: string) => {
       console.log('Crystallize requested for tool call:', toolCallId);
@@ -387,17 +411,14 @@ export function ChatPanel() {
         const { crystal, edges, edge_suggestions } = (await response.json()) as CreatedCrystalResponse;
 
         // 4. Update Graph Store Optimistically
-        const { nodes, addNode } = useGraphStore.getState();
-        const nodeCount = nodes.length;
+        const { addNode } = useGraphStore.getState();
 
-        // Simple positioning logic similar to GraphPanel
+        // Position will be handled by GraphPanel layout
         addNode({
           id: crystal.id,
           type: 'crystal',
-          position: {
-            x: 120 + (nodeCount % 4) * 220,
-            y: 100 + Math.floor(nodeCount / 4) * 140,
-          },
+          // Position will be handled by GraphPanel's dagre layout
+          position: { x: 0, y: 0 },
           data: {
             title: crystal.title,
             retrievability: crystal.retrievability,
@@ -540,20 +561,29 @@ export function ChatPanel() {
         </div>
         <div className="space-y-1 overflow-y-auto pr-1 flex-1 scrollbar-hide">
           {conversations.map((conversation) => (
-            <button
-              key={conversation.id}
-              type="button"
-              onClick={() => loadConversation(conversation.id)}
-              className={`group w-full rounded-lg border px-3 py-2.5 text-left text-sm transition-all ${conversationId === conversation.id
-                  ? 'border-neural-cyan/30 bg-neural-cyan/5 text-neural-cyan shadow-[0_0_15px_-3px_rgba(6,182,212,0.1)]'
-                  : 'border-transparent text-neural-light/60 hover:bg-white/5 hover:text-neural-light'
-                }`}
-            >
-              <p className="truncate font-medium">{conversation.title}</p>
-              <p className="truncate text-[10px] text-neural-light/30 mt-0.5 group-hover:text-neural-light/50 transition-colors">
-                 {new Date(conversation.updated_at).toLocaleDateString()}
-              </p>
-            </button>
+            <div key={conversation.id} className="group relative">
+              <button
+                type="button"
+                onClick={() => loadConversation(conversation.id)}
+                className={`w-full rounded-lg border px-3 py-2.5 text-left text-sm transition-all ${conversationId === conversation.id
+                    ? 'border-neural-cyan/30 bg-neural-cyan/5 text-neural-cyan shadow-[0_0_15px_-3px_rgba(6,182,212,0.1)]'
+                    : 'border-transparent text-neural-light/60 hover:bg-white/5 hover:text-neural-light'
+                  }`}
+              >
+                <p className="truncate font-medium pr-6">{conversation.title}</p>
+                <p className="truncate text-[10px] text-neural-light/30 mt-0.5 group-hover:text-neural-light/50 transition-colors">
+                   {new Date(conversation.updated_at).toLocaleDateString()}
+                </p>
+              </button>
+              <button
+                type="button"
+                onClick={(e) => handleDeleteConversation(e, conversation.id)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1.5 text-neural-light/30 hover:text-red-400 transition-all"
+                title="Delete conversation"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+              </button>
+            </div>
           ))}
         </div>
       </aside>

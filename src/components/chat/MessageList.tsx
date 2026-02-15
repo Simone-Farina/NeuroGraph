@@ -1,6 +1,9 @@
 'use client';
 
 import type { UIMessage } from 'ai';
+import ReactMarkdown from 'react-markdown';
+import rehypeHighlight from 'rehype-highlight';
+import remarkGfm from 'remark-gfm';
 import { CrystallizationSuggestion } from '@/components/chat/CrystallizationSuggestion';
 
 type MessageListProps = {
@@ -43,10 +46,19 @@ export function MessageList({ messages, onCrystallize, onDismiss }: MessageListP
                       key={index}
                       className={`rounded-2xl px-5 py-3.5 text-sm leading-7 shadow-sm backdrop-blur-sm ${isUser
                           ? 'bg-neural-cyan/10 border border-neural-cyan/20 text-neural-light rounded-tr-sm'
-                          : 'bg-white/5 border border-white/10 text-neural-light/90 rounded-tl-sm'
+                          : 'bg-white/5 border border-white/10 text-neural-light/90 rounded-tl-sm markdown-content'
                         }`}
                     >
-                      {part.text}
+                      {isUser ? (
+                        part.text
+                      ) : (
+                        <ReactMarkdown 
+                          remarkPlugins={[remarkGfm]} 
+                          rehypePlugins={[rehypeHighlight]}
+                        >
+                          {part.text}
+                        </ReactMarkdown>
+                      )}
                     </div>
                   );
                 }
