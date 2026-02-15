@@ -279,6 +279,53 @@ export function ChatPanel() {
     }
   }, [messages.length, conversationId, loadConversations]);
 
+  const upsertEdgesInStore = useCallback(
+    (
+      edgesInput: Array<{
+        id: string;
+        source_crystal_id: string;
+        target_crystal_id: string;
+        type: RelationshipType;
+      }>
+    ) => {
+      const { edges: currentEdges, addEdges } = useGraphStore.getState();
+
+      const existingIds = new Set(currentEdges.map((e) => e.id));
+      const existingKeys = new Set(
+        currentEdges.map((e) => {
+          const data = e.data as { typeLabel?: RelationshipType } | undefined;
+          return `${e.source}:${e.target}:${data?.typeLabel}`;
+        })
+      );
+
+      const newEdges: typeof edgesInput = [];
+
+      for (const edgeInput of edgesInput) {
+        if (existingIds.has(edgeInput.id)) {
+          continue;
+        }
+
+        const key = `${edgeInput.source_crystal_id}:${edgeInput.target_crystal_id}:${edgeInput.type}`;
+        if (existingKeys.has(key)) {
+          continue;
+        }
+
+        newEdges.push(edgeInput);
+
+        // Add to sets to prevent duplicates within the batch
+        existingIds.add(edgeInput.id);
+        existingKeys.add(key);
+      }
+
+      if (newEdges.length === 0) {
+        return;
+      }
+
+      addEdges(newEdges.map(toGraphEdge));
+    },
+    []
+  );
+
   const upsertEdgeInStore = useCallback(
     (edgeInput: {
       id: string;
@@ -286,25 +333,9 @@ export function ChatPanel() {
       target_crystal_id: string;
       type: RelationshipType;
     }) => {
-      const { edges: currentEdges, addEdge } = useGraphStore.getState();
-
-      const exists = currentEdges.some((existing) => {
-        const data = existing.data as { typeLabel?: RelationshipType } | undefined;
-        return (
-          existing.id === edgeInput.id ||
-          (existing.source === edgeInput.source_crystal_id &&
-            existing.target === edgeInput.target_crystal_id &&
-            data?.typeLabel === edgeInput.type)
-        );
-      });
-
-      if (exists) {
-        return;
-      }
-
-      addEdge(toGraphEdge(edgeInput));
+      upsertEdgesInStore([edgeInput]);
     },
-    []
+    [upsertEdgesInStore]
   );
 
   const handleSend = useCallback(async () => {
@@ -425,9 +456,7 @@ export function ChatPanel() {
         });
 
         if (edges && edges.length > 0) {
-          edges.forEach((edge) => {
-            upsertEdgeInStore(edge);
-          });
+          upsertEdgesInStore(edges);
         }
 
         if (edge_suggestions && edge_suggestions.length > 0) {
@@ -475,7 +504,7 @@ export function ChatPanel() {
         alert('An error occurred while crystallizing.');
       }
     },
-    [messages, conversationId, setMessages, showConnectionsNotice, upsertEdgeInStore]
+    [messages, conversationId, setMessages, showConnectionsNotice, upsertEdgesInStore]
   );
 
   const handleDismiss = useCallback((toolCallId: string) => {
