@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { Card, Rating, State } from 'ts-fsrs';
 
-import { createServerSupabaseClient } from '@/lib/auth/supabase';
+import { getAuthenticatedUser } from '@/lib/auth/server';
 import { crystalQueries } from '@/lib/db/queries';
 import { scheduleReview, scheduler, mapStateToFSRS } from '@/lib/ai/fsrs';
 
@@ -27,14 +27,8 @@ function formatInterval(date: Date, now: Date): string {
 
 export async function GET() {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { user, supabase, errorResponse } = await getAuthenticatedUser();
+    if (errorResponse) return errorResponse;
 
     const crystals = await crystalQueries.getDueForReview(supabase, user.id);
 
@@ -79,14 +73,8 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { user, supabase, errorResponse } = await getAuthenticatedUser();
+    if (errorResponse) return errorResponse;
 
     const json = await request.json();
     const parsed = reviewSchema.safeParse(json);

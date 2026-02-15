@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { createServerSupabaseClient } from '@/lib/auth/supabase';
+import { getAuthenticatedUser } from '@/lib/auth/server';
 
 const routeParamsSchema = z.object({
   id: z.uuid(),
@@ -28,14 +28,8 @@ export async function GET(_request: NextRequest, context: { params: { id: string
       );
     }
 
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { user, supabase, errorResponse } = await getAuthenticatedUser();
+    if (errorResponse) return errorResponse;
 
     const { data, error } = await supabase
       .from('crystal_edges')
@@ -77,14 +71,8 @@ export async function POST(request: NextRequest, context: { params: { id: string
       return NextResponse.json({ error: 'A crystal cannot connect to itself' }, { status: 400 });
     }
 
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { user, supabase, errorResponse } = await getAuthenticatedUser();
+    if (errorResponse) return errorResponse;
 
     const [{ data: sourceCrystal, error: sourceError }, { data: targetCrystal, error: targetError }] =
       await Promise.all([
@@ -172,14 +160,8 @@ export async function DELETE(request: NextRequest, context: { params: { id: stri
       );
     }
 
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { user, supabase, errorResponse } = await getAuthenticatedUser();
+    if (errorResponse) return errorResponse;
 
     const { data, error } = await supabase
       .from('crystal_edges')

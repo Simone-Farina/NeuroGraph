@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { createServerSupabaseClient } from '@/lib/auth/supabase';
+import { getAuthenticatedUser } from '@/lib/auth/server';
 import { generateEmbedding } from '@/lib/ai/embeddings';
 import type { Database } from '@/types/database';
 
@@ -55,14 +55,8 @@ const createCrystalSchema = z.object({
 
 export async function GET() {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { user, supabase, errorResponse } = await getAuthenticatedUser();
+    if (errorResponse) return errorResponse;
 
     const [{ data: crystals, error: crystalsError }, { data: edges, error: edgesError }] =
       await Promise.all([
@@ -91,14 +85,8 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { user, supabase, errorResponse } = await getAuthenticatedUser();
+    if (errorResponse) return errorResponse;
 
     const parsed = createCrystalSchema.safeParse(await request.json());
     if (!parsed.success) {
