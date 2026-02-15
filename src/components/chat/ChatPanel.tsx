@@ -9,64 +9,14 @@ import { ChatInput } from '@/components/chat/ChatInput';
 import { MessageList } from '@/components/chat/MessageList';
 import { extractFirstYouTubeUrl, isYouTubeUrl } from '@/lib/youtube';
 import { useGraphStore } from '@/stores/graphStore';
-import type { ConversationSummary } from '@/types/chat';
-
-type SuggestionInput = {
-  title: string;
-  definition: string;
-  core_insight: string;
-  bloom_level: string;
-  related_crystals?: Array<{
-    id: string;
-    title?: string;
-    relationship_type: 'PREREQUISITE' | 'RELATED' | 'BUILDS_ON';
-  }>;
-};
-
-type RelationshipType = 'PREREQUISITE' | 'RELATED' | 'BUILDS_ON';
-
-type SuggestionToolPart = {
-  type: `tool-${string}`;
-  toolCallId: string;
-  providerExecuted?: boolean;
-  input?: SuggestionInput;
-  state?: string;
-  output?: unknown;
-};
-
-type CreatedCrystalResponse = {
-  crystal: {
-    id: string;
-    title: string;
-    retrievability: number;
-  };
-  edges?: Array<{
-    id: string;
-    source_crystal_id: string;
-    target_crystal_id: string;
-    type: RelationshipType;
-    weight?: number;
-  }>;
-  edge_suggestions?: Array<{
-    source_crystal_id: string;
-    target_crystal_id: string;
-    target_title: string;
-    type: RelationshipType;
-    weight: number;
-    confidence: 'medium';
-    source: 'vector' | 'ai';
-  }>;
-};
-
-type EdgeUpsertResponse = {
-  edge: {
-    id: string;
-    source_crystal_id: string;
-    target_crystal_id: string;
-    type: RelationshipType;
-    weight: number;
-  };
-};
+import type {
+  ConversationSummary,
+  CreatedCrystalResponse,
+  EdgeUpsertResponse,
+  RelationshipType,
+  SuggestionInput,
+  SuggestionToolPart,
+} from '@/types/chat';
 
 function markerForEdge(type: RelationshipType) {
   if (type === 'RELATED') return undefined;
