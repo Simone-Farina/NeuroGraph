@@ -1,57 +1,6 @@
--- NeuroGraph Query Functions
--- RPC functions for complex queries (vector similarity, graph traversal)
+-- Fix recursive reference in get_crystal_neighborhood
+-- Issue: "recursive reference to query 'crystal_walk' must not appear within a subquery"
 
--- ============================================================
--- FUNCTION: find_similar_crystals
--- Vector similarity search using cosine distance
--- ============================================================
-CREATE OR REPLACE FUNCTION find_similar_crystals(
-  query_embedding vector(1536),
-  match_user_id uuid,
-  match_threshold float DEFAULT 0.3,
-  match_count int DEFAULT 5
-)
-RETURNS TABLE (
-  id uuid,
-  user_id uuid,
-  title text,
-  definition text,
-  core_insight text,
-  bloom_level text,
-  source_conversation_id uuid,
-  source_message_ids uuid[],
-  embedding vector(1536),
-  stability numeric,
-  ease_factor numeric,
-  retrievability numeric,
-  last_review timestamptz,
-  next_review_due timestamptz,
-  review_count int,
-  consecutive_correct int,
-  created_at timestamptz,
-  updated_at timestamptz,
-  similarity float
-)
-LANGUAGE plpgsql
-AS $$
-BEGIN
-  RETURN QUERY
-  SELECT
-    c.*,
-    1 - (c.embedding <=> query_embedding) AS similarity
-  FROM crystals c
-  WHERE c.user_id = match_user_id
-    AND c.embedding IS NOT NULL
-    AND (1 - (c.embedding <=> query_embedding)) >= (1 - match_threshold)
-  ORDER BY c.embedding <=> query_embedding
-  LIMIT match_count;
-END;
-$$;
-
--- ============================================================
--- FUNCTION: get_crystal_neighborhood
--- Recursive CTE graph traversal for connected crystals
--- ============================================================
 CREATE OR REPLACE FUNCTION get_crystal_neighborhood(
   root_crystal_id uuid,
   max_depth int DEFAULT 2
@@ -68,6 +17,7 @@ DECLARE
   result_edges json;
 BEGIN
   -- 1. Get all involved crystal IDs using recursive CTE with path tracking
+  -- Use ARRAY to track visited nodes to prevent cycles and duplicate processing
   WITH RECURSIVE traversal AS (
     -- Base case: root node
     SELECT 
@@ -124,13 +74,3 @@ BEGIN
   RETURN QUERY SELECT result_crystals AS crystals, result_edges AS edges;
 END;
 $$;
-
--- ============================================================
--- COMPLETION
--- ============================================================
-
-DO $$
-BEGIN
-  RAISE NOTICE 'Query functions installed successfully';
-  RAISE NOTICE 'Available: find_similar_crystals, get_crystal_neighborhood';
-END $$;
