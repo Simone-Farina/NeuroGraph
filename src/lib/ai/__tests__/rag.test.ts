@@ -9,6 +9,7 @@ vi.mock('@/lib/db/queries', () => ({
   crystalQueries: {
     findSimilar: vi.fn(),
     getNeighborhood: vi.fn(),
+    getNeighborhoodsBatch: vi.fn(),
   },
 }));
 
@@ -49,13 +50,24 @@ describe('RAG - getRelevantContext', () => {
       { id: 'c2', title: 'Backpropagation', definition: 'Algorithm for training neural networks', similarity: 0.72 },
     ];
     (crystalQueries.findSimilar as any).mockResolvedValue(similarCrystals);
-    (crystalQueries.getNeighborhood as any).mockImplementation((_client: any, crystalId: string) => ({
+
+    // Mock getNeighborhoodsBatch
+    const mockNeighborhoods = new Map();
+    mockNeighborhoods.set('c1', {
       crystals: [
-        ...similarCrystals.filter(c => c.id === crystalId),
-        { id: 'c3', title: 'Gradient Descent' },
+        { id: 'c1', title: 'Neural Networks' },
+        { id: 'c3', title: 'Gradient Descent' }, // Neighbor of c1
       ],
-      edges: [],
-    }));
+      edges: []
+    });
+    mockNeighborhoods.set('c2', {
+      crystals: [
+        { id: 'c2', title: 'Backpropagation' }
+      ],
+      edges: []
+    });
+
+    (crystalQueries.getNeighborhoodsBatch as any).mockResolvedValue(mockNeighborhoods);
 
     const client = createMockClient();
     const result = await getRelevantContext('how do neural nets learn?', 'user-1', client);
@@ -71,13 +83,17 @@ describe('RAG - getRelevantContext', () => {
       { id: 'c1', title: 'Crystal A', definition: 'Def A', similarity: 0.9 },
     ];
     (crystalQueries.findSimilar as any).mockResolvedValue(similarCrystals);
-    (crystalQueries.getNeighborhood as any).mockResolvedValue({
+
+    const mockNeighborhoods = new Map();
+    mockNeighborhoods.set('c1', {
       crystals: [
         { id: 'c1', title: 'Crystal A' },
-        { id: 'c2', title: 'Crystal B' },
+        { id: 'c2', title: 'Crystal B' } // Neighbor
       ],
-      edges: [],
+      edges: []
     });
+
+    (crystalQueries.getNeighborhoodsBatch as any).mockResolvedValue(mockNeighborhoods);
 
     const client = createMockClient();
     const result = await getRelevantContext('query', 'user-1', client);

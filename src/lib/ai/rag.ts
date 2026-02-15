@@ -34,17 +34,17 @@ export async function getRelevantContext(
       return { ragContext: '', ragCatalog };
     }
 
-    const neighborhoods = await Promise.all(
-      similarCrystals.map(crystal => 
-        crystalQueries.getNeighborhood(client, crystal.id, 1)
-      )
+    const neighborhoodsMap = await crystalQueries.getNeighborhoodsBatch(
+      client,
+      similarCrystals.map(c => c.id),
+      1
     );
     
     const allCrystalsMap = new Map<string, Crystal>();
     
     similarCrystals.forEach(c => allCrystalsMap.set(c.id, c));
     
-    neighborhoods.forEach(n => {
+    neighborhoodsMap.forEach(n => {
       n.crystals.forEach(c => {
         if (!allCrystalsMap.has(c.id)) {
           allCrystalsMap.set(c.id, c);
@@ -52,9 +52,9 @@ export async function getRelevantContext(
       });
     });
 
-    const contextLines = similarCrystals.map((crystal, index) => {
-      const neighborhood = neighborhoods[index];
-      const neighbors = neighborhood.crystals.filter(c => c.id !== crystal.id);
+    const contextLines = similarCrystals.map((crystal) => {
+      const neighborhood = neighborhoodsMap.get(crystal.id);
+      const neighbors = neighborhood ? neighborhood.crystals.filter(c => c.id !== crystal.id) : [];
       const neighborTitles = neighbors.map(n => n.title).join(', ');
       
       return `- Crystal ${crystal.title}: ${crystal.definition} (Neighbors: ${neighborTitles || 'none'})`;
