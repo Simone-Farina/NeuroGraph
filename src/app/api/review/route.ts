@@ -71,7 +71,7 @@ export async function GET() {
 
     return NextResponse.json({ reviews: reviewsWithIntervals });
   } catch (error) {
-    console.error('Review fetch error:', error);
+    console.error('Review fetch error:', error instanceof Error ? error.message : String(error));
     const message = error instanceof Error ? error.message : 'Unexpected error';
     return NextResponse.json({ error: message }, { status: 500 });
   }
@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ crystal: updatedCrystal });
   } catch (error) {
-    console.error('Review error:', error);
+    console.error('Review error:', error instanceof Error ? error.message : String(error));
     const message = error instanceof Error ? error.message : 'Unexpected error';
     return NextResponse.json({ error: message }, { status: 500 });
   }
