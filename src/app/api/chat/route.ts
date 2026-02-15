@@ -8,6 +8,7 @@ import { getChatModel } from '@/lib/ai/providers';
 import { suggestCrystallizationTool } from '@/lib/ai/tools';
 
 import { getRelevantContext } from '@/lib/ai/rag';
+import { persistAssistantMessage } from './persistence';
 
 function createConversationTitle(input: string) {
   const trimmed = input.trim();
@@ -191,21 +192,8 @@ export async function POST(request: NextRequest) {
         }
       },
       onFinish: async () => {
-        if (!assistantText.trim() || !conversationId) return;
-
-        try {
-          const { error } = await supabase.from('messages').insert({
-            conversation_id: conversationId,
-            role: 'assistant',
-            content: assistantText,
-          });
-
-          if (error) {
-            console.error('Failed to persist assistant message:', error.message);
-          }
-        } catch (err) {
-          console.error('Failed to persist assistant message:', err);
-        }
+        if (!conversationId) return;
+        await persistAssistantMessage(supabase, conversationId, assistantText);
       },
     });
 
