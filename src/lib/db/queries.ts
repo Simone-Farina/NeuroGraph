@@ -81,9 +81,10 @@ export const crystalQueries = {
     embedding: number[],
     userId: string,
     limit: number = 5,
-    threshold: number = 0.3
+    threshold: number = 0.3,
+    client: typeof supabase = supabase
   ): Promise<Array<Crystal & { similarity: number }>> {
-    const { data, error } = await supabase.rpc('find_similar_crystals', {
+    const { data, error } = await client.rpc('find_similar_crystals', {
       query_embedding: embedding,
       match_user_id: userId,
       match_threshold: threshold,
@@ -96,12 +97,13 @@ export const crystalQueries = {
 
   async getNeighborhood(
     crystalId: string,
-    maxDepth: number = 2
+    maxDepth: number = 2,
+    client: typeof supabase = supabase
   ): Promise<{
     crystals: Crystal[];
     edges: CrystalEdge[];
   }> {
-    const { data, error } = await supabase.rpc('get_crystal_neighborhood', {
+    const { data, error } = await client.rpc('get_crystal_neighborhood', {
       root_crystal_id: crystalId,
       max_depth: maxDepth,
     });
