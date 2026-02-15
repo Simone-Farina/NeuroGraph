@@ -11,6 +11,7 @@ type GraphStore = {
   removeNode: (nodeId: string) => void;
   removeEdge: (edgeId: string) => void;
   updateNode: (nodeId: string, data: Partial<Node['data']>) => void;
+  batchUpdateNodes: (updates: { id: string; data: Partial<Node['data']> }[]) => void;
   setSelectedNode: (nodeId: string | null) => void;
 };
 
@@ -43,5 +44,15 @@ export const useGraphStore = create<GraphStore>((set) => ({
         node.id === nodeId ? { ...node, data: { ...node.data, ...data } } : node
       ),
     })),
+  batchUpdateNodes: (updates) =>
+    set((state) => {
+      const updateMap = new Map(updates.map((u) => [u.id, u.data]));
+      return {
+        nodes: state.nodes.map((node) => {
+          const update = updateMap.get(node.id);
+          return update ? { ...node, data: { ...node.data, ...update } } : node;
+        }),
+      };
+    }),
   setSelectedNode: (selectedNodeId) => set({ selectedNodeId }),
 }));
