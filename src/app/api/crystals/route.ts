@@ -113,12 +113,15 @@ export async function POST(request: NextRequest) {
     const now = new Date();
     const nextReview = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
-    const { data, error } = await supabase
+    const embeddingInput = `${crystalInput.title} ${crystalInput.definition} ${crystalInput.core_insight}`;
+    const embedding = await generateEmbedding(embeddingInput);
+
+    const { data: crystal, error } = await supabase
       .from('crystals')
       .insert({
         ...crystalInput,
         user_id: user.id,
-        embedding: null,
+        embedding,
         stability: 1.0,
         difficulty: 5.0,
         state: 'New',
@@ -137,21 +140,6 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    const embeddingInput = `${data.title} ${data.definition} ${data.core_insight}`;
-    const embedding = await generateEmbedding(embeddingInput);
-
-    const { data: crystal, error: embeddingUpdateError } = await supabase
-      .from('crystals')
-      .update({ embedding })
-      .eq('id', data.id)
-      .eq('user_id', user.id)
-      .select('*')
-      .single();
-
-    if (embeddingUpdateError) {
-      return NextResponse.json({ error: embeddingUpdateError.message }, { status: 500 });
     }
 
     const { count } = await supabase
