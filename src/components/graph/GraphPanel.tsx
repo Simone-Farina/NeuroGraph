@@ -74,7 +74,7 @@ function GraphCanvas() {
   const nodes = useGraphStore((state) => state.nodes);
   const edges = useGraphStore((state) => state.edges);
   const setGraph = useGraphStore((state) => state.setGraph);
-  const updateNode = useGraphStore((state) => state.updateNode);
+  const batchUpdateNodes = useGraphStore((state) => state.batchUpdateNodes);
   const { fitView } = useReactFlow();
 
   const [flowNodes, setFlowNodes, onNodesChange] = useNodesState([]);
@@ -106,6 +106,7 @@ function GraphCanvas() {
     const updateRetrievability = () => {
       const now = new Date();
       const currentNodes = useGraphStore.getState().nodes;
+      const updates: { id: string; data: Partial<Node['data']> }[] = [];
       
       currentNodes.forEach(node => {
         // We need to cast data to any to access the extra fields we stored
@@ -123,10 +124,14 @@ function GraphCanvas() {
           
           // Only update if there's a significant change (e.g., > 0.1%) to avoid thrashing
           if (Math.abs(newRetrievability - (data.retrievability || 0)) > 0.001) {
-            updateNode(node.id, { retrievability: newRetrievability });
+            updates.push({ id: node.id, data: { retrievability: newRetrievability } });
           }
         }
       });
+
+      if (updates.length > 0) {
+        batchUpdateNodes(updates);
+      }
     };
 
     // Run immediately and then every minute
@@ -134,7 +139,7 @@ function GraphCanvas() {
     const interval = setInterval(updateRetrievability, 60 * 1000);
     
     return () => clearInterval(interval);
-  }, [updateNode]);
+  }, [batchUpdateNodes]);
 
   useEffect(() => {
     const loadGraph = async () => {
