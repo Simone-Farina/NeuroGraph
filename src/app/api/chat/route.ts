@@ -192,7 +192,10 @@ export async function POST(request: NextRequest) {
             console.error('Failed to persist assistant message:', error.message);
           }
         } catch (err) {
-          console.error('Failed to persist assistant message:', err);
+          console.error(
+            'Failed to persist assistant message:',
+            err instanceof Error ? err.message : 'Unknown error'
+          );
         }
       },
     });
