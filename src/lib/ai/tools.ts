@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 const relationshipTypeSchema = z.enum(['PREREQUISITE', 'RELATED', 'BUILDS_ON']);
 
-const parameters = z.object({
+export const crystallizationSchema = z.object({
   title: z
     .string()
     .min(3)
@@ -48,5 +48,5 @@ export const suggestCrystallizationTool = tool({
   description:
     'Suggest crystallizing a durable insight from the conversation into a knowledge node. ' +
     'Call this when the user demonstrates genuine analytical depth — not for surface-level facts.',
-  inputSchema: parameters,
+  inputSchema: crystallizationSchema,
 });
