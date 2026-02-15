@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
-import { calculateRetrievability, scheduleReview } from '../fsrs';
+import { calculateRetrievability, scheduleReview, mapStateToFSRS } from '../fsrs';
 import { Crystal } from '@/types/database';
-import { Rating } from 'ts-fsrs';
+import { Rating, State } from 'ts-fsrs';
 
 describe('FSRS Logic', () => {
   describe('calculateRetrievability', () => {
@@ -39,6 +39,20 @@ describe('FSRS Logic', () => {
       // The formula is R = (1 + factor * t / S) ^ -w20
       // If t = S, R should be close to request_retention (0.9)
       expect(calculateRetrievability(crystal, now)).toBeCloseTo(0.9, 1);
+    });
+  });
+
+  describe('mapStateToFSRS', () => {
+    it('should map all known states', () => {
+      expect(mapStateToFSRS('New')).toBe(State.New);
+      expect(mapStateToFSRS('Learning')).toBe(State.Learning);
+      expect(mapStateToFSRS('Review')).toBe(State.Review);
+      expect(mapStateToFSRS('Relearning')).toBe(State.Relearning);
+    });
+
+    it('should default to New for unknown state', () => {
+      expect(mapStateToFSRS('Unknown')).toBe(State.New);
+      expect(mapStateToFSRS('')).toBe(State.New);
     });
   });
 

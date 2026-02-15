@@ -140,7 +140,7 @@ export function CrystalNode({ id, data }: NodeProps<CrystalFlowNode>) {
         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
       </button>
 
-      <Handle type="target" position={Position.Left} className={`!h-3.5 !w-3.5 !border-2 !border-neural-dark transition-colors duration-300 ${styles.handle}`} />
+      <Handle type="target" position={Position.Top} className={`!h-3.5 !w-3.5 !border-2 !border-neural-dark transition-colors duration-300 ${styles.handle}`} />
       
       <div className="flex items-center justify-between mb-2">
         <p className={`text-[10px] font-bold uppercase tracking-widest ${styles.label}`}>Crystal</p>
@@ -160,7 +160,7 @@ export function CrystalNode({ id, data }: NodeProps<CrystalFlowNode>) {
         />
       </div>
 
-      <Handle type="source" position={Position.Right} className={`!h-3.5 !w-3.5 !border-2 !border-neural-dark transition-colors duration-300 ${styles.handle}`} />
+      <Handle type="source" position={Position.Bottom} className={`!h-3.5 !w-3.5 !border-2 !border-neural-dark transition-colors duration-300 ${styles.handle}`} />
     </div>
   );
 }

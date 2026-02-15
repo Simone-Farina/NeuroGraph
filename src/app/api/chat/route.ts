@@ -80,7 +80,7 @@ const postSchema = z.object({
     z.object({
       id: z.string(),
       role: z.enum(['user', 'assistant', 'system', 'tool']),
-      content: z.string(),
+      content: z.string().optional(),
       parts: z.array(z.any()).optional(),
     }).passthrough()
   ).min(1),
@@ -181,11 +181,19 @@ export async function POST(request: NextRequest) {
       onFinish: async () => {
         if (!assistantText.trim() || !conversationId) return;
 
-        await supabase.from('messages').insert({
-          conversation_id: conversationId,
-          role: 'assistant',
-          content: assistantText,
-        });
+        try {
+          const { error } = await supabase.from('messages').insert({
+            conversation_id: conversationId,
+            role: 'assistant',
+            content: assistantText,
+          });
+
+          if (error) {
+            console.error('Failed to persist assistant message:', error.message);
+          }
+        } catch (err) {
+          console.error('Failed to persist assistant message:', err);
+        }
       },
     });
 

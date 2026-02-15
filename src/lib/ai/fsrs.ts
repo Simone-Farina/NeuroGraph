@@ -10,7 +10,7 @@ export const scheduler: FSRS = fsrs({
 });
 
 // Map database state string to FSRS State enum
-function mapStateToFSRS(stateStr: string): State {
+export function mapStateToFSRS(stateStr: string): State {
   switch (stateStr) {
     case 'New': return State.New;
     case 'Learning': return State.Learning;

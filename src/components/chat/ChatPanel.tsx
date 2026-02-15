@@ -355,7 +355,6 @@ export function ChatPanel() {
 
   const handleCrystallize = useCallback(
     async (toolCallId: string) => {
-      console.log('Crystallize requested for tool call:', toolCallId);
 
       // 1. Find the message and tool invocation
       const message = messages.find((m) =>

@@ -17,7 +17,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const conversation = await conversationQueries.getById(id);
+    const conversation = await conversationQueries.getById(supabase, id);
     if (!conversation) {
       return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
     }
@@ -26,7 +26,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    await conversationQueries.delete(id);
+    await conversationQueries.delete(supabase, id);
 
     return NextResponse.json({ success: true });
   } catch (error) {

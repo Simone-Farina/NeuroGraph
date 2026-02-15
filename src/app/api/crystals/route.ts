@@ -68,7 +68,7 @@ export async function GET() {
       await Promise.all([
         supabase
           .from('crystals')
-          .select('*')
+          .select('id, user_id, title, definition, core_insight, bloom_level, source_conversation_id, stability, difficulty, state, reps, lapses, elapsed_days, scheduled_days, retrievability, last_review, next_review_due, review_count, consecutive_correct, created_at, updated_at')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
           .limit(200),
@@ -119,8 +119,8 @@ export async function POST(request: NextRequest) {
         ...crystalInput,
         user_id: user.id,
         embedding: null,
-        stability: 0,
-        difficulty: 0,
+        stability: 1.0,
+        difficulty: 5.0,
         state: 'New',
         reps: 0,
         lapses: 0,
@@ -153,6 +153,12 @@ export async function POST(request: NextRequest) {
     if (embeddingUpdateError) {
       return NextResponse.json({ error: embeddingUpdateError.message }, { status: 500 });
     }
+
+    const { count } = await supabase
+      .from('crystals')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .not('embedding', 'is', null);
 
     const { data: similarCrystals, error: similarError } = await supabase.rpc('find_similar_crystals', {
       query_embedding: embedding,

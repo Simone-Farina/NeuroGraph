@@ -27,9 +27,9 @@ export function MessageList({ messages, onCrystallize, onDismiss }: MessageListP
         const isUser = message.role === 'user';
 
         return (
-          <div
+            <div
             key={message.id}
-            className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
+            className={`flex ${isUser ? 'justify-end' : 'justify-start'} ${isUser ? 'message-user' : 'message-assistant'}`}
           >
             <div className={`max-w-[85%] ${isUser ? 'ml-12' : 'mr-12'}`}>
               <div className={`mb-1.5 flex items-center gap-2 ${isUser ? 'justify-end' : 'justify-start'}`}>

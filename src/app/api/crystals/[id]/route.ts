@@ -17,7 +17,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const crystal = await crystalQueries.getById(id);
+    const crystal = await crystalQueries.getById(supabase, id);
     if (!crystal) {
       return NextResponse.json({ error: 'Crystal not found' }, { status: 404 });
     }
@@ -26,7 +26,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    await crystalQueries.delete(id);
+    await crystalQueries.delete(supabase, id);
 
     return NextResponse.json({ success: true });
   } catch (error) {

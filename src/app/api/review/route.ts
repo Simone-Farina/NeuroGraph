@@ -4,23 +4,13 @@ import { Card, Rating, State } from 'ts-fsrs';
 
 import { createServerSupabaseClient } from '@/lib/auth/supabase';
 import { crystalQueries } from '@/lib/db/queries';
-import { scheduleReview, scheduler } from '@/lib/ai/fsrs';
+import { scheduleReview, scheduler, mapStateToFSRS } from '@/lib/ai/fsrs';
 
 // Schema for the review submission
 const reviewSchema = z.object({
   crystalId: z.string().uuid(),
   rating: z.number().int().min(1).max(4), // 1=Again, 2=Hard, 3=Good, 4=Easy
 });
-
-function mapStateToFSRS(stateStr: string): State {
-  switch (stateStr) {
-    case 'New': return State.New;
-    case 'Learning': return State.Learning;
-    case 'Review': return State.Review;
-    case 'Relearning': return State.Relearning;
-    default: return State.New;
-  }
-}
 
 function formatInterval(date: Date, now: Date): string {
   const diff = date.getTime() - now.getTime();
@@ -46,10 +36,11 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const crystals = await crystalQueries.getDueForReview(user.id);
+    const crystals = await crystalQueries.getDueForReview(supabase, user.id);
+
     const now = new Date();
 
-    const reviewsWithIntervals = crystals.map((crystal) => {
+    const reviewsWithIntervals = (crystals || []).map((crystal) => {
       const card: Card = {
         due: new Date(crystal.next_review_due),
         stability: crystal.stability,
@@ -110,7 +101,7 @@ export async function POST(request: NextRequest) {
     const { crystalId, rating } = parsed.data;
 
     // 1. Fetch the crystal
-    const crystal = await crystalQueries.getById(crystalId);
+    const crystal = await crystalQueries.getById(supabase, crystalId);
 
     if (!crystal) {
       return NextResponse.json({ error: 'Crystal not found' }, { status: 404 });
@@ -135,7 +126,7 @@ export async function POST(request: NextRequest) {
       consecutive_correct: isCorrect ? crystal.consecutive_correct + 1 : 0,
     };
 
-    const updatedCrystal = await crystalQueries.update(crystal.id, finalUpdates);
+    const updatedCrystal = await crystalQueries.update(supabase, crystal.id, finalUpdates);
 
     return NextResponse.json({ crystal: updatedCrystal });
   } catch (error) {

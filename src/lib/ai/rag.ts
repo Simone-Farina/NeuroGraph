@@ -1,22 +1,22 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { generateEmbedding } from '@/lib/ai/embeddings';
 import { crystalQueries } from '@/lib/db/queries';
-import { Crystal } from '@/types/database';
+import { Crystal, Database } from '@/types/database';
 
 export async function getRelevantContext(
   message: string,
   userId: string,
-  client: SupabaseClient
+  client: SupabaseClient<Database>
 ): Promise<{ ragContext: string; ragCatalog: string }> {
   try {
     const embedding = await generateEmbedding(message);
     
     const similarCrystals = await crystalQueries.findSimilar(
+      client,
       embedding,
       userId,
       5,
-      0.3,
-      client as any
+      0.3
     );
 
     if (similarCrystals.length === 0) {
@@ -36,7 +36,7 @@ export async function getRelevantContext(
 
     const neighborhoods = await Promise.all(
       similarCrystals.map(crystal => 
-        crystalQueries.getNeighborhood(crystal.id, 1, client as any)
+        crystalQueries.getNeighborhood(client, crystal.id, 1)
       )
     );
     

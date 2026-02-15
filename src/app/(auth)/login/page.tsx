@@ -16,6 +16,32 @@ export default function LoginPage() {
   const supabase = createClient();
 
   useEffect(() => {
+    if (process.env.NODE_ENV !== 'production') {
+      (window as any).supabase = supabase;
+    }
+  }, [supabase]);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        window.location.href = '/app';
+      }
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        window.location.href = '/app';
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [supabase]);
+
+  useEffect(() => {
     const checkViewport = () => {
       setIsDesktop(window.innerWidth >= 1024);
     };

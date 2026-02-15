@@ -1,13 +1,15 @@
-import { supabase } from './client';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Crystal, CrystalEdge, Conversation, Message, Database } from '@/types/database';
+
+type TypedClient = SupabaseClient<Database>;
 
 type CrystalInsert = Database['public']['Tables']['crystals']['Insert'];
 type CrystalUpdate = Database['public']['Tables']['crystals']['Update'];
 type EdgeInsert = Database['public']['Tables']['crystal_edges']['Insert'];
 
 export const crystalQueries = {
-  async create(data: CrystalInsert): Promise<Crystal> {
-    const { data: crystal, error } = await supabase
+  async create(client: TypedClient, data: CrystalInsert): Promise<Crystal> {
+    const { data: crystal, error } = await client
       .from('crystals')
       .insert(data)
       .select()
@@ -17,8 +19,8 @@ export const crystalQueries = {
     return crystal;
   },
 
-  async getById(id: string): Promise<Crystal | null> {
-    const { data, error } = await supabase
+  async getById(client: TypedClient, id: string): Promise<Crystal | null> {
+    const { data, error } = await client
       .from('crystals')
       .select('*')
       .eq('id', id)
@@ -31,8 +33,8 @@ export const crystalQueries = {
     return data;
   },
 
-  async getByUserId(userId: string): Promise<Crystal[]> {
-    const { data, error } = await supabase
+  async getByUserId(client: TypedClient, userId: string): Promise<Crystal[]> {
+    const { data, error } = await client
       .from('crystals')
       .select('*')
       .eq('user_id', userId)
@@ -42,8 +44,8 @@ export const crystalQueries = {
     return data;
   },
 
-  async update(id: string, updates: CrystalUpdate): Promise<Crystal> {
-    const { data, error } = await supabase
+  async update(client: TypedClient, id: string, updates: CrystalUpdate): Promise<Crystal> {
+    const { data, error } = await client
       .from('crystals')
       .update(updates)
       .eq('id', id)
@@ -54,8 +56,8 @@ export const crystalQueries = {
     return data;
   },
 
-  async delete(id: string): Promise<void> {
-    const { error } = await supabase
+  async delete(client: TypedClient, id: string): Promise<void> {
+    const { error } = await client
       .from('crystals')
       .delete()
       .eq('id', id);
@@ -63,8 +65,8 @@ export const crystalQueries = {
     if (error) throw error;
   },
 
-  async getDueForReview(userId: string, limit: number = 20): Promise<Crystal[]> {
-    const { data, error } = await supabase
+  async getDueForReview(client: TypedClient, userId: string, limit: number = 20): Promise<Crystal[]> {
+    const { data, error } = await client
       .from('crystals')
       .select('*')
       .eq('user_id', userId)
@@ -78,11 +80,11 @@ export const crystalQueries = {
   },
 
   async findSimilar(
+    client: TypedClient,
     embedding: number[],
     userId: string,
     limit: number = 5,
-    threshold: number = 0.3,
-    client: typeof supabase = supabase
+    threshold: number = 0.3
   ): Promise<Array<Crystal & { similarity: number }>> {
     const { data, error } = await client.rpc('find_similar_crystals', {
       query_embedding: embedding,
@@ -96,9 +98,9 @@ export const crystalQueries = {
   },
 
   async getNeighborhood(
+    client: TypedClient,
     crystalId: string,
-    maxDepth: number = 2,
-    client: typeof supabase = supabase
+    maxDepth: number = 2
   ): Promise<{
     crystals: Crystal[];
     edges: CrystalEdge[];
@@ -120,8 +122,8 @@ export const crystalQueries = {
 };
 
 export const edgeQueries = {
-  async create(data: EdgeInsert): Promise<CrystalEdge> {
-    const { data: edge, error } = await supabase
+  async create(client: TypedClient, data: EdgeInsert): Promise<CrystalEdge> {
+    const { data: edge, error } = await client
       .from('crystal_edges')
       .insert(data)
       .select()
@@ -131,8 +133,8 @@ export const edgeQueries = {
     return edge;
   },
 
-  async getByUserId(userId: string): Promise<CrystalEdge[]> {
-    const { data, error } = await supabase
+  async getByUserId(client: TypedClient, userId: string): Promise<CrystalEdge[]> {
+    const { data, error } = await client
       .from('crystal_edges')
       .select('*')
       .eq('user_id', userId);
@@ -141,8 +143,8 @@ export const edgeQueries = {
     return data;
   },
 
-  async getByCrystalId(crystalId: string): Promise<CrystalEdge[]> {
-    const { data, error } = await supabase
+  async getByCrystalId(client: TypedClient, crystalId: string): Promise<CrystalEdge[]> {
+    const { data, error } = await client
       .from('crystal_edges')
       .select('*')
       .or(`source_crystal_id.eq.${crystalId},target_crystal_id.eq.${crystalId}`);
@@ -151,8 +153,8 @@ export const edgeQueries = {
     return data;
   },
 
-  async delete(id: string): Promise<void> {
-    const { error } = await supabase
+  async delete(client: TypedClient, id: string): Promise<void> {
+    const { error } = await client
       .from('crystal_edges')
       .delete()
       .eq('id', id);
@@ -162,8 +164,8 @@ export const edgeQueries = {
 };
 
 export const conversationQueries = {
-  async create(userId: string, title: string): Promise<Conversation> {
-    const { data, error } = await supabase
+  async create(client: TypedClient, userId: string, title: string): Promise<Conversation> {
+    const { data, error } = await client
       .from('conversations')
       .insert({ user_id: userId, title })
       .select()
@@ -173,8 +175,8 @@ export const conversationQueries = {
     return data;
   },
 
-  async getById(id: string): Promise<Conversation | null> {
-    const { data, error } = await supabase
+  async getById(client: TypedClient, id: string): Promise<Conversation | null> {
+    const { data, error } = await client
       .from('conversations')
       .select('*')
       .eq('id', id)
@@ -187,8 +189,8 @@ export const conversationQueries = {
     return data;
   },
 
-  async getByUserId(userId: string): Promise<Conversation[]> {
-    const { data, error } = await supabase
+  async getByUserId(client: TypedClient, userId: string): Promise<Conversation[]> {
+    const { data, error } = await client
       .from('conversations')
       .select('*')
       .eq('user_id', userId)
@@ -198,8 +200,8 @@ export const conversationQueries = {
     return data;
   },
 
-  async delete(id: string): Promise<void> {
-    const { error } = await supabase
+  async delete(client: TypedClient, id: string): Promise<void> {
+    const { error } = await client
       .from('conversations')
       .delete()
       .eq('id', id);
@@ -210,12 +212,13 @@ export const conversationQueries = {
 
 export const messageQueries = {
   async create(
+    client: TypedClient,
     conversationId: string,
     role: 'user' | 'assistant' | 'system',
     content: string,
     youtubeUrl?: string
   ): Promise<Message> {
-    const { data, error } = await supabase
+    const { data, error } = await client
       .from('messages')
       .insert({
         conversation_id: conversationId,
@@ -230,8 +233,8 @@ export const messageQueries = {
     return data;
   },
 
-  async getByConversationId(conversationId: string): Promise<Message[]> {
-    const { data, error } = await supabase
+  async getByConversationId(client: TypedClient, conversationId: string): Promise<Message[]> {
+    const { data, error } = await client
       .from('messages')
       .select('*')
       .eq('conversation_id', conversationId)

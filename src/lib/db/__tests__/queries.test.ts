@@ -1,18 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { crystalQueries } from '../queries';
-import { supabase } from '../client';
 
-// Mock the supabase client
-vi.mock('../client', () => ({
-  supabase: {
+function createMockClient() {
+  return {
     from: vi.fn(),
     rpc: vi.fn(),
-  },
-}));
+  } as any;
+}
 
 describe('DB Queries', () => {
+  let mockClient: ReturnType<typeof createMockClient>;
+
   beforeEach(() => {
     vi.clearAllMocks();
+    mockClient = createMockClient();
   });
 
   describe('crystalQueries.create', () => {
@@ -24,11 +25,11 @@ describe('DB Queries', () => {
       const mockInsert = vi.fn().mockReturnValue({ select: mockSelect });
       const mockFrom = vi.fn().mockReturnValue({ insert: mockInsert });
       
-      (supabase.from as any).mockImplementation(mockFrom);
+      mockClient.from.mockImplementation(mockFrom);
 
-      const result = await crystalQueries.create({ title: 'Test', user_id: 'user1', content: 'content' } as any);
+      const result = await crystalQueries.create(mockClient, { title: 'Test', user_id: 'user1', content: 'content' } as any);
       
-      expect(supabase.from).toHaveBeenCalledWith('crystals');
+      expect(mockClient.from).toHaveBeenCalledWith('crystals');
       expect(mockInsert).toHaveBeenCalledWith(expect.objectContaining({ title: 'Test' }));
       expect(result).toEqual(mockCrystal);
     });
@@ -40,9 +41,9 @@ describe('DB Queries', () => {
       const mockInsert = vi.fn().mockReturnValue({ select: mockSelect });
       const mockFrom = vi.fn().mockReturnValue({ insert: mockInsert });
       
-      (supabase.from as any).mockImplementation(mockFrom);
+      mockClient.from.mockImplementation(mockFrom);
 
-      await expect(crystalQueries.create({} as any)).rejects.toEqual({ message: 'Error' });
+      await expect(crystalQueries.create(mockClient, {} as any)).rejects.toEqual({ message: 'Error' });
     });
   });
 
@@ -54,9 +55,9 @@ describe('DB Queries', () => {
       const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
       const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
 
-      (supabase.from as any).mockImplementation(mockFrom);
+      mockClient.from.mockImplementation(mockFrom);
 
-      const result = await crystalQueries.getById('1');
+      const result = await crystalQueries.getById(mockClient, '1');
       
       expect(mockEq).toHaveBeenCalledWith('id', '1');
       expect(result).toEqual(mockCrystal);
@@ -68,9 +69,9 @@ describe('DB Queries', () => {
       const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
       const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
 
-      (supabase.from as any).mockImplementation(mockFrom);
+      mockClient.from.mockImplementation(mockFrom);
 
-      const result = await crystalQueries.getById('1');
+      const result = await crystalQueries.getById(mockClient, '1');
       
       expect(result).toBeNull();
     });
