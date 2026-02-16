@@ -14,9 +14,7 @@ import {
   useEdgesState,
   useNodesState,
   useReactFlow,
-  Position,
 } from '@xyflow/react';
-import dagre from '@dagrejs/dagre';
 
 import { CrystalEdge } from '@/components/graph/CrystalEdge';
 import { CrystalNode } from '@/components/graph/CrystalNode';
@@ -32,44 +30,6 @@ const edgeTypes = {
   crystalEdge: CrystalEdge,
 };
 
-const nodeWidth = 200;
-const nodeHeight = 80;
-
-/**
- * Calculates the layout of the graph using Dagre.
- * Uses a Top-to-Bottom (TB) rank direction.
- */
-const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
-  const dagreGraph = new dagre.graphlib.Graph();
-  dagreGraph.setDefaultEdgeLabel(() => ({}));
-  dagreGraph.setGraph({ rankdir: 'TB' });
-
-  nodes.forEach((node) => {
-    dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
-  });
-
-  edges.forEach((edge) => {
-    dagreGraph.setEdge(edge.source, edge.target);
-  });
-
-  dagre.layout(dagreGraph);
-
-  const layoutedNodes = nodes.map((node) => {
-    const nodeWithPosition = dagreGraph.node(node.id);
-    return {
-      ...node,
-      targetPosition: Position.Top,
-      sourcePosition: Position.Bottom,
-      position: {
-        x: nodeWithPosition.x - nodeWidth / 2,
-        y: nodeWithPosition.y - nodeHeight / 2,
-      },
-    };
-  });
-
-  return { nodes: layoutedNodes, edges };
-};
-
 function GraphCanvas() {
   const nodes = useGraphStore((state) => state.nodes);
   const edges = useGraphStore((state) => state.edges);
@@ -80,26 +40,50 @@ function GraphCanvas() {
   const [flowNodes, setFlowNodes, onNodesChange] = useNodesState([]);
   const [flowEdges, setFlowEdges, onEdgesChange] = useEdgesState([]);
 
+  const workerRef = useRef<Worker | null>(null);
+  const lastRequestId = useRef(0);
+
+  useEffect(() => {
+    workerRef.current = new Worker(new URL('./layout.worker.ts', import.meta.url));
+
+    workerRef.current.onmessage = (event: MessageEvent<{ nodes: Node[]; edges: Edge[]; requestId: number }>) => {
+      const { nodes: layoutedNodes, edges: layoutedEdges, requestId } = event.data;
+
+      // Only update if this is the response to the latest request
+      if (requestId === lastRequestId.current) {
+        setFlowNodes(layoutedNodes);
+        setFlowEdges(layoutedEdges);
+        window.requestAnimationFrame(() => {
+          fitView();
+        });
+      }
+    };
+
+    return () => {
+      workerRef.current?.terminate();
+    };
+  }, [setFlowNodes, setFlowEdges, fitView]);
+
   const onLayout = useCallback(
     (nodes: Node[], edges: Edge[]) => {
-      const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
-        nodes,
-        edges,
-      );
-
-      setFlowNodes([...layoutedNodes]);
-      setFlowEdges([...layoutedEdges]);
-      
-      window.requestAnimationFrame(() => {
-        fitView();
-      });
+      if (workerRef.current) {
+        const requestId = ++lastRequestId.current;
+        workerRef.current.postMessage({ nodes, edges, requestId });
+      }
     },
-    [setFlowNodes, setFlowEdges, fitView],
+    [],
   );
 
   useEffect(() => {
-    onLayout(nodes, edges);
-  }, [nodes, edges, onLayout]);
+    if (nodes.length > 0) {
+      onLayout(nodes, edges);
+    } else {
+      // Invalidate any pending layout requests
+      lastRequestId.current++;
+      setFlowNodes([]);
+      setFlowEdges([]);
+    }
+  }, [nodes, edges, onLayout, setFlowNodes, setFlowEdges]);
 
   // Periodic retrievability update
   useEffect(() => {
