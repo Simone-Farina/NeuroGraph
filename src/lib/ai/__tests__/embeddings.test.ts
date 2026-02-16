@@ -28,6 +28,7 @@ describe('generateEmbedding', () => {
     const text = 'test text';
     const result = await generateEmbedding(text);
 
+    expect(getEmbeddingModel).toHaveBeenCalled();
     expect(embed).toHaveBeenCalledWith({
       model: mockModel,
       value: text,
