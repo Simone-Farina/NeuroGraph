@@ -16,3 +16,9 @@ https://nextjs.org/telemetry
  ✓ Compiled / in 6.4s (552 modules)
  ✓ Compiled in 719ms (259 modules)
  GET / 200 in 7142ms
+ ⚠ Found a change in next.config.js. Restarting the server to apply the changes...
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+ ✓ Ready in 5.5s

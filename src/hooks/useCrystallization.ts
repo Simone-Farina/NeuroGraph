@@ -26,12 +26,12 @@ type UseCrystallizationProps = {
   conversationId: string | null;
   setMessages: (messages: UIMessage[] | ((prev: UIMessage[]) => UIMessage[])) => void;
   showConnectionsNotice: (message: string) => void;
-  upsertEdgeInStore: (edge: {
+  upsertEdgesInStore: (edges: Array<{
     id: string;
     source_crystal_id: string;
     target_crystal_id: string;
     type: RelationshipType;
-  }) => void;
+  }>) => void;
   addEdgeSuggestions: (suggestions: EdgeSuggestion[]) => void;
 };
 
@@ -40,7 +40,7 @@ export function useCrystallization({
   conversationId,
   setMessages,
   showConnectionsNotice,
-  upsertEdgeInStore,
+  upsertEdgesInStore,
   addEdgeSuggestions,
 }: UseCrystallizationProps) {
   const handleCrystallize = useCallback(
@@ -110,9 +110,7 @@ export function useCrystallization({
         });
 
         if (edges && edges.length > 0) {
-          edges.forEach((edge) => {
-            upsertEdgeInStore(edge);
-          });
+          upsertEdgesInStore(edges);
         }
 
         if (edge_suggestions && edge_suggestions.length > 0) {
@@ -151,7 +149,7 @@ export function useCrystallization({
         alert('An error occurred while crystallizing.');
       }
     },
-    [messages, conversationId, setMessages, showConnectionsNotice, upsertEdgeInStore, addEdgeSuggestions]
+    [messages, conversationId, setMessages, showConnectionsNotice, upsertEdgesInStore, addEdgeSuggestions]
   );
 
   const handleDismiss = useCallback((toolCallId: string) => {

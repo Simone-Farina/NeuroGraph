@@ -27,7 +27,7 @@ export function ChatPanel() {
     clearConnectionNotice,
     clearEdgeSuggestions,
     addEdgeSuggestions,
-    upsertEdgeInStore,
+    upsertEdgesInStore,
     handleConfirmEdgeSuggestion,
     handleDismissEdgeSuggestion,
   } = useEdgeSuggestions();
@@ -97,7 +97,7 @@ export function ChatPanel() {
     conversationId,
     setMessages,
     showConnectionsNotice,
-    upsertEdgeInStore,
+    upsertEdgesInStore,
     addEdgeSuggestions,
   });
 
@@ -116,8 +116,6 @@ export function ChatPanel() {
   useEffect(() => {
     if (messages.length >= 2 && !conversationId && conversations.length > 0) {
       // Pick the most recent conversation (first one)
-      // This assumes loadConversations puts the newest first, which is standard
-      // We check if we are not already in a conversation (which !conversationId does)
       setConversationId(conversations[0].id);
     }
   }, [conversations, conversationId, messages.length, setConversationId]);
