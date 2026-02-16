@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
-import { Edge, MarkerType } from '@xyflow/react';
+import { Edge } from '@xyflow/react';
 
 import { ChatInput } from '@/components/chat/ChatInput';
 import { MessageList } from '@/components/chat/MessageList';
@@ -12,44 +12,10 @@ import { useGraphStore } from '@/stores/graphStore';
 import type {
   ConversationSummary,
   CreatedCrystalResponse,
-  EdgeUpsertResponse,
   RelationshipType,
-  SuggestionInput,
   SuggestionToolPart,
 } from '@/types/chat';
-
-function markerForEdge(type: RelationshipType) {
-  if (type === 'RELATED') return undefined;
-
-  return {
-    type: MarkerType.ArrowClosed,
-    color: type === 'PREREQUISITE' ? '#22d3ee' : '#f59e0b',
-  };
-}
-
-function toGraphEdge(edge: {
-  id: string;
-  source_crystal_id: string;
-  target_crystal_id: string;
-  type: RelationshipType;
-}): Edge {
-  return {
-    id: edge.id,
-    source: edge.source_crystal_id,
-    target: edge.target_crystal_id,
-    type: 'crystalEdge',
-    data: { typeLabel: edge.type },
-    markerEnd: markerForEdge(edge.type),
-  };
-}
-
-function edgeSuggestionKey(suggestion: {
-  source_crystal_id: string;
-  target_crystal_id: string;
-  type: RelationshipType;
-}) {
-  return `${suggestion.source_crystal_id}:${suggestion.target_crystal_id}:${suggestion.type}`;
-}
+import { edgeSuggestionKey, useEdgeSuggestions } from '@/hooks/useEdgeSuggestions';
 
 function isUuid(value: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
@@ -72,26 +38,23 @@ export function ChatPanel() {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [input, setInput] = useState('');
   const [isFetchingTranscript, setIsFetchingTranscript] = useState(false);
-  const [connectionNotice, setConnectionNotice] = useState<string | null>(null);
-  const [edgeSuggestions, setEdgeSuggestions] = useState<
-    NonNullable<CreatedCrystalResponse['edge_suggestions']>
-  >([]);
+
+  const {
+    edgeSuggestions,
+    connectionNotice,
+    showConnectionsNotice,
+    clearConnectionNotice,
+    clearEdgeSuggestions,
+    addEdgeSuggestions,
+    upsertEdgeInStore,
+    handleConfirmEdgeSuggestion,
+    handleDismissEdgeSuggestion,
+  } = useEdgeSuggestions();
+
   const conversationIdRef = useRef(conversationId);
-  const noticeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Keep the ref in sync
   conversationIdRef.current = conversationId;
-
-  const showConnectionsNotice = useCallback((message: string) => {
-    if (noticeTimeoutRef.current) {
-      clearTimeout(noticeTimeoutRef.current);
-    }
-
-    setConnectionNotice(message);
-    noticeTimeoutRef.current = setTimeout(() => {
-      setConnectionNotice(null);
-    }, 2400);
-  }, []);
 
   const {
     messages,
@@ -158,25 +121,21 @@ export function ChatPanel() {
 
       setMessages(loadedMessages);
       setConversationId(id);
-      setEdgeSuggestions([]);
-      setConnectionNotice(null);
+      clearEdgeSuggestions();
+      clearConnectionNotice();
     } catch (error) {
       console.error('Failed to load conversation', error);
     }
-  }, [setMessages]);
+  }, [setMessages, clearEdgeSuggestions, clearConnectionNotice]);
 
   const handleNewConversation = useCallback(() => {
-    if (noticeTimeoutRef.current) {
-      clearTimeout(noticeTimeoutRef.current);
-      noticeTimeoutRef.current = null;
-    }
+    clearConnectionNotice();
 
     setMessages([]);
     setConversationId(null);
     setInput('');
-    setConnectionNotice(null);
-    setEdgeSuggestions([]);
-  }, [setMessages]);
+    clearEdgeSuggestions();
+  }, [setMessages, clearConnectionNotice, clearEdgeSuggestions]);
 
   const handleDeleteConversation = useCallback(async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -207,14 +166,6 @@ export function ChatPanel() {
     loadConversations();
   }, [loadConversations]);
 
-  useEffect(() => {
-    return () => {
-      if (noticeTimeoutRef.current) {
-        clearTimeout(noticeTimeoutRef.current);
-      }
-    };
-  }, []);
-
   // Extract conversation ID from the first response
   useEffect(() => {
     if (messages.length >= 2 && !conversationId) {
@@ -228,56 +179,6 @@ export function ChatPanel() {
       });
     }
   }, [messages.length, conversationId, loadConversations]);
-
-  const upsertEdgesInStore = useCallback(
-    (
-      edgesInput: Array<{
-        id: string;
-        source_crystal_id: string;
-        target_crystal_id: string;
-        type: RelationshipType;
-      }>
-    ) => {
-      const { edges: currentEdges, addEdges } = useGraphStore.getState();
-      const seenIds = new Set(currentEdges.map((e) => e.id));
-      const seenContent = new Set(
-        currentEdges.map((e) => {
-          const data = e.data as { typeLabel?: string } | undefined;
-          return `${e.source}:${e.target}:${data?.typeLabel}`;
-        })
-      );
-
-      const edgesToAdd: Edge[] = [];
-
-      for (const edgeInput of edgesInput) {
-        if (seenIds.has(edgeInput.id)) continue;
-
-        const contentKey = `${edgeInput.source_crystal_id}:${edgeInput.target_crystal_id}:${edgeInput.type}`;
-        if (seenContent.has(contentKey)) continue;
-
-        edgesToAdd.push(toGraphEdge(edgeInput));
-        seenIds.add(edgeInput.id);
-        seenContent.add(contentKey);
-      }
-
-      if (edgesToAdd.length > 0) {
-        addEdges(edgesToAdd);
-      }
-    },
-    []
-  );
-
-  const upsertEdgeInStore = useCallback(
-    (edgeInput: {
-      id: string;
-      source_crystal_id: string;
-      target_crystal_id: string;
-      type: RelationshipType;
-    }) => {
-      upsertEdgesInStore([edgeInput]);
-    },
-    [upsertEdgesInStore]
-  );
 
   const handleSend = useCallback(async () => {
     const text = input.trim();
@@ -397,20 +298,13 @@ export function ChatPanel() {
         });
 
         if (edges && edges.length > 0) {
-          upsertEdgesInStore(edges);
+          edges.forEach((edge) => {
+            upsertEdgeInStore(edge);
+          });
         }
 
         if (edge_suggestions && edge_suggestions.length > 0) {
-          setEdgeSuggestions((prev) => {
-            const merged = [...edge_suggestions, ...prev];
-            const deduped = new Map<string, (typeof merged)[number]>();
-
-            merged.forEach((suggestion) => {
-              deduped.set(edgeSuggestionKey(suggestion), suggestion);
-            });
-
-            return Array.from(deduped.values()).slice(0, 8);
-          });
+          addEdgeSuggestions(edge_suggestions);
         }
 
         const connectionCount = (edges?.length ?? 0) + (edge_suggestions?.length ?? 0);
@@ -445,7 +339,7 @@ export function ChatPanel() {
         alert('An error occurred while crystallizing.');
       }
     },
-    [messages, conversationId, setMessages, showConnectionsNotice, upsertEdgeInStore]
+    [messages, conversationId, setMessages, showConnectionsNotice, upsertEdgeInStore, addEdgeSuggestions]
   );
 
   const handleDismiss = useCallback((toolCallId: string) => {
@@ -468,50 +362,6 @@ export function ChatPanel() {
       }))
     );
   }, [setMessages]);
-
-  const handleConfirmEdgeSuggestion = useCallback(
-    async (suggestion: NonNullable<CreatedCrystalResponse['edge_suggestions']>[number]) => {
-      try {
-        const response = await fetch(`/api/crystals/${suggestion.source_crystal_id}/edges`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            target_id: suggestion.target_crystal_id,
-            type: suggestion.type,
-            weight: suggestion.weight,
-            ai_suggested: true,
-          }),
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          console.error('Failed to confirm edge suggestion', error);
-          showConnectionsNotice('Connection could not be created');
-          return;
-        }
-
-        const payload = (await response.json()) as EdgeUpsertResponse;
-
-        if (payload.edge) {
-          upsertEdgeInStore(payload.edge);
-        }
-
-        const suggestionId = edgeSuggestionKey(suggestion);
-        setEdgeSuggestions((prev) =>
-          prev.filter((candidate) => edgeSuggestionKey(candidate) !== suggestionId)
-        );
-        showConnectionsNotice('Connection added');
-      } catch (error) {
-        console.error('Connection confirmation failed', error);
-        showConnectionsNotice('Connection could not be created');
-      }
-    },
-    [showConnectionsNotice, upsertEdgeInStore]
-  );
-
-  const handleDismissEdgeSuggestion = useCallback((suggestionId: string) => {
-    setEdgeSuggestions((prev) => prev.filter((candidate) => edgeSuggestionKey(candidate) !== suggestionId));
-  }, []);
 
   const isLoading = status === 'streaming' || status === 'submitted' || isFetchingTranscript;
 
