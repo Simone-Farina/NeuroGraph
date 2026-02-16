@@ -67,7 +67,8 @@ export async function getRelevantContext(
 
     return { ragContext, ragCatalog };
   } catch (error) {
-    console.error('RAG error:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('RAG error:', errorMessage);
     return { ragContext: '', ragCatalog: '- none yet' };
   }
 }

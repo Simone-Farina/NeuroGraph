@@ -80,7 +80,10 @@ export function extractFirstYouTubeUrl(text: string): string | null {
 export async function fetchVideoTitle(videoId: string): Promise<string | null> {
   try {
     const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(`https://www.youtube.com/watch?v=${videoId}`)}&format=json`;
-    const response = await fetch(oembedUrl, { cache: 'no-store' });
+    const response = await fetch(oembedUrl, {
+      cache: 'no-store',
+      signal: AbortSignal.timeout(5000),
+    });
     if (!response.ok) return null;
 
     const data = (await response.json()) as { title?: unknown };
