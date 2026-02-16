@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { crystalQueries } from '../queries';
+import { crystalQueries, edgeQueries } from '../queries';
 
 function createMockClient() {
   return {
@@ -74,6 +74,121 @@ describe('DB Queries', () => {
       const result = await crystalQueries.getById(mockClient, '1');
       
       expect(result).toBeNull();
+    });
+  });
+
+  describe('edgeQueries', () => {
+    describe('create', () => {
+      it('should insert and return edge', async () => {
+        const mockEdge = { id: '1', source_crystal_id: 's1', target_crystal_id: 't1' };
+        const mockSelect = vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({ data: mockEdge, error: null }),
+        });
+        const mockInsert = vi.fn().mockReturnValue({ select: mockSelect });
+        const mockFrom = vi.fn().mockReturnValue({ insert: mockInsert });
+
+        mockClient.from.mockImplementation(mockFrom);
+
+        const result = await edgeQueries.create(mockClient, { source_crystal_id: 's1', target_crystal_id: 't1', user_id: 'user1' } as any);
+
+        expect(mockClient.from).toHaveBeenCalledWith('crystal_edges');
+        expect(mockInsert).toHaveBeenCalledWith(expect.objectContaining({ source_crystal_id: 's1' }));
+        expect(result).toEqual(mockEdge);
+      });
+
+      it('should throw error on failure', async () => {
+        const mockSelect = vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({ data: null, error: { message: 'Error' } }),
+        });
+        const mockInsert = vi.fn().mockReturnValue({ select: mockSelect });
+        const mockFrom = vi.fn().mockReturnValue({ insert: mockInsert });
+
+        mockClient.from.mockImplementation(mockFrom);
+
+        await expect(edgeQueries.create(mockClient, {} as any)).rejects.toEqual({ message: 'Error' });
+      });
+    });
+
+    describe('getByUserId', () => {
+      it('should return edges for user', async () => {
+        const mockEdges = [{ id: '1', source_crystal_id: 's1', target_crystal_id: 't1' }];
+        const mockEq = vi.fn().mockResolvedValue({ data: mockEdges, error: null });
+        const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
+        const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
+
+        mockClient.from.mockImplementation(mockFrom);
+
+        const result = await edgeQueries.getByUserId(mockClient, 'user1');
+
+        expect(mockClient.from).toHaveBeenCalledWith('crystal_edges');
+        expect(mockSelect).toHaveBeenCalledWith('*');
+        expect(mockEq).toHaveBeenCalledWith('user_id', 'user1');
+        expect(result).toEqual(mockEdges);
+      });
+
+      it('should throw error on failure', async () => {
+        const mockEq = vi.fn().mockResolvedValue({ data: null, error: { message: 'Error' } });
+        const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
+        const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
+
+        mockClient.from.mockImplementation(mockFrom);
+
+        await expect(edgeQueries.getByUserId(mockClient, 'user1')).rejects.toEqual({ message: 'Error' });
+      });
+    });
+
+    describe('getByCrystalId', () => {
+      it('should return edges for crystal', async () => {
+        const mockEdges = [{ id: '1', source_crystal_id: 'c1', target_crystal_id: 't1' }];
+        const mockOr = vi.fn().mockResolvedValue({ data: mockEdges, error: null });
+        const mockSelect = vi.fn().mockReturnValue({ or: mockOr });
+        const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
+
+        mockClient.from.mockImplementation(mockFrom);
+
+        const result = await edgeQueries.getByCrystalId(mockClient, 'c1');
+
+        expect(mockClient.from).toHaveBeenCalledWith('crystal_edges');
+        expect(mockSelect).toHaveBeenCalledWith('*');
+        expect(mockOr).toHaveBeenCalledWith('source_crystal_id.eq.c1,target_crystal_id.eq.c1');
+        expect(result).toEqual(mockEdges);
+      });
+
+      it('should throw error on failure', async () => {
+        const mockOr = vi.fn().mockResolvedValue({ data: null, error: { message: 'Error' } });
+        const mockSelect = vi.fn().mockReturnValue({ or: mockOr });
+        const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
+
+        mockClient.from.mockImplementation(mockFrom);
+
+        await expect(edgeQueries.getByCrystalId(mockClient, 'c1')).rejects.toEqual({ message: 'Error' });
+      });
+    });
+
+    describe('delete', () => {
+      it('should delete edge', async () => {
+        const mockEq = vi.fn().mockResolvedValue({ error: null });
+        const mockDelete = vi.fn().mockReturnValue({ eq: mockEq });
+        const mockFrom = vi.fn().mockReturnValue({ delete: mockDelete });
+
+        mockClient.from.mockImplementation(mockFrom);
+
+        await edgeQueries.delete(mockClient, '1');
+
+        expect(mockClient.from).toHaveBeenCalledWith('crystal_edges');
+        expect(mockDelete).toHaveBeenCalled();
+        expect(mockEq).toHaveBeenCalledWith('id', '1');
+      });
+
+      it('should throw error on failure', async () => {
+        const mockEq = vi.fn().mockResolvedValue({ error: { message: 'Error' } });
+        const mockDelete = vi.fn().mockReturnValue({ eq: mockEq });
+        const mockFrom = vi.fn().mockReturnValue({ delete: mockDelete });
+
+        mockClient.from.mockImplementation(mockFrom);
+
+        await expect(edgeQueries.delete(mockClient, '1')).rejects.toEqual({ message: 'Error' });
+      });
     });
   });
 });
