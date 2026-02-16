@@ -8,7 +8,7 @@ vi.mock('@/lib/ai/embeddings', () => ({
 vi.mock('@/lib/db/queries', () => ({
   crystalQueries: {
     findSimilar: vi.fn(),
-    getNeighborhood: vi.fn(),
+    getNeighborhoodsBatch: vi.fn(),
   },
 }));
 
@@ -49,13 +49,15 @@ describe('RAG - getRelevantContext', () => {
       { id: 'c2', title: 'Backpropagation', definition: 'Algorithm for training neural networks', similarity: 0.72 },
     ];
     (crystalQueries.findSimilar as any).mockResolvedValue(similarCrystals);
-    (crystalQueries.getNeighborhood as any).mockImplementation((_client: any, crystalId: string) => ({
-      crystals: [
-        ...similarCrystals.filter(c => c.id === crystalId),
-        { id: 'c3', title: 'Gradient Descent' },
-      ],
-      edges: [],
-    }));
+    (crystalQueries.getNeighborhoodsBatch as any).mockImplementation((_client: any, crystalIds: string[]) => {
+      return crystalIds.map(id => ({
+        crystals: [
+          ...similarCrystals.filter(c => c.id === id),
+          { id: 'c3', title: 'Gradient Descent' },
+        ],
+        edges: [],
+      }));
+    });
 
     const client = createMockClient();
     const result = await getRelevantContext('how do neural nets learn?', 'user-1', client);
@@ -71,13 +73,15 @@ describe('RAG - getRelevantContext', () => {
       { id: 'c1', title: 'Crystal A', definition: 'Def A', similarity: 0.9 },
     ];
     (crystalQueries.findSimilar as any).mockResolvedValue(similarCrystals);
-    (crystalQueries.getNeighborhood as any).mockResolvedValue({
-      crystals: [
-        { id: 'c1', title: 'Crystal A' },
-        { id: 'c2', title: 'Crystal B' },
-      ],
-      edges: [],
-    });
+    (crystalQueries.getNeighborhoodsBatch as any).mockResolvedValue([
+      {
+        crystals: [
+          { id: 'c1', title: 'Crystal A' },
+          { id: 'c2', title: 'Crystal B' },
+        ],
+        edges: [],
+      },
+    ]);
 
     const client = createMockClient();
     const result = await getRelevantContext('query', 'user-1', client);
