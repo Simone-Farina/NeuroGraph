@@ -97,6 +97,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Rate limiting check
+    const { data: allowed, error: rateLimitError } = await supabase.rpc('check_rate_limit', {
+      p_user_id: user.id,
+      p_limit: 20, // 20 requests
+      p_window_seconds: 60, // per 60 seconds
+    });
+
+    if (rateLimitError) {
+      console.error('Rate limit check failed:', rateLimitError);
+      return NextResponse.json({ error: 'Rate limit check failed' }, { status: 500 });
+    }
+
+    if (!allowed) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const body = await request.json();
     const parsed = postSchema.safeParse(body);
     if (!parsed.success) {
