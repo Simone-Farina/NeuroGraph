@@ -1,62 +1,51 @@
--- Create a table for rate limiting
+-- Create table for rate limiting
 CREATE TABLE IF NOT EXISTS user_rate_limits (
   user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   request_count INTEGER NOT NULL DEFAULT 0,
   window_start TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Enable RLS to secure the table
+-- Enable RLS
 ALTER TABLE user_rate_limits ENABLE ROW LEVEL SECURITY;
 
--- Only service role can manage rate limits directly
-CREATE POLICY "Service role can manage rate limits"
-  ON user_rate_limits
+-- Only service role can manage this table directly
+CREATE POLICY "Service role can manage rate limits" ON user_rate_limits
   USING (auth.role() = 'service_role');
 
--- Create a function to check and update rate limits atomically
+-- Function to check and update rate limit
 CREATE OR REPLACE FUNCTION check_rate_limit(
-  p_user_id UUID,
   p_limit INTEGER DEFAULT 10,
   p_window_seconds INTEGER DEFAULT 60
 ) RETURNS BOOLEAN
 LANGUAGE plpgsql
-SECURITY DEFINER -- Run as owner to bypass RLS for this function
+SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
-  v_count INTEGER;
-  v_window_start TIMESTAMPTZ;
+  v_user_id UUID;
+  v_request_count INTEGER;
 BEGIN
-  -- Lock the row for update to prevent race conditions
-  SELECT request_count, window_start INTO v_count, v_window_start
-  FROM user_rate_limits
-  WHERE user_id = p_user_id
-  FOR UPDATE;
+  v_user_id := auth.uid();
 
-  IF NOT FOUND THEN
-    -- First request from this user
-    INSERT INTO user_rate_limits (user_id, request_count, window_start)
-    VALUES (p_user_id, 1, NOW());
-    RETURN TRUE;
+  -- If not authenticated, deny
+  IF v_user_id IS NULL THEN
+    RETURN FALSE;
   END IF;
 
-  -- Check if window has expired
-  IF NOW() > v_window_start + (p_window_seconds || ' seconds')::INTERVAL THEN
-    -- New window, reset count
-    UPDATE user_rate_limits
-    SET request_count = 1, window_start = NOW()
-    WHERE user_id = p_user_id;
-    RETURN TRUE;
-  ELSE
-    -- Same window, check limit
-    IF v_count < p_limit THEN
-      UPDATE user_rate_limits
-      SET request_count = request_count + 1
-      WHERE user_id = p_user_id;
-      RETURN TRUE;
-    ELSE
-      -- Limit exceeded
-      RETURN FALSE;
-    END IF;
-  END IF;
+  INSERT INTO user_rate_limits (user_id, request_count, window_start)
+  VALUES (v_user_id, 1, NOW())
+  ON CONFLICT (user_id) DO UPDATE
+  SET
+    request_count = CASE
+      WHEN user_rate_limits.window_start < NOW() - (p_window_seconds || ' seconds')::INTERVAL THEN 1
+      ELSE user_rate_limits.request_count + 1
+    END,
+    window_start = CASE
+      WHEN user_rate_limits.window_start < NOW() - (p_window_seconds || ' seconds')::INTERVAL THEN NOW()
+      ELSE user_rate_limits.window_start
+    END
+  RETURNING request_count INTO v_request_count;
+
+  RETURN v_request_count <= p_limit;
 END;
 $$;

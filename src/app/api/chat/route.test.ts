@@ -1,41 +1,134 @@
 import { POST } from './route';
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/auth/supabase';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock dependencies
-vi.mock('@/lib/auth/supabase');
-vi.mock('ai', () => ({
-  streamText: vi.fn().mockReturnValue({
-    toUIMessageStreamResponse: vi.fn().mockReturnValue(new Response('streamed response', { status: 200 })),
-  }),
-  convertToModelMessages: vi.fn().mockResolvedValue([]),
-  tool: vi.fn((opts) => opts),
+vi.mock('@/lib/auth/supabase', () => ({
+  createServerSupabaseClient: vi.fn(),
 }));
 vi.mock('@/lib/ai/providers', () => ({
   getChatModel: vi.fn(),
 }));
+vi.mock('ai', () => ({
+  streamText: vi.fn().mockReturnValue({
+    toUIMessageStreamResponse: vi.fn().mockReturnValue(new Response('stream')),
+  }),
+  convertToModelMessages: vi.fn().mockResolvedValue([]),
+  UIMessage: {},
+  tool: vi.fn().mockReturnValue({}),
+}));
 vi.mock('@/lib/ai/rag', () => ({
   getRelevantContext: vi.fn().mockResolvedValue({ ragContext: '', ragCatalog: '' }),
 }));
+// Mock persistence
+vi.mock('./persistence', () => ({
+  persistAssistantMessage: vi.fn().mockResolvedValue(undefined),
+}));
 
-describe('Chat API POST', () => {
-  const mockSupabase = {
-    auth: {
-      getUser: vi.fn(),
-    },
-    rpc: vi.fn(),
-    from: vi.fn(() => ({
-      insert: vi.fn().mockReturnThis(),
-      select: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({ data: { id: 'conv-123' }, error: null }),
-      eq: vi.fn().mockReturnThis(),
-    })),
-  };
+describe('Chat API Rate Limiting', () => {
+  let mockSupabase: any;
+  let mockQueryBuilder: any;
 
   beforeEach(() => {
     vi.clearAllMocks();
+
+    mockQueryBuilder = {
+      select: vi.fn(),
+      insert: vi.fn(),
+      update: vi.fn(),
+      eq: vi.fn(),
+      single: vi.fn(),
+      order: vi.fn(),
+      limit: vi.fn(),
+      then: (resolve: any) => resolve({ data: { id: 'conv-id' }, error: null }),
+    };
+
+    mockQueryBuilder.select.mockReturnValue(mockQueryBuilder);
+    mockQueryBuilder.insert.mockReturnValue(mockQueryBuilder);
+    mockQueryBuilder.eq.mockReturnValue(mockQueryBuilder);
+    mockQueryBuilder.order.mockReturnValue(mockQueryBuilder);
+    mockQueryBuilder.limit.mockReturnValue(mockQueryBuilder);
+    // single should return a promise that resolves to data
+    mockQueryBuilder.single.mockResolvedValue({ data: { id: 'conv-id' }, error: null });
+
+    mockSupabase = {
+      auth: {
+        getUser: vi.fn().mockResolvedValue({
+          data: {
+            user: { id: 'test-user-id' },
+          },
+        }),
+      },
+      rpc: vi.fn(),
+      from: vi.fn().mockReturnValue(mockQueryBuilder),
+    };
+
     (createServerSupabaseClient as any).mockResolvedValue(mockSupabase);
+  });
+
+  it('should return 429 when rate limit is exceeded', async () => {
+    // Mock rate limit check to return false (not allowed)
+    mockSupabase.rpc.mockResolvedValue({ data: false, error: null });
+
+    const request = new NextRequest('http://localhost:3000/api/chat', {
+      method: 'POST',
+      body: JSON.stringify({
+        messages: [{ role: 'user', content: 'Hello', id: '1' }],
+      }),
+    });
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(429);
+    const data = await response.json();
+    expect(data.error).toBe('Too many requests');
+    expect(mockSupabase.rpc).toHaveBeenCalledWith('check_rate_limit', {
+      p_limit: 20,
+      p_window_seconds: 60,
+    });
+  });
+
+  it('should proceed when rate limit is allowed', async () => {
+    // Mock rate limit check to return true (allowed)
+    mockSupabase.rpc.mockResolvedValue({ data: true, error: null });
+
+    // Mock other DB calls for successful flow
+    // mockQueryBuilder is already configured in beforeEach to return success
+
+    const request = new NextRequest('http://localhost:3000/api/chat', {
+      method: 'POST',
+      body: JSON.stringify({
+        messages: [{ role: 'user', content: 'Hello', id: '1', parts: [{ type: 'text', text: 'Hello' }] }],
+      }),
+    });
+
+    const response = await POST(request);
+
+    // If successful, it should return the stream response (which we mocked to return a Response object)
+    expect(response.status).toBe(200);
+    expect(mockSupabase.rpc).toHaveBeenCalledWith('check_rate_limit', {
+      p_limit: 20,
+      p_window_seconds: 60,
+    });
+  });
+
+  it('should return 500 when rate limit check fails with error', async () => {
+    // Mock rate limit check to return error
+    mockSupabase.rpc.mockResolvedValue({ data: null, error: { message: 'DB error' } });
+
+    const request = new NextRequest('http://localhost:3000/api/chat', {
+      method: 'POST',
+      body: JSON.stringify({
+        messages: [{ role: 'user', content: 'Hello', id: '1' }],
+      }),
+    });
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(500);
+    const data = await response.json();
+    expect(data.error).toBe('Rate limit check failed');
   });
 
   it('should return 401 if user is not authenticated', async () => {
@@ -47,75 +140,5 @@ describe('Chat API POST', () => {
 
     const res = await POST(req);
     expect(res.status).toBe(401);
-  });
-
-  it('should return 429 if rate limit is exceeded', async () => {
-    mockSupabase.auth.getUser.mockResolvedValue({ data: { user: { id: 'user-123' } } });
-    // Mock RPC returning false (rate limited)
-    mockSupabase.rpc.mockResolvedValue({ data: false, error: null });
-
-    const req = new NextRequest('http://localhost:3000/api/chat', {
-      method: 'POST',
-      body: JSON.stringify({
-        messages: [{
-            id: '1',
-            role: 'user',
-            content: 'Hello',
-            parts: [{ type: 'text', text: 'Hello' }]
-        }]
-      }),
-    });
-
-    const res = await POST(req);
-    expect(res.status).toBe(429);
-    const json = await res.json();
-    expect(json.error).toBe('Too many requests');
-    expect(mockSupabase.rpc).toHaveBeenCalledWith('check_rate_limit', {
-      p_user_id: 'user-123',
-      p_limit: 20,
-      p_window_seconds: 60,
-    });
-  });
-
-  it('should proceed if rate limit is not exceeded', async () => {
-    mockSupabase.auth.getUser.mockResolvedValue({ data: { user: { id: 'user-123' } } });
-    // Mock RPC returning true (allowed)
-    mockSupabase.rpc.mockResolvedValue({ data: true, error: null });
-
-    // Mock insert to return success
-    const insertMock = vi.fn().mockReturnValue({
-        select: vi.fn().mockReturnValue({
-            single: vi.fn().mockResolvedValue({ data: { id: 'conv-123' }, error: null })
-        })
-    });
-    // For the message insert
-    const messageInsertMock = vi.fn().mockResolvedValue({ error: null });
-
-    mockSupabase.from.mockImplementation((table: string) => {
-        if (table === 'conversations') {
-            return { insert: insertMock };
-        }
-        if (table === 'messages') {
-            return { insert: messageInsertMock };
-        }
-        return {};
-    });
-
-
-    const req = new NextRequest('http://localhost:3000/api/chat', {
-      method: 'POST',
-      body: JSON.stringify({
-        messages: [{
-            id: '1',
-            role: 'user',
-            content: 'Hello',
-            parts: [{ type: 'text', text: 'Hello' }]
-        }]
-      }),
-    });
-
-    const res = await POST(req);
-    expect(res.status).toBe(200);
-    expect(mockSupabase.rpc).toHaveBeenCalledWith('check_rate_limit', expect.any(Object));
   });
 });

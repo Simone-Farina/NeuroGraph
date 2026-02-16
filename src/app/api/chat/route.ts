@@ -8,6 +8,7 @@ import { getChatModel } from '@/lib/ai/providers';
 import { suggestCrystallizationTool } from '@/lib/ai/tools';
 
 import { getRelevantContext } from '@/lib/ai/rag';
+import { persistAssistantMessage } from './persistence';
 
 function createConversationTitle(input: string) {
   const trimmed = input.trim();
@@ -99,13 +100,12 @@ export async function POST(request: NextRequest) {
 
     // Rate limiting check
     const { data: allowed, error: rateLimitError } = await supabase.rpc('check_rate_limit', {
-      p_user_id: user.id,
       p_limit: 20, // 20 requests
       p_window_seconds: 60, // per 60 seconds
     });
 
     if (rateLimitError) {
-      console.error('Rate limit check failed:', rateLimitError);
+      console.error('Rate limit error:', rateLimitError);
       return NextResponse.json({ error: 'Rate limit check failed' }, { status: 500 });
     }
 
@@ -195,21 +195,8 @@ export async function POST(request: NextRequest) {
         }
       },
       onFinish: async () => {
-        if (!assistantText.trim() || !conversationId) return;
-
-        try {
-          const { error } = await supabase.from('messages').insert({
-            conversation_id: conversationId,
-            role: 'assistant',
-            content: assistantText,
-          });
-
-          if (error) {
-            console.error('Failed to persist assistant message:', error.message);
-          }
-        } catch (err) {
-          console.error('Failed to persist assistant message:', err);
-        }
+        if (!conversationId) return;
+        await persistAssistantMessage(supabase, conversationId, assistantText);
       },
     });
 
