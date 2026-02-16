@@ -1,7 +1,7 @@
 import { tool } from 'ai';
 import { z } from 'zod';
 
-const relationshipTypeSchema = z.enum(['PREREQUISITE', 'RELATED', 'BUILDS_ON']);
+export const relationshipTypeSchema = z.enum(['PREREQUISITE', 'RELATED', 'BUILDS_ON']);
 
 export const crystallizationSchema = z.object({
   title: z
