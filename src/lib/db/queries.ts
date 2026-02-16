@@ -194,6 +194,22 @@ export const edgeQueries = {
     return edge;
   },
 
+  async upsert(
+    client: TypedClient,
+    data: EdgeInsert[]
+  ): Promise<CrystalEdge[]> {
+    const { data: edges, error } = await client
+      .from('crystal_edges')
+      .upsert(data, {
+        onConflict: 'source_crystal_id,target_crystal_id,type',
+        ignoreDuplicates: true,
+      })
+      .select('*');
+
+    if (error) throw error;
+    return edges || [];
+  },
+
   async getByUserId(client: TypedClient, userId: string): Promise<CrystalEdge[]> {
     const { data, error } = await client
       .from('crystal_edges')
