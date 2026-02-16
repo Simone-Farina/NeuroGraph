@@ -18,7 +18,14 @@ DECLARE
 BEGIN
   -- 1. Get all involved crystal IDs using recursive CTE with path tracking
   -- Use ARRAY to track visited nodes to prevent cycles and duplicate processing
-  WITH RECURSIVE traversal AS (
+  WITH RECURSIVE
+  -- Helper CTE to view edges as bidirectional (undirected)
+  bidirectional_edges AS (
+    SELECT source_crystal_id AS source, target_crystal_id AS target FROM crystal_edges
+    UNION ALL
+    SELECT target_crystal_id AS source, source_crystal_id AS target FROM crystal_edges
+  ),
+  traversal AS (
     -- Base case: root node
     SELECT 
       id,
@@ -29,24 +36,15 @@ BEGIN
     
     UNION ALL
     
-    -- Recursive step
+    -- Recursive step: traverse connected edges
     SELECT 
-      next_node.id,
-      t.path || next_node.id,
+      e.target AS id,
+      t.path || e.target,
       t.depth + 1
     FROM traversal t
-    -- Find connected edges (either direction)
-    JOIN crystal_edges e ON (e.source_crystal_id = t.id OR e.target_crystal_id = t.id)
-    -- Find the adjacent node
-    JOIN crystals next_node ON (
-      CASE 
-        WHEN e.source_crystal_id = t.id THEN e.target_crystal_id 
-        ELSE e.source_crystal_id 
-      END = next_node.id
-    )
+    JOIN bidirectional_edges e ON e.source = t.id
     WHERE t.depth < max_depth
-      -- Prevent cycles: next_node must not be in the current path
-      AND NOT (next_node.id = ANY(t.path))
+      AND NOT (e.target = ANY(t.path))
   )
   SELECT array_agg(DISTINCT id) INTO neighborhood_ids FROM traversal;
 

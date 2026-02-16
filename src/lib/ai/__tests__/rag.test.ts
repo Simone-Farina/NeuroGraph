@@ -8,7 +8,7 @@ vi.mock('@/lib/ai/embeddings', () => ({
 vi.mock('@/lib/db/queries', () => ({
   crystalQueries: {
     findSimilar: vi.fn(),
-    getNeighborhood: vi.fn(),
+    getNeighborhoodsBatch: vi.fn(),
   },
 }));
 
@@ -49,13 +49,15 @@ describe('RAG - getRelevantContext', () => {
       { id: 'c2', title: 'Backpropagation', definition: 'Algorithm for training neural networks', similarity: 0.72 },
     ];
     (crystalQueries.findSimilar as any).mockResolvedValue(similarCrystals);
-    (crystalQueries.getNeighborhood as any).mockImplementation((_client: any, crystalId: string) => ({
-      crystals: [
-        ...similarCrystals.filter(c => c.id === crystalId),
-        { id: 'c3', title: 'Gradient Descent' },
-      ],
-      edges: [],
-    }));
+    (crystalQueries.getNeighborhoodsBatch as any).mockImplementation((_client: any, crystalIds: string[]) => {
+      return crystalIds.map(id => ({
+        crystals: [
+          ...similarCrystals.filter(c => c.id === id),
+          { id: 'c3', title: 'Gradient Descent' },
+        ],
+        edges: [],
+      }));
+    });
 
     const client = createMockClient();
     const result = await getRelevantContext('how do neural nets learn?', 'user-1', client);
@@ -71,13 +73,15 @@ describe('RAG - getRelevantContext', () => {
       { id: 'c1', title: 'Crystal A', definition: 'Def A', similarity: 0.9 },
     ];
     (crystalQueries.findSimilar as any).mockResolvedValue(similarCrystals);
-    (crystalQueries.getNeighborhood as any).mockResolvedValue({
-      crystals: [
-        { id: 'c1', title: 'Crystal A' },
-        { id: 'c2', title: 'Crystal B' },
-      ],
-      edges: [],
-    });
+    (crystalQueries.getNeighborhoodsBatch as any).mockResolvedValue([
+      {
+        crystals: [
+          { id: 'c1', title: 'Crystal A' },
+          { id: 'c2', title: 'Crystal B' },
+        ],
+        edges: [],
+      },
+    ]);
 
     const client = createMockClient();
     const result = await getRelevantContext('query', 'user-1', client);
@@ -109,5 +113,39 @@ describe('RAG - getRelevantContext', () => {
       5,
       0.3
     );
+  });
+
+  it('should NOT log sensitive data in error logs', async () => {
+    // Setup: Create an error object with sensitive properties
+    const sensitiveError = new Error('Database connection failed');
+    (sensitiveError as any).connectionString = 'postgres://user:secret_password@localhost:5432/db';
+    (sensitiveError as any).internalConfig = { apiKey: 'sk-1234567890abcdef' };
+
+    // Mock crystalQueries.findSimilar to throw this sensitive error
+    (crystalQueries.findSimilar as any).mockRejectedValue(sensitiveError);
+
+    const client = createMockClient();
+
+    // Spy on console.error
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    // Execute the function
+    await getRelevantContext('test query', 'user-1', client);
+
+    // Verify Fix: Check if the sensitive data was NOT logged
+
+    // Verify that the sensitive error object was NOT logged as the second argument
+    expect(consoleSpy).not.toHaveBeenCalledWith('RAG error:', sensitiveError);
+
+    // Verify that ONLY the error message was logged
+    expect(consoleSpy).toHaveBeenCalledWith('RAG error:', 'Database connection failed');
+
+    // Double check that the logged argument is a string and does not contain sensitive properties
+    const loggedArg = consoleSpy.mock.calls[0][1];
+    expect(typeof loggedArg).toBe('string');
+    expect(loggedArg).toBe('Database connection failed');
+    expect(loggedArg).not.toBe(sensitiveError);
+
+    consoleSpy.mockRestore();
   });
 });
