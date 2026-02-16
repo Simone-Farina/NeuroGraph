@@ -4,14 +4,24 @@ import { POST } from '../route';
 import { createServerSupabaseClient } from '@/lib/auth/supabase';
 import { generateEmbedding } from '@/lib/ai/embeddings';
 
-// Mock dependencies
-vi.mock('@/lib/auth/supabase', () => ({
-  createServerSupabaseClient: vi.fn(),
-}));
+vi.mock('@/lib/auth/supabase');
+vi.mock('@/lib/ai/embeddings');
 
-vi.mock('@/lib/ai/embeddings', () => ({
-  generateEmbedding: vi.fn(),
-}));
+// Mock data
+const mockUser = {
+  id: 'user-123',
+  email: 'test@example.com',
+};
+
+const validPayload = {
+  title: 'Test Crystal',
+  definition: 'A test crystal definition with sufficient length.',
+  core_insight: 'A core insight that is also long enough to be valid.',
+  bloom_level: 'Remember',
+  source_conversation_id: '123e4567-e89b-12d3-a456-426614174000',
+  source_message_ids: ['msg-1', 'msg-2'],
+  related_crystals: [],
+};
 
 describe('POST /api/crystals', () => {
   let mockSupabase: any;
@@ -21,60 +31,95 @@ describe('POST /api/crystals', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    const createMockBuilder = (data: any) => ({
-      select: vi.fn().mockReturnThis(),
-      insert: vi.fn().mockReturnThis(),
-      update: vi.fn().mockReturnThis(),
-      upsert: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      in: vi.fn().mockReturnThis(),
-      not: vi.fn().mockReturnThis(),
-      order: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({
-        data: {
-          id: 'crystal-123',
-          ...data,
-          embedding: null,
-        },
-        error: null,
+    // Setup mock Supabase client
+    mockInsert = vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        single: vi.fn().mockResolvedValue({
+          data: { id: 'crystal-1', ...validPayload, user_id: mockUser.id, embedding: [0.1, 0.2, 0.3] },
+          error: null,
+        }),
       }),
-      then: (resolve: any) => resolve({ data: [], error: null, count: 0 }),
     });
 
-    const defaultBuilder = createMockBuilder({});
-
-    mockInsert = vi.fn().mockImplementation((data) => {
-       return createMockBuilder(data);
-    });
-
-    mockUpdate = vi.fn().mockReturnValue(defaultBuilder);
-
-    const mockFrom = vi.fn().mockReturnValue({
-      ...defaultBuilder,
-      insert: mockInsert,
-      update: mockUpdate,
+    // Mock update to return success if called (though we expect it not to be called for embedding)
+    mockUpdate = vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+                select: vi.fn().mockReturnValue({
+                    single: vi.fn().mockResolvedValue({
+                        data: { id: 'crystal-1', ...validPayload, user_id: mockUser.id, embedding: [0.1, 0.2, 0.3] },
+                        error: null,
+                    })
+                })
+            })
+        })
     });
 
     mockSupabase = {
       auth: {
-        getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'test-user-id' } } }),
+        getUser: vi.fn().mockResolvedValue({ data: { user: mockUser }, error: null }),
       },
-      from: mockFrom,
+      from: vi.fn((table) => {
+        if (table === 'crystals') {
+          return {
+            insert: mockInsert,
+            // Mock select for "count" query
+            select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                    not: vi.fn().mockResolvedValue({ count: 1 })
+                })
+            }),
+            update: mockUpdate,
+          };
+        }
+        if (table === 'crystal_edges') {
+            return {
+                select: vi.fn().mockReturnValue({
+                    eq: vi.fn().mockReturnValue({
+                        eq: vi.fn().mockReturnValue({
+                            in: vi.fn().mockResolvedValue({ data: [], error: null })
+                        })
+                    })
+                }),
+                upsert: vi.fn().mockReturnValue({
+                    select: vi.fn().mockResolvedValue({ data: [], error: null })
+                })
+            }
+        }
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({ data: null, error: null }),
+        };
+      }),
       rpc: vi.fn().mockResolvedValue({ data: [], error: null }),
     };
 
-    vi.mocked(createServerSupabaseClient).mockResolvedValue(mockSupabase);
-    vi.mocked(generateEmbedding).mockResolvedValue([0.1, 0.2, 0.3]);
+    (createServerSupabaseClient as any).mockResolvedValue(mockSupabase);
+    (generateEmbedding as any).mockResolvedValue([0.1, 0.2, 0.3]);
+  });
+
+  it('should include source_message_ids in the insert payload', async () => {
+    const req = new NextRequest('http://localhost/api/crystals', {
+      method: 'POST',
+      body: JSON.stringify(validPayload),
+    });
+
+    const response = await POST(req);
+    expect(response.status).toBe(201);
+
+    expect(mockSupabase.from).toHaveBeenCalledWith('crystals');
+    expect(mockInsert).toHaveBeenCalledTimes(1);
+
+    const insertPayload = mockInsert.mock.calls[0][0];
+    expect(insertPayload).toHaveProperty('title', validPayload.title);
+    expect(insertPayload).toHaveProperty('source_message_ids', validPayload.source_message_ids);
   });
 
   it('should optimize DB calls by generating embedding before insert', async () => {
     const payload = {
-      title: 'Test Crystal',
-      definition: 'A test definition that is long enough.',
-      core_insight: 'A test insight that is also long enough.',
-      bloom_level: 'Remember',
-      source_conversation_id: '123e4567-e89b-12d3-a456-426614174000',
+      ...validPayload,
+      title: 'Test Crystal Optimization',
     };
 
     const req = new NextRequest('http://localhost:3000/api/crystals', {
