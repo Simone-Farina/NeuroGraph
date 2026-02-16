@@ -2,7 +2,7 @@ import { convertToModelMessages, streamText, UIMessage } from 'ai';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { createServerSupabaseClient } from '@/lib/auth/supabase';
+import { getAuthenticatedUser } from '@/lib/auth/server';
 import { CHAT_SYSTEM_PROMPT, MAX_CONTEXT_MESSAGES } from '@/lib/ai/prompts';
 import { getChatModel } from '@/lib/ai/providers';
 import { suggestCrystallizationTool } from '@/lib/ai/tools';
@@ -19,14 +19,8 @@ function createConversationTitle(input: string) {
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { user, supabase, errorResponse } = await getAuthenticatedUser();
+    if (errorResponse) return errorResponse;
 
     const mode = request.nextUrl.searchParams.get('mode');
 
@@ -89,14 +83,8 @@ const postSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { user, supabase, errorResponse } = await getAuthenticatedUser();
+    if (errorResponse) return errorResponse;
 
     // Rate limiting check
     const { data: allowed, error: rateLimitError } = await supabase.rpc('check_rate_limit');
