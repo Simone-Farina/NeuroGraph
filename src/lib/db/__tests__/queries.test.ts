@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { crystalQueries, edgeQueries } from '../queries';
+import { crystalQueries, edgeQueries, conversationQueries } from '../queries';
 
 function createMockClient() {
   return {
@@ -254,5 +254,4 @@ describe('DB Queries', () => {
       });
     });
   });
-
 });
