@@ -36,6 +36,8 @@ describe('ReviewBadge', () => {
 
     const { container } = render(<ReviewBadge />);
 
+    const { container } = render(<ReviewBadge />);
+
     // Wait for loading to finish
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -109,6 +111,7 @@ describe('ReviewBadge', () => {
     });
 
     expect(consoleSpy).toHaveBeenCalledWith('Failed to fetch review count:', expect.any(Error));
+
     consoleSpy.mockRestore();
   });
 });
