@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import rehypeHighlight from 'rehype-highlight';
 import remarkGfm from 'remark-gfm';
 import { CrystallizationSuggestion } from '@/components/chat/CrystallizationSuggestion';
+import type { SuggestionInput } from '@/types/chat';
 
 type MessageListProps = {
   messages: UIMessage[];
@@ -77,17 +78,7 @@ export function MessageList({ messages, onCrystallize, onDismiss }: MessageListP
                       <CrystallizationSuggestion
                         key={toolPart.toolCallId}
                         toolCallId={toolPart.toolCallId}
-                        input={toolPart.input as {
-                          title?: string;
-                          definition?: string;
-                          core_insight?: string;
-                          bloom_level?: string;
-                          related_crystals?: Array<{
-                            id: string;
-                            title?: string;
-                            relationship_type: 'PREREQUISITE' | 'RELATED' | 'BUILDS_ON';
-                          }>;
-                        }}
+                        input={toolPart.input as Partial<SuggestionInput>}
                         state={toolPart.state}
                         onCrystallize={() => onCrystallize?.(toolPart.toolCallId)}
                         onDismiss={() => onDismiss?.(toolPart.toolCallId)}
