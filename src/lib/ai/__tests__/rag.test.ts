@@ -8,6 +8,7 @@ vi.mock('@/lib/ai/embeddings', () => ({
 vi.mock('@/lib/db/queries', () => ({
   crystalQueries: {
     findSimilar: vi.fn(),
+    getNeighborhood: vi.fn(),
     getNeighborhoodsBatch: vi.fn(),
   },
 }));
@@ -49,15 +50,24 @@ describe('RAG - getRelevantContext', () => {
       { id: 'c2', title: 'Backpropagation', definition: 'Algorithm for training neural networks', similarity: 0.72 },
     ];
     (crystalQueries.findSimilar as any).mockResolvedValue(similarCrystals);
-    (crystalQueries.getNeighborhoodsBatch as any).mockImplementation((_client: any, crystalIds: string[]) => {
-      return crystalIds.map(id => ({
-        crystals: [
-          ...similarCrystals.filter(c => c.id === id),
-          { id: 'c3', title: 'Gradient Descent' },
-        ],
-        edges: [],
-      }));
+
+    // Mock getNeighborhoodsBatch
+    const mockNeighborhoods = new Map();
+    mockNeighborhoods.set('c1', {
+      crystals: [
+        { id: 'c1', title: 'Neural Networks' },
+        { id: 'c3', title: 'Gradient Descent' }, // Neighbor of c1
+      ],
+      edges: []
     });
+    mockNeighborhoods.set('c2', {
+      crystals: [
+        { id: 'c2', title: 'Backpropagation' }
+      ],
+      edges: []
+    });
+
+    (crystalQueries.getNeighborhoodsBatch as any).mockResolvedValue(mockNeighborhoods);
 
     const client = createMockClient();
     const result = await getRelevantContext('how do neural nets learn?', 'user-1', client);
@@ -73,15 +83,19 @@ describe('RAG - getRelevantContext', () => {
       { id: 'c1', title: 'Crystal A', definition: 'Def A', similarity: 0.9 },
     ];
     (crystalQueries.findSimilar as any).mockResolvedValue(similarCrystals);
-    (crystalQueries.getNeighborhoodsBatch as any).mockResolvedValue([
-      {
-        crystals: [
-          { id: 'c1', title: 'Crystal A' },
-          { id: 'c2', title: 'Crystal B' },
-        ],
-        edges: [],
-      },
-    ]);
+
+    const mockNeighborhoods = new Map();
+    mockNeighborhoods.set('c1', {
+      crystals: [
+        { id: 'c1', title: 'Crystal A' },
+        { id: 'c2', title: 'Crystal B' } // Neighbor
+      ],
+      edges: []
+    });
+
+    (crystalQueries.getNeighborhoodsBatch as any).mockResolvedValue(mockNeighborhoods);
+
+    (crystalQueries.getNeighborhoodsBatch as any).mockResolvedValue(mockNeighborhoods);
 
     const client = createMockClient();
     const result = await getRelevantContext('query', 'user-1', client);

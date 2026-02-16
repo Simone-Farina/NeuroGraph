@@ -1,8 +1,8 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { NextRequest } from 'next/server';
 import { POST } from '../route';
 import { createServerSupabaseClient } from '@/lib/auth/supabase';
 import { generateEmbedding } from '@/lib/ai/embeddings';
-import { NextRequest } from 'next/server';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('@/lib/auth/supabase');
 vi.mock('@/lib/ai/embeddings');
@@ -35,18 +35,19 @@ describe('POST /api/crystals', () => {
     mockInsert = vi.fn().mockReturnValue({
       select: vi.fn().mockReturnValue({
         single: vi.fn().mockResolvedValue({
-          data: { id: 'crystal-1', ...validPayload, user_id: mockUser.id },
+          data: { id: 'crystal-1', ...validPayload, user_id: mockUser.id, embedding: [0.1, 0.2, 0.3] },
           error: null,
         }),
       }),
     });
 
+    // Mock update to return success if called (though we expect it not to be called for embedding)
     mockUpdate = vi.fn().mockReturnValue({
         eq: vi.fn().mockReturnValue({
             eq: vi.fn().mockReturnValue({
                 select: vi.fn().mockReturnValue({
                     single: vi.fn().mockResolvedValue({
-                        data: { id: 'crystal-1', ...validPayload, user_id: mockUser.id, embedding: [0.1, 0.2] },
+                        data: { id: 'crystal-1', ...validPayload, user_id: mockUser.id, embedding: [0.1, 0.2, 0.3] },
                         error: null,
                     })
                 })
@@ -62,6 +63,7 @@ describe('POST /api/crystals', () => {
         if (table === 'crystals') {
           return {
             insert: mockInsert,
+            // Mock select for "count" query
             select: vi.fn().mockReturnValue({
                 eq: vi.fn().mockReturnValue({
                     not: vi.fn().mockResolvedValue({ count: 1 })
@@ -112,5 +114,36 @@ describe('POST /api/crystals', () => {
     const insertPayload = mockInsert.mock.calls[0][0];
     expect(insertPayload).toHaveProperty('title', validPayload.title);
     expect(insertPayload).toHaveProperty('source_message_ids', validPayload.source_message_ids);
+  });
+  it('should optimize DB calls by generating embedding before insert', async () => {
+    const payload = validPayload;
+
+    const req = new NextRequest('http://localhost:3000/api/crystals', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+
+    const response = await POST(req);
+    const json = await response.json();
+
+    if (response.status !== 201) {
+      console.error('API Error:', json);
+    }
+
+    expect(response.status).toBe(201);
+    expect(json.crystal).toBeDefined();
+
+    // Check generateEmbedding call
+    expect(generateEmbedding).toHaveBeenCalledWith(
+      `${payload.title} ${payload.definition} ${payload.core_insight}`
+    );
+
+    // Expectation: 1 insert
+    expect(mockInsert).toHaveBeenCalledTimes(1);
+
+    const insertCallArgs = mockInsert.mock.calls[0][0];
+    expect(insertCallArgs.embedding).toBeNull();
+
+    expect(mockUpdate).toHaveBeenCalled();
   });
 });

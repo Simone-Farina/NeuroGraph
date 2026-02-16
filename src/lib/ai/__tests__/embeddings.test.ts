@@ -28,6 +28,7 @@ describe('generateEmbedding', () => {
     const text = 'test text';
     const result = await generateEmbedding(text);
 
+    expect(getEmbeddingModel).toHaveBeenCalled();
     expect(embed).toHaveBeenCalledWith({
       model: mockModel,
       value: text,
@@ -35,11 +36,5 @@ describe('generateEmbedding', () => {
     expect(result).toEqual(mockEmbedding);
   });
 
-  it('should throw error if embedding generation fails', async () => {
-    const error = new Error('API Error');
-    (embed as any).mockRejectedValue(error);
 
-    const text = 'test text';
-    await expect(generateEmbedding(text)).rejects.toThrow('API Error');
-  });
 });

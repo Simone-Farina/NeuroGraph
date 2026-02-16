@@ -6,6 +6,8 @@ import { DefaultChatTransport } from 'ai';
 import { Edge, MarkerType } from '@xyflow/react';
 
 import { ChatInput } from '@/components/chat/ChatInput';
+import { ConversationList } from '@/components/chat/ConversationList';
+import { EdgeSuggestions } from '@/components/chat/EdgeSuggestions';
 import { MessageList } from '@/components/chat/MessageList';
 import { extractFirstYouTubeUrl, isYouTubeUrl } from '@/lib/youtube';
 import { useGraphStore } from '@/stores/graphStore';
@@ -17,6 +19,7 @@ import type {
   SuggestionInput,
   SuggestionToolPart,
 } from '@/types/chat';
+import { edgeSuggestionKey, useEdgeSuggestions } from '@/hooks/useEdgeSuggestions';
 
 function markerForEdge(type: RelationshipType) {
   if (type === 'RELATED') return undefined;
@@ -43,13 +46,6 @@ function toGraphEdge(edge: {
   };
 }
 
-function edgeSuggestionKey(suggestion: {
-  source_crystal_id: string;
-  target_crystal_id: string;
-  type: RelationshipType;
-}) {
-  return `${suggestion.source_crystal_id}:${suggestion.target_crystal_id}:${suggestion.type}`;
-}
 
 function isUuid(value: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
@@ -72,26 +68,22 @@ export function ChatPanel() {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [input, setInput] = useState('');
   const [isFetchingTranscript, setIsFetchingTranscript] = useState(false);
-  const [connectionNotice, setConnectionNotice] = useState<string | null>(null);
-  const [edgeSuggestions, setEdgeSuggestions] = useState<
-    NonNullable<CreatedCrystalResponse['edge_suggestions']>
-  >([]);
+
+  const {
+    edgeSuggestions,
+    connectionNotice,
+    showConnectionsNotice,
+    clearConnectionNotice,
+    clearEdgeSuggestions,
+    addEdgeSuggestions,
+    handleConfirmEdgeSuggestion,
+    handleDismissEdgeSuggestion,
+  } = useEdgeSuggestions();
+
   const conversationIdRef = useRef(conversationId);
-  const noticeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Keep the ref in sync
   conversationIdRef.current = conversationId;
-
-  const showConnectionsNotice = useCallback((message: string) => {
-    if (noticeTimeoutRef.current) {
-      clearTimeout(noticeTimeoutRef.current);
-    }
-
-    setConnectionNotice(message);
-    noticeTimeoutRef.current = setTimeout(() => {
-      setConnectionNotice(null);
-    }, 2400);
-  }, []);
 
   const {
     messages,
@@ -158,25 +150,21 @@ export function ChatPanel() {
 
       setMessages(loadedMessages);
       setConversationId(id);
-      setEdgeSuggestions([]);
-      setConnectionNotice(null);
+      clearEdgeSuggestions();
+      clearConnectionNotice();
     } catch (error) {
       console.error('Failed to load conversation', error);
     }
-  }, [setMessages]);
+  }, [setMessages, clearEdgeSuggestions, clearConnectionNotice]);
 
   const handleNewConversation = useCallback(() => {
-    if (noticeTimeoutRef.current) {
-      clearTimeout(noticeTimeoutRef.current);
-      noticeTimeoutRef.current = null;
-    }
+    clearConnectionNotice();
 
     setMessages([]);
     setConversationId(null);
     setInput('');
-    setConnectionNotice(null);
-    setEdgeSuggestions([]);
-  }, [setMessages]);
+    clearEdgeSuggestions();
+  }, [setMessages, clearConnectionNotice, clearEdgeSuggestions]);
 
   const handleDeleteConversation = useCallback(async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -207,14 +195,6 @@ export function ChatPanel() {
     loadConversations();
   }, [loadConversations]);
 
-  useEffect(() => {
-    return () => {
-      if (noticeTimeoutRef.current) {
-        clearTimeout(noticeTimeoutRef.current);
-      }
-    };
-  }, []);
-
   // Extract conversation ID from the first response
   useEffect(() => {
     if (messages.length >= 2 && !conversationId) {
@@ -238,31 +218,41 @@ export function ChatPanel() {
         type: RelationshipType;
       }>
     ) => {
+      // Get current state once to avoid unnecessary re-renders or subscriptions
       const { edges: currentEdges, addEdges } = useGraphStore.getState();
-      const seenIds = new Set(currentEdges.map((e) => e.id));
-      const seenContent = new Set(
+
+      const existingIds = new Set(currentEdges.map((e) => e.id));
+      const existingKeys = new Set(
         currentEdges.map((e) => {
-          const data = e.data as { typeLabel?: string } | undefined;
+          const data = e.data as { typeLabel?: RelationshipType } | undefined;
           return `${e.source}:${e.target}:${data?.typeLabel}`;
         })
       );
 
-      const edgesToAdd: Edge[] = [];
+      const newEdges: typeof edgesInput = [];
 
       for (const edgeInput of edgesInput) {
-        if (seenIds.has(edgeInput.id)) continue;
+        if (existingIds.has(edgeInput.id)) {
+          continue;
+        }
 
-        const contentKey = `${edgeInput.source_crystal_id}:${edgeInput.target_crystal_id}:${edgeInput.type}`;
-        if (seenContent.has(contentKey)) continue;
+        const key = `${edgeInput.source_crystal_id}:${edgeInput.target_crystal_id}:${edgeInput.type}`;
+        if (existingKeys.has(key)) {
+          continue;
+        }
 
-        edgesToAdd.push(toGraphEdge(edgeInput));
-        seenIds.add(edgeInput.id);
-        seenContent.add(contentKey);
+        newEdges.push(edgeInput);
+
+        // Add to sets to prevent duplicates within the batch
+        existingIds.add(edgeInput.id);
+        existingKeys.add(key);
       }
 
-      if (edgesToAdd.length > 0) {
-        addEdges(edgesToAdd);
+      if (newEdges.length === 0) {
+        return;
       }
+
+      addEdges(newEdges.map(toGraphEdge));
     },
     []
   );
@@ -278,7 +268,6 @@ export function ChatPanel() {
     },
     [upsertEdgesInStore]
   );
-
   const handleSend = useCallback(async () => {
     const text = input.trim();
     if (!text || status !== 'ready' || isFetchingTranscript) return;
@@ -401,16 +390,7 @@ export function ChatPanel() {
         }
 
         if (edge_suggestions && edge_suggestions.length > 0) {
-          setEdgeSuggestions((prev) => {
-            const merged = [...edge_suggestions, ...prev];
-            const deduped = new Map<string, (typeof merged)[number]>();
-
-            merged.forEach((suggestion) => {
-              deduped.set(edgeSuggestionKey(suggestion), suggestion);
-            });
-
-            return Array.from(deduped.values()).slice(0, 8);
-          });
+          addEdgeSuggestions(edge_suggestions);
         }
 
         const connectionCount = (edges?.length ?? 0) + (edge_suggestions?.length ?? 0);
@@ -445,7 +425,7 @@ export function ChatPanel() {
         alert('An error occurred while crystallizing.');
       }
     },
-    [messages, conversationId, setMessages, showConnectionsNotice, upsertEdgeInStore]
+    [messages, conversationId, setMessages, showConnectionsNotice, upsertEdgesInStore, addEdgeSuggestions]
   );
 
   const handleDismiss = useCallback((toolCallId: string) => {
@@ -469,93 +449,17 @@ export function ChatPanel() {
     );
   }, [setMessages]);
 
-  const handleConfirmEdgeSuggestion = useCallback(
-    async (suggestion: NonNullable<CreatedCrystalResponse['edge_suggestions']>[number]) => {
-      try {
-        const response = await fetch(`/api/crystals/${suggestion.source_crystal_id}/edges`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            target_id: suggestion.target_crystal_id,
-            type: suggestion.type,
-            weight: suggestion.weight,
-            ai_suggested: true,
-          }),
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          console.error('Failed to confirm edge suggestion', error);
-          showConnectionsNotice('Connection could not be created');
-          return;
-        }
-
-        const payload = (await response.json()) as EdgeUpsertResponse;
-
-        if (payload.edge) {
-          upsertEdgeInStore(payload.edge);
-        }
-
-        const suggestionId = edgeSuggestionKey(suggestion);
-        setEdgeSuggestions((prev) =>
-          prev.filter((candidate) => edgeSuggestionKey(candidate) !== suggestionId)
-        );
-        showConnectionsNotice('Connection added');
-      } catch (error) {
-        console.error('Connection confirmation failed', error);
-        showConnectionsNotice('Connection could not be created');
-      }
-    },
-    [showConnectionsNotice, upsertEdgeInStore]
-  );
-
-  const handleDismissEdgeSuggestion = useCallback((suggestionId: string) => {
-    setEdgeSuggestions((prev) => prev.filter((candidate) => edgeSuggestionKey(candidate) !== suggestionId));
-  }, []);
-
   const isLoading = status === 'streaming' || status === 'submitted' || isFetchingTranscript;
 
   return (
     <section className="chat-panel flex h-full overflow-hidden border-r border-neural-gray-700 bg-neural-gray-900/30">
-      <aside className="hidden w-72 shrink-0 border-r border-white/5 p-4 lg:flex lg:flex-col bg-neural-dark/30">
-        <div className="mb-6 flex items-center justify-between">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-neural-light/40">Conversations</p>
-          <button
-            type="button"
-            onClick={handleNewConversation}
-            className="flex items-center justify-center rounded-md border border-white/10 bg-white/5 px-2.5 py-1.5 text-xs font-medium text-neural-light/80 transition hover:bg-white/10 hover:text-neural-cyan hover:border-neural-cyan/30"
-          >
-            + New Chat
-          </button>
-        </div>
-        <div className="space-y-1 overflow-y-auto pr-1 flex-1 scrollbar-hide">
-          {conversations.map((conversation) => (
-            <div key={conversation.id} className="group relative">
-              <button
-                type="button"
-                onClick={() => loadConversation(conversation.id)}
-                className={`w-full rounded-lg border px-3 py-2.5 text-left text-sm transition-all ${conversationId === conversation.id
-                    ? 'border-neural-cyan/30 bg-neural-cyan/5 text-neural-cyan shadow-[0_0_15px_-3px_rgba(6,182,212,0.1)]'
-                    : 'border-transparent text-neural-light/60 hover:bg-white/5 hover:text-neural-light'
-                  }`}
-              >
-                <p className="truncate font-medium pr-6">{conversation.title}</p>
-                <p className="truncate text-[10px] text-neural-light/30 mt-0.5 group-hover:text-neural-light/50 transition-colors">
-                   {new Date(conversation.updated_at).toLocaleDateString()}
-                </p>
-              </button>
-              <button
-                type="button"
-                onClick={(e) => handleDeleteConversation(e, conversation.id)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1.5 text-neural-light/30 hover:text-red-400 transition-all"
-                title="Delete conversation"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-              </button>
-            </div>
-          ))}
-        </div>
-      </aside>
+      <ConversationList
+        conversations={conversations}
+        currentId={conversationId}
+        onSelect={loadConversation}
+        onDelete={handleDeleteConversation}
+        onNew={handleNewConversation}
+      />
 
       <div className="flex min-w-0 flex-1 flex-col relative">
         <div className="absolute inset-0 bg-gradient-to-b from-neural-dark/0 via-neural-dark/0 to-neural-dark/20 pointer-events-none" />
@@ -575,52 +479,11 @@ export function ChatPanel() {
           </div>
         ) : null}
 
-        {edgeSuggestions.length > 0 ? (
-          <div className="mx-6 mb-4 rounded-xl border border-white/10 bg-neural-gray-900/60 p-4 backdrop-blur-md shadow-2xl">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-neural-light/40 mb-3">
-              Suggested Connections
-            </p>
-            <div className="space-y-2">
-              {edgeSuggestions.map((suggestion) => {
-                const suggestionId = edgeSuggestionKey(suggestion);
-                const relationshipLabel = suggestion.type.toLowerCase().replace('_', ' ');
-
-                return (
-                  <div
-                    key={suggestionId}
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-white/5 bg-white/5 px-3 py-2 hover:bg-white/10 transition-colors"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-neural-light">{suggestion.target_title}</p>
-                      <p className="text-xs text-neural-light/40 flex items-center gap-1.5">
-                        <span className={`inline-block h-1.5 w-1.5 rounded-full ${suggestion.source === 'vector' ? 'bg-neural-purple' : 'bg-neural-cyan'}`} />
-                        {relationshipLabel}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          void handleConfirmEdgeSuggestion(suggestion);
-                        }}
-                        className="rounded-md bg-neural-cyan/10 border border-neural-cyan/20 px-3 py-1.5 text-xs font-semibold text-neural-cyan transition hover:bg-neural-cyan/20 hover:border-neural-cyan/40 hover:shadow-[0_0_10px_-2px_rgba(6,182,212,0.3)]"
-                      >
-                        Connect
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDismissEdgeSuggestion(suggestionId)}
-                        className="rounded-md border border-white/10 px-3 py-1.5 text-xs text-neural-light/50 transition hover:bg-white/5 hover:text-neural-light/80"
-                      >
-                        Dismiss
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ) : null}
+        <EdgeSuggestions
+          suggestions={edgeSuggestions}
+          onConfirm={handleConfirmEdgeSuggestion}
+          onDismiss={handleDismissEdgeSuggestion}
+        />
 
         <ChatInput
           value={input}

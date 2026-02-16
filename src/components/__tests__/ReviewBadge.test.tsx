@@ -109,6 +109,7 @@ describe('ReviewBadge', () => {
     });
 
     expect(consoleSpy).toHaveBeenCalledWith('Failed to fetch review count:', expect.any(Error));
+
     consoleSpy.mockRestore();
   });
 });

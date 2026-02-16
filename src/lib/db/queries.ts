@@ -122,63 +122,69 @@ export const crystalQueries = {
 
   async getNeighborhoodsBatch(
     client: TypedClient,
-    crystalIds: string[]
-  ): Promise<Array<{ crystals: Crystal[]; edges: CrystalEdge[] }>> {
-    if (crystalIds.length === 0) return [];
+    crystalIds: string[],
+    maxDepth: number = 1
+  ): Promise<Map<string, { crystals: Crystal[]; edges: CrystalEdge[] }>> {
+    if (maxDepth !== 1) {
+      throw new Error('Batch neighborhood retrieval only supports depth 1');
+    }
 
-    // 1. Fetch all connected edges
-    // Use .or() with .in() for batch filtering on source OR target
-    const filter = `source_crystal_id.in.(${crystalIds.join(',')}),target_crystal_id.in.(${crystalIds.join(',')})`;
-    const { data: allEdges, error: edgesError } = await client
+    if (!crystalIds || crystalIds.length === 0) {
+      return new Map();
+    }
+
+    // 1. Fetch edges connected to any of the crystalIds
+    // Filter: source_crystal_id IN crystalIds OR target_crystal_id IN crystalIds
+    const { data: edges, error: edgesError } = await client
       .from('crystal_edges')
       .select('*')
-      .or(filter);
+      .or(`source_crystal_id.in.(${crystalIds.join(',')}),target_crystal_id.in.(${crystalIds.join(',')})`);
 
     if (edgesError) throw edgesError;
-    const edges = allEdges || [];
 
-    // 2. Collect all unique crystal IDs involved (including the input IDs themselves)
-    const involvedCrystalIds = new Set<string>(crystalIds);
-    edges.forEach(edge => {
-      involvedCrystalIds.add(edge.source_crystal_id);
-      involvedCrystalIds.add(edge.target_crystal_id);
+    // 2. Collect all unique crystal IDs from edges + original IDs
+    const allCrystalIds = new Set<string>(crystalIds);
+    edges?.forEach(edge => {
+      allCrystalIds.add(edge.source_crystal_id);
+      allCrystalIds.add(edge.target_crystal_id);
     });
 
-    // 3. Fetch all involved crystals
-    const { data: allCrystals, error: crystalsError } = await client
+    // 3. Fetch all crystals
+    const { data: crystals, error: crystalsError } = await client
       .from('crystals')
       .select('*')
-      .in('id', Array.from(involvedCrystalIds));
+      .in('id', Array.from(allCrystalIds));
 
     if (crystalsError) throw crystalsError;
-    const crystals = allCrystals || [];
 
-    // Map for fast lookup
-    const crystalMap = new Map(crystals.map(c => [c.id, c]));
+    // 4. Group results by original crystalId
+    const crystalsMap = new Map<string, Crystal>();
+    crystals?.forEach(c => crystalsMap.set(c.id, c));
 
-    // 4. Reconstruct neighborhoods per input ID
-    return crystalIds.map(rootId => {
-      // Find edges connected to this rootId
-      const connectedEdges = edges.filter(
-        e => e.source_crystal_id === rootId || e.target_crystal_id === rootId
-      );
+    const result = new Map<string, { crystals: Crystal[]; edges: CrystalEdge[] }>();
 
-      // Find crystals connected via these edges + the root itself
-      const connectedCrystalIds = new Set<string>([rootId]);
-      connectedEdges.forEach(e => {
-        connectedCrystalIds.add(e.source_crystal_id);
-        connectedCrystalIds.add(e.target_crystal_id);
+    crystalIds.forEach(id => {
+      const crystalEdges = edges?.filter(e =>
+        e.source_crystal_id === id || e.target_crystal_id === id
+      ) || [];
+
+      const neighborhoodCrystalIds = new Set<string>([id]);
+      crystalEdges.forEach(e => {
+        neighborhoodCrystalIds.add(e.source_crystal_id);
+        neighborhoodCrystalIds.add(e.target_crystal_id);
       });
 
-      const neighborhoodCrystals = Array.from(connectedCrystalIds)
-        .map(id => crystalMap.get(id))
-        .filter((c): c is Crystal => c !== undefined);
+      const neighborhoodCrystals = Array.from(neighborhoodCrystalIds)
+        .map(cid => crystalsMap.get(cid))
+        .filter((c): c is Crystal => !!c);
 
-      return {
+      result.set(id, {
         crystals: neighborhoodCrystals,
-        edges: connectedEdges
-      };
+        edges: crystalEdges
+      });
     });
+
+    return result;
   },
 };
 
@@ -192,6 +198,22 @@ export const edgeQueries = {
 
     if (error) throw error;
     return edge;
+  },
+
+  async upsert(
+    client: TypedClient,
+    data: EdgeInsert[]
+  ): Promise<CrystalEdge[]> {
+    const { data: edges, error } = await client
+      .from('crystal_edges')
+      .upsert(data, {
+        onConflict: 'source_crystal_id,target_crystal_id,type',
+        ignoreDuplicates: true,
+      })
+      .select('*');
+
+    if (error) throw error;
+    return edges || [];
   },
 
   async getByUserId(client: TypedClient, userId: string): Promise<CrystalEdge[]> {
