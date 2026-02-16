@@ -34,10 +34,9 @@ export async function getRelevantContext(
       return { ragContext: '', ragCatalog };
     }
 
-    const neighborhoods = await Promise.all(
-      similarCrystals.map(crystal => 
-        crystalQueries.getNeighborhood(client, crystal.id, 1)
-      )
+    const neighborhoods = await crystalQueries.getNeighborhoodsBatch(
+      client,
+      similarCrystals.map(crystal => crystal.id)
     );
     
     const allCrystalsMap = new Map<string, Crystal>();
@@ -68,7 +67,8 @@ export async function getRelevantContext(
 
     return { ragContext, ragCatalog };
   } catch (error) {
-    console.error('RAG error:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('RAG error:', errorMessage);
     return { ragContext: '', ragCatalog: '- none yet' };
   }
 }

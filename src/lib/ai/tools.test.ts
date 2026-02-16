@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { crystallizationToolSchema } from './tools';
+import { crystallizationSchema } from './tools';
 
 describe('Crystallization Tool Schema', () => {
   it('should validate a correct full input', () => {
@@ -16,7 +16,7 @@ describe('Crystallization Tool Schema', () => {
         },
       ],
     };
-    const result = crystallizationToolSchema.safeParse(validInput);
+    const result = crystallizationSchema.safeParse(validInput);
     expect(result.success).toBe(true);
   });
 
@@ -27,7 +27,7 @@ describe('Crystallization Tool Schema', () => {
       core_insight: 'The core insight is that testing is important.',
       bloom_level: 'Remember',
     };
-    const result = crystallizationToolSchema.safeParse(validMinimalInput);
+    const result = crystallizationSchema.safeParse(validMinimalInput);
     expect(result.success).toBe(true);
   });
 
@@ -38,7 +38,7 @@ describe('Crystallization Tool Schema', () => {
       core_insight: 'The core insight is that testing is important.',
       bloom_level: 'Remember',
     };
-    const result = crystallizationToolSchema.safeParse(invalidInput);
+    const result = crystallizationSchema.safeParse(invalidInput);
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error.flatten().fieldErrors.definition).toBeDefined();
@@ -52,7 +52,7 @@ describe('Crystallization Tool Schema', () => {
       core_insight: 'The core insight is that testing is important.',
       bloom_level: 'Remember',
     };
-    const result = crystallizationToolSchema.safeParse(invalidInput);
+    const result = crystallizationSchema.safeParse(invalidInput);
     expect(result.success).toBe(false);
      if (!result.success) {
       expect(result.error.flatten().fieldErrors.title).toBeDefined();
@@ -66,7 +66,7 @@ describe('Crystallization Tool Schema', () => {
       core_insight: 'Short', // Too short (min 10)
       bloom_level: 'Remember',
     };
-    const result = crystallizationToolSchema.safeParse(invalidInput);
+    const result = crystallizationSchema.safeParse(invalidInput);
     expect(result.success).toBe(false);
     if (!result.success) {
         const errors = result.error.flatten().fieldErrors;
@@ -83,7 +83,7 @@ describe('Crystallization Tool Schema', () => {
       core_insight: 'The core insight is that testing is important.',
       bloom_level: 'InvalidLevel',
     };
-    const result = crystallizationToolSchema.safeParse(invalidInput);
+    const result = crystallizationSchema.safeParse(invalidInput);
     expect(result.success).toBe(false);
      if (!result.success) {
       expect(result.error.flatten().fieldErrors.bloom_level).toBeDefined();
@@ -104,7 +104,7 @@ describe('Crystallization Tool Schema', () => {
         },
       ],
     };
-    const result = crystallizationToolSchema.safeParse(invalidInput);
+    const result = crystallizationSchema.safeParse(invalidInput);
     expect(result.success).toBe(false);
   });
 });

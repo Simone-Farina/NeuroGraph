@@ -76,4 +76,66 @@ describe('DB Queries', () => {
       expect(result).toBeNull();
     });
   });
+
+  describe('crystalQueries.getNeighborhoodsBatch', () => {
+    it('should return empty array if no crystalIds provided', async () => {
+      const result = await crystalQueries.getNeighborhoodsBatch(mockClient, []);
+      expect(result).toEqual([]);
+      expect(mockClient.from).not.toHaveBeenCalled();
+    });
+
+    it('should fetch edges and crystals and reconstruct neighborhoods', async () => {
+      const crystalIds = ['1', '2'];
+      const mockEdges = [
+        { id: 'e1', source_crystal_id: '1', target_crystal_id: '3' }, // 1 -> 3
+        { id: 'e2', source_crystal_id: '2', target_crystal_id: '4' }, // 2 -> 4
+        { id: 'e3', source_crystal_id: '3', target_crystal_id: '2' }, // 3 -> 2
+      ];
+      // Involved: 1, 2, 3, 4
+      const mockCrystals = [
+        { id: '1', title: 'C1' },
+        { id: '2', title: 'C2' },
+        { id: '3', title: 'C3' },
+        { id: '4', title: 'C4' },
+      ];
+
+      const mockFrom = vi.fn();
+
+      const mockEdgesSelect = vi.fn().mockReturnValue({
+        or: vi.fn().mockResolvedValue({ data: mockEdges, error: null })
+      });
+
+      const mockCrystalsSelect = vi.fn().mockReturnValue({
+        in: vi.fn().mockResolvedValue({ data: mockCrystals, error: null })
+      });
+
+      mockFrom.mockImplementation((table: string) => {
+        if (table === 'crystal_edges') return { select: mockEdgesSelect };
+        if (table === 'crystals') return { select: mockCrystalsSelect };
+        return {};
+      });
+
+      mockClient.from = mockFrom;
+
+      const result = await crystalQueries.getNeighborhoodsBatch(mockClient, crystalIds);
+
+      expect(mockEdgesSelect).toHaveBeenCalled();
+      expect(result).toHaveLength(2);
+
+      // Neighborhood 1 (root '1')
+      expect(result[0].crystals).toEqual(expect.arrayContaining([
+        expect.objectContaining({ id: '1' }),
+        expect.objectContaining({ id: '3' })
+      ]));
+      expect(result[0].edges).toEqual([mockEdges[0]]);
+
+      // Neighborhood 2 (root '2')
+      expect(result[1].crystals).toEqual(expect.arrayContaining([
+        expect.objectContaining({ id: '2' }),
+        expect.objectContaining({ id: '3' }),
+        expect.objectContaining({ id: '4' })
+      ]));
+      expect(result[1].edges).toHaveLength(2);
+    });
+  });
 });
