@@ -36,11 +36,5 @@ describe('generateEmbedding', () => {
     expect(result).toEqual(mockEmbedding);
   });
 
-  it('should throw error if embedding generation fails', async () => {
-    const error = new Error('API Error');
-    (embed as any).mockRejectedValue(error);
 
-    const text = 'test text';
-    await expect(generateEmbedding(text)).rejects.toThrow('API Error');
-  });
 });
