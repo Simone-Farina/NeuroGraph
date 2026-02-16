@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
-import { Edge } from '@xyflow/react';
 
 import { ChatInput } from '@/components/chat/ChatInput';
 import { MessageList } from '@/components/chat/MessageList';
@@ -12,7 +11,6 @@ import { useGraphStore } from '@/stores/graphStore';
 import type {
   ConversationSummary,
   CreatedCrystalResponse,
-  RelationshipType,
   SuggestionToolPart,
 } from '@/types/chat';
 import { edgeSuggestionKey, useEdgeSuggestions } from '@/hooks/useEdgeSuggestions';
