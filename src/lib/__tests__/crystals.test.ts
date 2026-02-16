@@ -23,27 +23,11 @@ describe('createCrystalAndProcessEdges', () => {
   let mockUpsert: any;
   let mockRpc: any;
 
-  // Query builder mocks
-  const createQueryBuilder = (defaultData: any = []) => {
-    const builder: any = {
-      select: vi.fn(() => builder),
-      insert: vi.fn(() => builder),
-      update: vi.fn(() => builder),
-      upsert: vi.fn(() => builder),
-      eq: vi.fn(() => builder),
-      in: vi.fn(() => builder),
-      single: vi.fn().mockResolvedValue({ data: defaultData, error: null }),
-      then: (resolve: any) => resolve({ data: defaultData, error: null }),
-    };
-    return builder;
-  };
-
   beforeEach(() => {
     vi.clearAllMocks();
 
     const createdCrystal = { id: 'new-id', ...input };
 
-    // We need different behaviors for different tables/operations
     mockInsert = vi.fn().mockReturnValue({
       select: vi.fn().mockReturnValue({
         single: vi.fn().mockResolvedValue({ data: createdCrystal, error: null })
@@ -74,7 +58,7 @@ describe('createCrystalAndProcessEdges', () => {
             update: mockUpdate,
             select: vi.fn(() => ({
               eq: vi.fn(() => ({
-                in: vi.fn().mockResolvedValue({ data: [], error: null }) // For manual related crystals check
+                in: vi.fn().mockResolvedValue({ data: [], error: null })
               }))
             }))
           };
@@ -85,7 +69,7 @@ describe('createCrystalAndProcessEdges', () => {
             select: vi.fn(() => ({
               eq: vi.fn(() => ({
                 eq: vi.fn(() => ({
-                  in: vi.fn().mockResolvedValue({ data: [], error: null }) // For filtering existing edges
+                  in: vi.fn().mockResolvedValue({ data: [], error: null })
                 }))
               }))
             }))
@@ -104,9 +88,10 @@ describe('createCrystalAndProcessEdges', () => {
     expect(mockInsert).toHaveBeenCalledWith(expect.objectContaining({
       title: input.title,
       user_id: userId,
-      state: 'New'
+      state: 'New',
+      embedding: [0.1, 0.2, 0.3]
     }));
-    expect(mockUpdate).toHaveBeenCalledWith({ embedding: [0.1, 0.2, 0.3] });
+    expect(mockUpdate).not.toHaveBeenCalled();
     expect(result.crystal).toEqual(expect.objectContaining({ id: 'new-id' }));
   });
 
@@ -124,7 +109,7 @@ describe('createCrystalAndProcessEdges', () => {
   it('processes high confidence similarities as auto-edges', async () => {
     mockRpc.mockResolvedValue({
       data: [
-        { id: 'similar-1', title: 'Similar 1', similarity: 0.9 }, // 1 - 0.9 = 0.1 < 0.2 (High)
+        { id: 'similar-1', title: 'Similar 1', similarity: 0.9 },
       ],
       error: null,
     });
@@ -142,24 +127,21 @@ describe('createCrystalAndProcessEdges', () => {
       ]),
       expect.any(Object)
     );
-    // Should not be in suggestions
     expect(result.edge_suggestions).toHaveLength(0);
   });
 
   it('processes medium confidence similarities as suggestions', async () => {
     mockRpc.mockResolvedValue({
       data: [
-        { id: 'similar-2', title: 'Similar 2', similarity: 0.75 }, // 1 - 0.75 = 0.25 (>= 0.2, < 0.3) Medium
+        { id: 'similar-2', title: 'Similar 2', similarity: 0.75 },
       ],
       error: null,
     });
 
     const result = await createCrystalAndProcessEdges(mockSupabase, userId, input);
 
-    // Should NOT be upserted
     expect(mockUpsert).not.toHaveBeenCalled();
 
-    // Should be in suggestions
     expect(result.edge_suggestions).toHaveLength(1);
     expect(result.edge_suggestions[0]).toMatchObject({
       target_crystal_id: 'similar-2',
@@ -169,7 +151,6 @@ describe('createCrystalAndProcessEdges', () => {
   });
 
   it('filters out existing edges from suggestions', async () => {
-    // Medium confidence suggestion
     mockRpc.mockResolvedValue({
       data: [
         { id: 'similar-2', title: 'Similar 2', similarity: 0.75 },
@@ -177,7 +158,6 @@ describe('createCrystalAndProcessEdges', () => {
       error: null,
     });
 
-    // Mock existing edge found in DB
     mockSupabase.from.mockImplementation((table: string) => {
       if (table === 'crystal_edges') {
         return {
@@ -194,7 +174,6 @@ describe('createCrystalAndProcessEdges', () => {
             }))
         };
       }
-      // Return default mock for crystals
       return {
         insert: mockInsert,
         update: mockUpdate,

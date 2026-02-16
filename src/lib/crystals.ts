@@ -58,17 +58,20 @@ export async function createCrystalAndProcessEdges(
   userId: string,
   input: CreateCrystalInput
 ) {
-  const { related_crystals: relatedCrystalsInput = [], source_message_ids: _sourceMessageIds, ...crystalInput } = input;
+  const { related_crystals: relatedCrystalsInput = [], ...crystalInput } = input;
 
   const now = new Date();
   const nextReview = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
-  const { data, error } = await supabase
+  const embeddingInput = `${crystalInput.title} ${crystalInput.definition} ${crystalInput.core_insight}`;
+  const embedding = await generateEmbedding(embeddingInput);
+
+  const { data: crystal, error } = await supabase
     .from('crystals')
     .insert({
       ...crystalInput,
       user_id: userId,
-      embedding: null,
+      embedding,
       stability: 1.0,
       difficulty: 5.0,
       state: 'New',
@@ -87,21 +90,6 @@ export async function createCrystalAndProcessEdges(
 
   if (error) {
     throw new Error(error.message);
-  }
-
-  const embeddingInput = `${data.title} ${data.definition} ${data.core_insight}`;
-  const embedding = await generateEmbedding(embeddingInput);
-
-  const { data: crystal, error: embeddingUpdateError } = await supabase
-    .from('crystals')
-    .update({ embedding })
-    .eq('id', data.id)
-    .eq('user_id', userId)
-    .select('*')
-    .single();
-
-  if (embeddingUpdateError) {
-    throw new Error(embeddingUpdateError.message);
   }
 
   const { data: similarCrystals, error: similarError } = await supabase.rpc('find_similar_crystals', {
