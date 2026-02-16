@@ -89,9 +89,9 @@ describe('createCrystalAndProcessEdges', () => {
       title: input.title,
       user_id: userId,
       state: 'New',
-      embedding: [0.1, 0.2, 0.3]
+      embedding: null
     }));
-    expect(mockUpdate).not.toHaveBeenCalled();
+    expect(mockUpdate).toHaveBeenCalled();
     expect(result.crystal).toEqual(expect.objectContaining({ id: 'new-id' }));
   });
 

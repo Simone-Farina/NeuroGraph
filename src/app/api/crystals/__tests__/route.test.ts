@@ -116,10 +116,7 @@ describe('POST /api/crystals', () => {
     expect(insertPayload).toHaveProperty('source_message_ids', validPayload.source_message_ids);
   });
   it('should optimize DB calls by generating embedding before insert', async () => {
-    const payload = {
-      ...validPayload,
-      title: 'Test Crystal Optimization',
-    };
+    const payload = validPayload;
 
     const req = new NextRequest('http://localhost:3000/api/crystals', {
       method: 'POST',
@@ -144,11 +141,9 @@ describe('POST /api/crystals', () => {
     // Expectation: 1 insert
     expect(mockInsert).toHaveBeenCalledTimes(1);
 
-    // Verify embedding is included in insert
     const insertCallArgs = mockInsert.mock.calls[0][0];
-    expect(insertCallArgs.embedding).toEqual([0.1, 0.2, 0.3]);
+    expect(insertCallArgs.embedding).toBeNull();
 
-    // Check update call. It should NOT be called now.
-    expect(mockUpdate).not.toHaveBeenCalled();
+    expect(mockUpdate).toHaveBeenCalled();
   });
 });

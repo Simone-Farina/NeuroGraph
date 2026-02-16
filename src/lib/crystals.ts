@@ -257,3 +257,26 @@ export async function processCrystalEdges(
 
   return { createdEdges, edgeSuggestions };
 }
+
+export async function createCrystalAndProcessEdges(
+  client: SupabaseClient<Database>,
+  userId: string,
+  input: CreateCrystalInput
+) {
+  const { related_crystals: relatedCrystalsInput = [], ...crystalInput } = input;
+  const crystal = await createCrystal(client, userId, crystalInput);
+  const { createdEdges, edgeSuggestions } = await processCrystalEdges(
+    client,
+    userId,
+    crystal,
+    relatedCrystalsInput
+  );
+
+  return {
+    crystal,
+    createdEdges,
+    edgeSuggestions,
+    created_edges: createdEdges,
+    edge_suggestions: edgeSuggestions,
+  };
+}

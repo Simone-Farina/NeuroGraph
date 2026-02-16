@@ -78,9 +78,9 @@ describe('DB Queries', () => {
   });
 
   describe('crystalQueries.getNeighborhoodsBatch', () => {
-    it('should return empty array if no crystalIds provided', async () => {
+    it('should return empty map if no crystalIds provided', async () => {
       const result = await crystalQueries.getNeighborhoodsBatch(mockClient, []);
-      expect(result).toEqual([]);
+      expect(result).toEqual(new Map());
       expect(mockClient.from).not.toHaveBeenCalled();
     });
 
@@ -120,22 +120,28 @@ describe('DB Queries', () => {
       const result = await crystalQueries.getNeighborhoodsBatch(mockClient, crystalIds);
 
       expect(mockEdgesSelect).toHaveBeenCalled();
-      expect(result).toHaveLength(2);
+      expect(result.size).toBe(2);
+
+      const neighborhood1 = result.get('1');
+      const neighborhood2 = result.get('2');
+
+      expect(neighborhood1).toBeDefined();
+      expect(neighborhood2).toBeDefined();
 
       // Neighborhood 1 (root '1')
-      expect(result[0].crystals).toEqual(expect.arrayContaining([
+      expect(neighborhood1?.crystals).toEqual(expect.arrayContaining([
         expect.objectContaining({ id: '1' }),
         expect.objectContaining({ id: '3' })
       ]));
-      expect(result[0].edges).toEqual([mockEdges[0]]);
+      expect(neighborhood1?.edges).toEqual([mockEdges[0]]);
 
       // Neighborhood 2 (root '2')
-      expect(result[1].crystals).toEqual(expect.arrayContaining([
+      expect(neighborhood2?.crystals).toEqual(expect.arrayContaining([
         expect.objectContaining({ id: '2' }),
         expect.objectContaining({ id: '3' }),
         expect.objectContaining({ id: '4' })
       ]));
-      expect(result[1].edges).toHaveLength(2);
+      expect(neighborhood2?.edges).toHaveLength(2);
     });
   });
 
@@ -251,7 +257,9 @@ describe('DB Queries', () => {
 
         await expect(edgeQueries.delete(mockClient, '1')).rejects.toEqual({ message: 'Error' });
       });
-=======
+    });
+  });
+
   describe('conversationQueries.create', () => {
     it('should insert and return conversation', async () => {
       const mockConversation = { id: '1', title: 'Test Chat', user_id: 'user1' };

@@ -86,47 +86,13 @@ export async function POST(request: NextRequest) {
     const { user, supabase, errorResponse } = await getAuthenticatedUser();
     if (errorResponse) return errorResponse;
 
-    // Rate limiting check
-    const { data: allowed, error: rateLimitError } = await supabase.rpc('check_rate_limit');
-
-    if (rateLimitError) {
-      console.error('Rate limit error:', rateLimitError);
-      return NextResponse.json({ error: 'Rate limit check failed' }, { status: 500 });
-    }
-
-    if (!allowed) {
-      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
-    }
+    const rpc = supabase.rpc as unknown as (
+      fn: string,
+      args?: Record<string, unknown>
+    ) => Promise<{ data: boolean | null; error: Error | null }>;
 
     // Rate limiting check
-    const { data: allowed, error: rateLimitError } = await supabase.rpc('check_rate_limit', {
-      p_limit: 20, // 20 requests
-      p_window_seconds: 60, // per 60 seconds
-    });
-
-    if (rateLimitError) {
-      console.error('Rate limit error:', rateLimitError);
-      return NextResponse.json({ error: 'Rate limit check failed' }, { status: 500 });
-    }
-
-    if (!allowed) {
-      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
-    }
-
-    // Rate limiting check
-    const { data: allowed, error: rateLimitError } = await supabase.rpc('check_rate_limit');
-
-    if (rateLimitError) {
-      console.error('Rate limit error:', rateLimitError);
-      return NextResponse.json({ error: 'Rate limit check failed' }, { status: 500 });
-    }
-
-    if (!allowed) {
-      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
-    }
-
-    // Rate limiting check
-    const { data: allowed, error: rateLimitError } = await supabase.rpc('check_rate_limit');
+    const { data: allowed, error: rateLimitError } = await rpc('check_rate_limit');
 
     if (rateLimitError) {
       console.error('Rate limit error:', rateLimitError);

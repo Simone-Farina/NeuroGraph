@@ -36,8 +36,6 @@ describe('ReviewBadge', () => {
 
     const { container } = render(<ReviewBadge />);
 
-    const { container } = render(<ReviewBadge />);
-
     // Wait for loading to finish
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledTimes(1);
