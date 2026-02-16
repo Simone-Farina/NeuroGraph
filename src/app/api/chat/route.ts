@@ -95,11 +95,10 @@ export async function POST(request: NextRequest) {
     const { data: allowed, error: rateLimitError } = await rpc('check_rate_limit');
 
     if (rateLimitError) {
-      console.error('Rate limit error:', rateLimitError);
-      return NextResponse.json({ error: 'Rate limit check failed' }, { status: 500 });
+      console.error('Rate limit error (continuing without rate limiting):', rateLimitError);
     }
 
-    if (!allowed) {
+    if (!rateLimitError && !allowed) {
       return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
     }
 

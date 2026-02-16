@@ -1,5 +1,5 @@
 import { POST } from './route';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/auth/supabase';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
@@ -70,7 +70,7 @@ describe('Chat API Rate Limiting', () => {
     const request = new NextRequest('http://localhost:3000/api/chat', {
       method: 'POST',
       body: JSON.stringify({
-        messages: [{ role: 'user', content: 'Hello', id: '1' }],
+        messages: [{ role: 'user', content: 'Hello', id: '1', parts: [{ type: 'text', text: 'Hello' }] }],
       }),
     });
 
@@ -103,21 +103,20 @@ describe('Chat API Rate Limiting', () => {
     expect(mockSupabase.rpc).toHaveBeenCalledWith('check_rate_limit');
   });
 
-  it('should return 500 when rate limit check fails with error', async () => {
+  it('should continue when rate limit check fails with error', async () => {
     // Mock rate limit check to return error
     mockSupabase.rpc.mockResolvedValue({ data: null, error: { message: 'DB error' } });
 
     const request = new NextRequest('http://localhost:3000/api/chat', {
       method: 'POST',
       body: JSON.stringify({
-        messages: [{ role: 'user', content: 'Hello', id: '1' }],
+        messages: [{ role: 'user', content: 'Hello', id: '1', parts: [{ type: 'text', text: 'Hello' }] }],
       }),
     });
 
     const response = await POST(request);
 
-    expect(response.status).toBe(500);
-    const data = await response.json();
-    expect(data.error).toBe('Rate limit check failed');
+    expect(response.status).toBe(200);
+    expect(mockSupabase.rpc).toHaveBeenCalledWith('check_rate_limit');
   });
 });
