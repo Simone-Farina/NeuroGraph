@@ -115,7 +115,6 @@ describe('POST /api/crystals', () => {
     expect(insertPayload).toHaveProperty('title', validPayload.title);
     expect(insertPayload).toHaveProperty('source_message_ids', validPayload.source_message_ids);
   });
-
   it('should optimize DB calls by generating embedding before insert', async () => {
     const payload = {
       ...validPayload,

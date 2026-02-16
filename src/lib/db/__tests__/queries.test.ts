@@ -139,6 +139,7 @@ describe('DB Queries', () => {
     });
   });
 
+
   describe('edgeQueries', () => {
     describe('create', () => {
       it('should insert and return edge', async () => {
@@ -253,4 +254,5 @@ describe('DB Queries', () => {
       });
     });
   });
+
 });

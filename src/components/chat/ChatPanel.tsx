@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
+import { Edge, MarkerType } from '@xyflow/react';
 
 import { ChatInput } from '@/components/chat/ChatInput';
 import { MessageList } from '@/components/chat/MessageList';
@@ -11,9 +12,39 @@ import { useGraphStore } from '@/stores/graphStore';
 import type {
   ConversationSummary,
   CreatedCrystalResponse,
+  EdgeUpsertResponse,
+  RelationshipType,
+  SuggestionInput,
   SuggestionToolPart,
 } from '@/types/chat';
 import { edgeSuggestionKey, useEdgeSuggestions } from '@/hooks/useEdgeSuggestions';
+
+function markerForEdge(type: RelationshipType) {
+  if (type === 'RELATED') return undefined;
+
+  return {
+    type: MarkerType.ArrowClosed,
+    color: type === 'PREREQUISITE' ? '#22d3ee' : '#f59e0b',
+  };
+}
+
+function toGraphEdge(edge: {
+  id: string;
+  source_crystal_id: string;
+  target_crystal_id: string;
+  type: RelationshipType;
+}): Edge {
+  return {
+    id: edge.id,
+    source: edge.source_crystal_id,
+    target: edge.target_crystal_id,
+    type: 'crystalEdge',
+    data: { typeLabel: edge.type },
+    markerEnd: markerForEdge(edge.type),
+  };
+}
+
+
 
 function isUuid(value: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
@@ -44,7 +75,6 @@ export function ChatPanel() {
     clearConnectionNotice,
     clearEdgeSuggestions,
     addEdgeSuggestions,
-    upsertEdgeInStore,
     handleConfirmEdgeSuggestion,
     handleDismissEdgeSuggestion,
   } = useEdgeSuggestions();
@@ -178,6 +208,65 @@ export function ChatPanel() {
     }
   }, [messages.length, conversationId, loadConversations]);
 
+  const upsertEdgesInStore = useCallback(
+    (
+      edgesInput: Array<{
+        id: string;
+        source_crystal_id: string;
+        target_crystal_id: string;
+        type: RelationshipType;
+      }>
+    ) => {
+      // Get current state once to avoid unnecessary re-renders or subscriptions
+      const { edges: currentEdges, addEdges } = useGraphStore.getState();
+
+      const existingIds = new Set(currentEdges.map((e) => e.id));
+      const existingKeys = new Set(
+        currentEdges.map((e) => {
+          const data = e.data as { typeLabel?: RelationshipType } | undefined;
+          return `${e.source}:${e.target}:${data?.typeLabel}`;
+        })
+      );
+
+      const newEdges: typeof edgesInput = [];
+
+      for (const edgeInput of edgesInput) {
+        if (existingIds.has(edgeInput.id)) {
+          continue;
+        }
+
+        const key = `${edgeInput.source_crystal_id}:${edgeInput.target_crystal_id}:${edgeInput.type}`;
+        if (existingKeys.has(key)) {
+          continue;
+        }
+
+        newEdges.push(edgeInput);
+
+        // Add to sets to prevent duplicates within the batch
+        existingIds.add(edgeInput.id);
+        existingKeys.add(key);
+      }
+
+      if (newEdges.length === 0) {
+        return;
+      }
+
+      addEdges(newEdges.map(toGraphEdge));
+    },
+    []
+  );
+
+  const upsertEdgeInStore = useCallback(
+    (edgeInput: {
+      id: string;
+      source_crystal_id: string;
+      target_crystal_id: string;
+      type: RelationshipType;
+    }) => {
+      upsertEdgesInStore([edgeInput]);
+    },
+    [upsertEdgesInStore]
+  );
   const handleSend = useCallback(async () => {
     const text = input.trim();
     if (!text || status !== 'ready' || isFetchingTranscript) return;
@@ -296,9 +385,7 @@ export function ChatPanel() {
         });
 
         if (edges && edges.length > 0) {
-          edges.forEach((edge) => {
-            upsertEdgeInStore(edge);
-          });
+          upsertEdgesInStore(edges);
         }
 
         if (edge_suggestions && edge_suggestions.length > 0) {
@@ -337,7 +424,7 @@ export function ChatPanel() {
         alert('An error occurred while crystallizing.');
       }
     },
-    [messages, conversationId, setMessages, showConnectionsNotice, upsertEdgeInStore, addEdgeSuggestions]
+    [messages, conversationId, setMessages, showConnectionsNotice, upsertEdgesInStore, addEdgeSuggestions]
   );
 
   const handleDismiss = useCallback((toolCallId: string) => {
