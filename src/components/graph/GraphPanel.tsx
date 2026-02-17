@@ -92,7 +92,7 @@ function GraphCanvas() {
       setFlowEdges([...layoutedEdges]);
       
       window.requestAnimationFrame(() => {
-        fitView();
+        fitView({ padding: 0.3, maxZoom: 0.7 });
       });
     },
     [setFlowNodes, setFlowEdges, fitView],
@@ -220,7 +220,7 @@ function GraphCanvas() {
       edgeTypes={edgeTypes}
       nodesConnectable={false}
       fitView
-      fitViewOptions={{ padding: 0.6 }}
+      fitViewOptions={{ padding: 0.3, maxZoom: 0.7 }}
       className="bg-neural-dark"
       proOptions={{ hideAttribution: true }}
     >
