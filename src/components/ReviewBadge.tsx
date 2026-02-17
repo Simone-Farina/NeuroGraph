@@ -43,6 +43,7 @@ export function ReviewBadge() {
     >
       <Link 
         href="/app/review"
+        data-tour="review-badge"
         className="group relative flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-neural-cyan/5 hover:bg-neural-cyan/10 border border-neural-cyan/20 hover:border-neural-cyan/40 transition-all duration-500 overflow-hidden"
       >
         <div className="absolute inset-0 bg-gradient-to-r from-neural-cyan/0 via-neural-cyan/5 to-neural-cyan/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out" />

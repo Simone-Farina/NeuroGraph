@@ -108,10 +108,4 @@ If queries return empty results unexpectedly:
 
 1. Check that you're authenticated: `supabase.auth.getUser()`
 2. Verify user_id matches: `auth.uid()` should equal the row's `user_id`
-3. Use the **Service Role Key** to bypass RLS for verification (backend/scripts only).
-4. **Emergency Debugging ONLY (NOT for production)**: If you must disable RLS to diagnose issues, re-enable it immediately after:
-   ```sql
-   ALTER TABLE table_name DISABLE ROW LEVEL SECURITY;
-   -- Perform checks...
-   ALTER TABLE table_name ENABLE ROW LEVEL SECURITY;
-   ```
+3. Temporarily disable RLS for debugging: `ALTER TABLE table_name DISABLE ROW LEVEL SECURITY;` (NOT for production)

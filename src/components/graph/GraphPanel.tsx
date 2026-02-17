@@ -14,10 +14,13 @@ import {
   useEdgesState,
   useNodesState,
   useReactFlow,
+  Position,
 } from '@xyflow/react';
+import dagre from '@dagrejs/dagre';
 
 import { CrystalEdge } from '@/components/graph/CrystalEdge';
 import { CrystalNode } from '@/components/graph/CrystalNode';
+import { CrystalDetailPanel } from '@/components/graph/CrystalDetailPanel';
 import { useGraphStore } from '@/stores/graphStore';
 import { calculateRetrievability } from '@/lib/ai/fsrs';
 import { Crystal } from '@/types/database';
@@ -30,67 +33,81 @@ const edgeTypes = {
   crystalEdge: CrystalEdge,
 };
 
+const nodeWidth = 200;
+const nodeHeight = 80;
+
+/**
+ * Calculates the layout of the graph using Dagre.
+ * Uses a Top-to-Bottom (TB) rank direction.
+ */
+const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
+  const dagreGraph = new dagre.graphlib.Graph();
+  dagreGraph.setDefaultEdgeLabel(() => ({}));
+  dagreGraph.setGraph({ rankdir: 'TB' });
+
+  nodes.forEach((node) => {
+    dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
+  });
+
+  edges.forEach((edge) => {
+    dagreGraph.setEdge(edge.source, edge.target);
+  });
+
+  dagre.layout(dagreGraph);
+
+  const layoutedNodes = nodes.map((node) => {
+    const nodeWithPosition = dagreGraph.node(node.id);
+    return {
+      ...node,
+      targetPosition: Position.Top,
+      sourcePosition: Position.Bottom,
+      position: {
+        x: nodeWithPosition.x - nodeWidth / 2,
+        y: nodeWithPosition.y - nodeHeight / 2,
+      },
+    };
+  });
+
+  return { nodes: layoutedNodes, edges };
+};
+
 function GraphCanvas() {
   const nodes = useGraphStore((state) => state.nodes);
   const edges = useGraphStore((state) => state.edges);
   const setGraph = useGraphStore((state) => state.setGraph);
-  const batchUpdateNodes = useGraphStore((state) => state.batchUpdateNodes);
+  const updateNode = useGraphStore((state) => state.updateNode);
+  const setSelectedNode = useGraphStore((state) => state.setSelectedNode);
   const { fitView } = useReactFlow();
 
   const [flowNodes, setFlowNodes, onNodesChange] = useNodesState([]);
   const [flowEdges, setFlowEdges, onEdgesChange] = useEdgesState([]);
 
-  const workerRef = useRef<Worker | null>(null);
-  const lastRequestId = useRef(0);
-
-  useEffect(() => {
-    workerRef.current = new Worker(new URL('./layout.worker.ts', import.meta.url));
-
-    workerRef.current.onmessage = (event: MessageEvent<{ nodes: Node[]; edges: Edge[]; requestId: number }>) => {
-      const { nodes: layoutedNodes, edges: layoutedEdges, requestId } = event.data;
-
-      // Only update if this is the response to the latest request
-      if (requestId === lastRequestId.current) {
-        setFlowNodes(layoutedNodes);
-        setFlowEdges(layoutedEdges);
-        window.requestAnimationFrame(() => {
-          fitView();
-        });
-      }
-    };
-
-    return () => {
-      workerRef.current?.terminate();
-    };
-  }, [setFlowNodes, setFlowEdges, fitView]);
-
   const onLayout = useCallback(
     (nodes: Node[], edges: Edge[]) => {
-      if (workerRef.current) {
-        const requestId = ++lastRequestId.current;
-        workerRef.current.postMessage({ nodes, edges, requestId });
-      }
+      const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
+        nodes,
+        edges,
+      );
+
+      setFlowNodes([...layoutedNodes]);
+      setFlowEdges([...layoutedEdges]);
+      
+      window.requestAnimationFrame(() => {
+        fitView();
+      });
     },
-    [],
+    [setFlowNodes, setFlowEdges, fitView],
   );
 
   useEffect(() => {
-    if (nodes.length > 0) {
-      onLayout(nodes, edges);
-    } else {
-      // Invalidate any pending layout requests
-      lastRequestId.current++;
-      setFlowNodes([]);
-      setFlowEdges([]);
-    }
-  }, [nodes, edges, onLayout, setFlowNodes, setFlowEdges]);
+    onLayout(nodes, edges);
+  }, [nodes, edges, onLayout]);
 
   // Periodic retrievability update
   useEffect(() => {
     const updateRetrievability = () => {
       const now = new Date();
       const currentNodes = useGraphStore.getState().nodes;
-      const updates: { id: string; data: Partial<Node['data']> }[] = [];
       
       currentNodes.forEach(node => {
         // We need to cast data to any to access the extra fields we stored
@@ -108,14 +125,10 @@ function GraphCanvas() {
           
           // Only update if there's a significant change (e.g., > 0.1%) to avoid thrashing
           if (Math.abs(newRetrievability - (data.retrievability || 0)) > 0.001) {
-            updates.push({ id: node.id, data: { retrievability: newRetrievability } });
+            updateNode(node.id, { retrievability: newRetrievability });
           }
         }
       });
-
-      if (updates.length > 0) {
-        batchUpdateNodes(updates);
-      }
     };
 
     // Run immediately and then every minute
@@ -123,7 +136,7 @@ function GraphCanvas() {
     const interval = setInterval(updateRetrievability, 60 * 1000);
     
     return () => clearInterval(interval);
-  }, [batchUpdateNodes]);
+  }, [updateNode]);
 
   useEffect(() => {
     const loadGraph = async () => {
@@ -173,6 +186,13 @@ function GraphCanvas() {
     return () => clearInterval(interval);
   }, [setGraph]);
 
+  const onNodeClick = useCallback(
+    (_: React.MouseEvent, node: Node) => {
+      setSelectedNode(node.id);
+    },
+    [setSelectedNode],
+  );
+
   if (!flowNodes.length) {
     return (
       <div className="flex h-full items-center justify-center p-8 text-center bg-neural-dark relative overflow-hidden">
@@ -196,6 +216,7 @@ function GraphCanvas() {
       edges={flowEdges}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
+      onNodeClick={onNodeClick}
       nodeTypes={nodeTypes}
       edgeTypes={edgeTypes}
       nodesConnectable={false}
@@ -211,11 +232,12 @@ function GraphCanvas() {
 
 export function GraphPanel() {
   return (
-    <section className="graph-panel h-full overflow-hidden bg-neural-dark relative">
+    <section className="graph-panel h-full overflow-hidden bg-neural-dark relative" data-tour="graph-panel">
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_right,_rgba(168,85,247,0.05)_0%,_rgba(10,10,10,0)_50%)] z-0" />
       <ReactFlowProvider>
         <GraphCanvas />
       </ReactFlowProvider>
+      <CrystalDetailPanel />
     </section>
   );
 }

@@ -3,6 +3,7 @@
 import { AuthProvider, useAuth } from '@/lib/auth/AuthContext';
 import { motion } from 'framer-motion';
 import { ReviewBadge } from '@/components/ReviewBadge';
+import { OnboardingProvider } from '@/components/onboarding/OnboardingTour';
 
 function LogoutButton() {
   const { signOut, user } = useAuth();
@@ -68,7 +69,9 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthProvider>
-      <AppLayoutContent>{children}</AppLayoutContent>
+      <OnboardingProvider>
+        <AppLayoutContent>{children}</AppLayoutContent>
+      </OnboardingProvider>
     </AuthProvider>
   );
 }

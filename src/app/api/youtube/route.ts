@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { getAuthenticatedUser } from '@/lib/auth/server';
+import { createServerSupabaseClient } from '@/lib/auth/supabase';
 import {
   extractVideoId,
   fetchTranscript,
@@ -15,8 +15,14 @@ const youtubeSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const { user, supabase, errorResponse } = await getAuthenticatedUser();
-    if (errorResponse) return errorResponse;
+    const supabase = await createServerSupabaseClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     const parsed = youtubeSchema.safeParse(await request.json());
     if (!parsed.success) {

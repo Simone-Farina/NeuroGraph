@@ -79,44 +79,6 @@ export function useEdgeSuggestions() {
     });
   }, []);
 
-  const upsertEdgesInStore = useCallback(
-    (
-      edgesInput: Array<{
-        id: string;
-        source_crystal_id: string;
-        target_crystal_id: string;
-        type: RelationshipType;
-      }>
-    ) => {
-      const { edges: currentEdges, addEdges } = useGraphStore.getState();
-      const seenIds = new Set(currentEdges.map((e) => e.id));
-      const seenContent = new Set(
-        currentEdges.map((e) => {
-          const data = e.data as { typeLabel?: string } | undefined;
-          return `${e.source}:${e.target}:${data?.typeLabel}`;
-        })
-      );
-
-      const edgesToAdd: Edge[] = [];
-
-      for (const edgeInput of edgesInput) {
-        if (seenIds.has(edgeInput.id)) continue;
-
-        const contentKey = `${edgeInput.source_crystal_id}:${edgeInput.target_crystal_id}:${edgeInput.type}`;
-        if (seenContent.has(contentKey)) continue;
-
-        edgesToAdd.push(toGraphEdge(edgeInput));
-        seenIds.add(edgeInput.id);
-        seenContent.add(contentKey);
-      }
-
-      if (edgesToAdd.length > 0) {
-        addEdges(edgesToAdd);
-      }
-    },
-    []
-  );
-
   const upsertEdgeInStore = useCallback(
     (edgeInput: {
       id: string;
@@ -124,9 +86,23 @@ export function useEdgeSuggestions() {
       target_crystal_id: string;
       type: RelationshipType;
     }) => {
-      upsertEdgesInStore([edgeInput]);
+      const { edges: currentEdges, addEdge } = useGraphStore.getState();
+
+      const exists = currentEdges.some((existing) => {
+        const data = existing.data as { typeLabel?: RelationshipType } | undefined;
+        return (
+          existing.id === edgeInput.id ||
+          (existing.source === edgeInput.source_crystal_id &&
+            existing.target === edgeInput.target_crystal_id &&
+            data?.typeLabel === edgeInput.type)
+        );
+      });
+
+      if (exists) return;
+
+      addEdge(toGraphEdge(edgeInput));
     },
-    [upsertEdgesInStore]
+    []
   );
 
   const handleConfirmEdgeSuggestion = useCallback(
@@ -189,7 +165,6 @@ export function useEdgeSuggestions() {
     clearEdgeSuggestions,
     addEdgeSuggestions,
     upsertEdgeInStore,
-    upsertEdgesInStore,
     handleConfirmEdgeSuggestion,
     handleDismissEdgeSuggestion,
   };

@@ -31,6 +31,9 @@ export type Crystal = {
   next_review_due: string;
   review_count: number;
   consecutive_correct: number;
+  content: string;
+  user_modified: boolean;
+  modified_at: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -90,6 +93,9 @@ export type Database = {
           next_review_due?: string;
           review_count?: number;
           consecutive_correct?: number;
+          content?: string;
+          user_modified?: boolean;
+          modified_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };

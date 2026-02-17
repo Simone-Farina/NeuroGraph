@@ -2,13 +2,12 @@ import { convertToModelMessages, streamText, UIMessage } from 'ai';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { getAuthenticatedUser } from '@/lib/auth/server';
+import { createServerSupabaseClient } from '@/lib/auth/supabase';
 import { CHAT_SYSTEM_PROMPT, MAX_CONTEXT_MESSAGES } from '@/lib/ai/prompts';
 import { getChatModel } from '@/lib/ai/providers';
 import { suggestCrystallizationTool } from '@/lib/ai/tools';
 
 import { getRelevantContext } from '@/lib/ai/rag';
-import { persistAssistantMessage } from './persistence';
 
 function createConversationTitle(input: string) {
   const trimmed = input.trim();
@@ -19,8 +18,14 @@ function createConversationTitle(input: string) {
 
 export async function GET(request: NextRequest) {
   try {
-    const { user, supabase, errorResponse } = await getAuthenticatedUser();
-    if (errorResponse) return errorResponse;
+    const supabase = await createServerSupabaseClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     const mode = request.nextUrl.searchParams.get('mode');
 
@@ -83,23 +88,13 @@ const postSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const { user, supabase, errorResponse } = await getAuthenticatedUser();
-    if (errorResponse) return errorResponse;
+    const supabase = await createServerSupabaseClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    const rpc = supabase.rpc.bind(supabase) as unknown as (
-      fn: string,
-      args?: Record<string, unknown>
-    ) => Promise<{ data: boolean | null; error: Error | null }>;
-
-    // Rate limiting check
-    const { data: allowed, error: rateLimitError } = await rpc('check_rate_limit');
-
-    if (rateLimitError) {
-      console.error('Rate limit error (continuing without rate limiting):', rateLimitError);
-    }
-
-    if (!rateLimitError && !allowed) {
-      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
@@ -184,8 +179,21 @@ export async function POST(request: NextRequest) {
         }
       },
       onFinish: async () => {
-        if (!conversationId) return;
-        await persistAssistantMessage(supabase, conversationId, assistantText);
+        if (!assistantText.trim() || !conversationId) return;
+
+        try {
+          const { error } = await supabase.from('messages').insert({
+            conversation_id: conversationId,
+            role: 'assistant',
+            content: assistantText,
+          });
+
+          if (error) {
+            console.error('Failed to persist assistant message:', error.message);
+          }
+        } catch (err) {
+          console.error('Failed to persist assistant message:', err);
+        }
       },
     });
 

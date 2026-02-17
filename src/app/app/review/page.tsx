@@ -83,16 +83,6 @@ export default function ReviewPage() {
   if (!currentCrystal) {
     return (
       <div className="min-h-screen p-8 bg-neural-dark flex flex-col items-center justify-center">
-        <header className="fixed top-0 left-0 right-0 p-4 flex items-center justify-between bg-neural-dark/80 backdrop-blur-md z-10 border-b border-white/5">
-          <Link href="/app" className="text-neural-light/60 hover:text-neural-light transition-colors flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="m12 19-7-7 7-7"/>
-              <path d="M19 12H5"/>
-            </svg>
-            <span>Back</span>
-          </Link>
-        </header>
-        
         <div className="text-center max-w-lg mx-auto">
           <div className="mb-6 inline-flex items-center justify-center h-20 w-20 rounded-full bg-neural-purple/10 border border-neural-purple/30 text-4xl animate-pulse">
             ✨
@@ -121,34 +111,35 @@ export default function ReviewPage() {
   }
 
   return (
-    <div className="min-h-screen p-8 bg-neural-dark flex flex-col items-center justify-center pt-24">
-      <header className="fixed top-0 left-0 right-0 p-4 flex items-center justify-between bg-neural-dark/80 backdrop-blur-md z-10 border-b border-white/5">
-        <Link href="/app" className="text-neural-light/60 hover:text-neural-light transition-colors flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="m12 19-7-7 7-7"/>
-            <path d="M19 12H5"/>
-          </svg>
-          <span>Back</span>
-        </Link>
-        <div className="text-neural-light/40 text-sm uppercase tracking-wider font-mono">
-          {currentIndex + 1} / {crystals.length}
+    <div className="min-h-screen p-4 sm:p-8 bg-neural-dark flex flex-col items-center justify-center">
+      <div className="w-full max-w-2xl mb-4 sm:mb-8">
+        <div className="flex justify-between items-end text-[10px] uppercase tracking-widest font-bold mb-2">
+          <span className="text-neural-cyan">Session Progress</span>
+          <span className="text-neural-light/40">{currentIndex + 1} of {crystals.length} reviewed</span>
         </div>
-        <div className="w-20" />
-      </header>
+        <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+          <motion.div 
+            className="h-full bg-neural-cyan"
+            initial={{ width: 0 }}
+            animate={{ width: `${((currentIndex + 1) / crystals.length) * 100}%` }}
+            transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+          />
+        </div>
+      </div>
 
-      <div className="w-full max-w-2xl">
-        <div className="relative h-[500px]">
+      <div className="w-full max-w-2xl flex-1 flex flex-col">
+        <div className="relative flex-1 min-h-[400px] sm:h-[500px] sm:flex-none">
           <motion.div 
             key={currentCrystal.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="absolute inset-0 bg-white/5 border border-white/10 rounded-2xl p-8 flex flex-col overflow-y-auto"
+            className="absolute inset-0 bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8 flex flex-col overflow-y-auto"
           >
             {/* Front of Card */}
             <div className="flex-1">
-              <h2 className="text-2xl font-bold text-neural-light mb-6">{currentCrystal.title}</h2>
-              <div className="text-lg text-neural-light/80 leading-relaxed">
+              <h2 className="text-xl sm:text-2xl font-bold text-neural-light mb-4 sm:mb-6">{currentCrystal.title}</h2>
+              <div className="text-base sm:text-lg text-neural-light/80 leading-relaxed">
                 {currentCrystal.definition}
               </div>
             </div>
@@ -159,10 +150,10 @@ export default function ReviewPage() {
                 <motion.div 
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
-                  className="mt-8 pt-8 border-t border-white/10"
+                  className="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-white/10"
                 >
-                  <div className="text-neural-cyan mb-2 text-sm uppercase tracking-wider font-bold">Core Insight</div>
-                  <p className="text-neural-light leading-relaxed">
+                  <div className="text-neural-cyan mb-2 text-xs sm:text-sm uppercase tracking-wider font-bold">Core Insight</div>
+                  <p className="text-sm sm:text-base text-neural-light leading-relaxed">
                     {currentCrystal.core_insight}
                   </p>
                 </motion.div>
@@ -171,31 +162,31 @@ export default function ReviewPage() {
           </motion.div>
         </div>
 
-        <div className="mt-8 flex justify-center gap-4 h-24">
+        <div className="mt-6 sm:mt-8 flex justify-center gap-4 min-h-[6rem]">
           {!isRevealed ? (
             <button 
               onClick={handleReveal}
-              className="px-8 py-3 bg-neural-purple text-white rounded-lg font-bold hover:bg-neural-purple/80 transition-colors w-full max-w-xs self-start"
+              className="px-8 py-3 bg-neural-purple text-white rounded-lg font-bold hover:bg-neural-purple/80 transition-colors w-full sm:max-w-xs self-start"
             >
               Show Answer
             </button>
           ) : (
-            <div className="grid grid-cols-4 gap-4 w-full">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 w-full">
               <button onClick={() => handleRate(1)} className="p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors flex flex-col items-center gap-1">
-                <span className="font-bold">Again</span>
-                <span className="text-xs opacity-60">{currentCrystal.intervals[1]}</span>
+                <span className="font-bold text-sm sm:text-base">Again</span>
+                <span className="text-[10px] sm:text-xs opacity-60">{currentCrystal.intervals[1]}</span>
               </button>
               <button onClick={() => handleRate(2)} className="p-3 rounded-lg border border-orange-500/30 bg-orange-500/10 text-orange-400 hover:bg-orange-500/20 transition-colors flex flex-col items-center gap-1">
-                <span className="font-bold">Hard</span>
-                <span className="text-xs opacity-60">{currentCrystal.intervals[2]}</span>
+                <span className="font-bold text-sm sm:text-base">Hard</span>
+                <span className="text-[10px] sm:text-xs opacity-60">{currentCrystal.intervals[2]}</span>
               </button>
               <button onClick={() => handleRate(3)} className="p-3 rounded-lg border border-blue-500/30 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-colors flex flex-col items-center gap-1">
-                <span className="font-bold">Good</span>
-                <span className="text-xs opacity-60">{currentCrystal.intervals[3]}</span>
+                <span className="font-bold text-sm sm:text-base">Good</span>
+                <span className="text-[10px] sm:text-xs opacity-60">{currentCrystal.intervals[3]}</span>
               </button>
               <button onClick={() => handleRate(4)} className="p-3 rounded-lg border border-green-500/30 bg-green-500/10 text-green-400 hover:bg-green-500/20 transition-colors flex flex-col items-center gap-1">
-                <span className="font-bold">Easy</span>
-                <span className="text-xs opacity-60">{currentCrystal.intervals[4]}</span>
+                <span className="font-bold text-sm sm:text-base">Easy</span>
+                <span className="text-[10px] sm:text-xs opacity-60">{currentCrystal.intervals[4]}</span>
               </button>
             </div>
           )}

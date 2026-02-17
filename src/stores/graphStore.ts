@@ -8,11 +8,9 @@ type GraphStore = {
   setGraph: (nodes: Node[], edges: Edge[]) => void;
   addNode: (node: Node) => void;
   addEdge: (edge: Edge) => void;
-  addEdges: (edges: Edge[]) => void;
   removeNode: (nodeId: string) => void;
   removeEdge: (edgeId: string) => void;
   updateNode: (nodeId: string, data: Partial<Node['data']>) => void;
-  batchUpdateNodes: (updates: { id: string; data: Partial<Node['data']> }[]) => void;
   setSelectedNode: (nodeId: string | null) => void;
 };
 
@@ -28,10 +26,6 @@ export const useGraphStore = create<GraphStore>((set) => ({
   addEdge: (edge) =>
     set((state) => ({
       edges: [...state.edges, edge],
-    })),
-  addEdges: (edges) =>
-    set((state) => ({
-      edges: [...state.edges, ...edges],
     })),
   removeNode: (nodeId) =>
     set((state) => ({
@@ -49,15 +43,5 @@ export const useGraphStore = create<GraphStore>((set) => ({
         node.id === nodeId ? { ...node, data: { ...node.data, ...data } } : node
       ),
     })),
-  batchUpdateNodes: (updates) =>
-    set((state) => {
-      const updateMap = new Map(updates.map((u) => [u.id, u.data]));
-      return {
-        nodes: state.nodes.map((node) => {
-          const update = updateMap.get(node.id);
-          return update ? { ...node, data: { ...node.data, ...update } } : node;
-        }),
-      };
-    }),
   setSelectedNode: (selectedNodeId) => set({ selectedNodeId }),
 }));

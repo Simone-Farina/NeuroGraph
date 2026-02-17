@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { Card, Rating, State } from 'ts-fsrs';
 
-import { getAuthenticatedUser } from '@/lib/auth/server';
+import { createServerSupabaseClient } from '@/lib/auth/supabase';
 import { crystalQueries } from '@/lib/db/queries';
 import { scheduleReview, scheduler, mapStateToFSRS } from '@/lib/ai/fsrs';
 
@@ -27,8 +27,14 @@ function formatInterval(date: Date, now: Date): string {
 
 export async function GET() {
   try {
-    const { user, supabase, errorResponse } = await getAuthenticatedUser();
-    if (errorResponse) return errorResponse;
+    const supabase = await createServerSupabaseClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     const crystals = await crystalQueries.getDueForReview(supabase, user.id);
 
@@ -65,16 +71,22 @@ export async function GET() {
 
     return NextResponse.json({ reviews: reviewsWithIntervals });
   } catch (error) {
+    console.error('Review fetch error:', error);
     const message = error instanceof Error ? error.message : 'Unexpected error';
-    console.error('Review fetch error:', message);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const { user, supabase, errorResponse } = await getAuthenticatedUser();
-    if (errorResponse) return errorResponse;
+    const supabase = await createServerSupabaseClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     const json = await request.json();
     const parsed = reviewSchema.safeParse(json);
@@ -118,8 +130,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ crystal: updatedCrystal });
   } catch (error) {
+    console.error('Review error:', error);
     const message = error instanceof Error ? error.message : 'Unexpected error';
-    console.error('Review error:', message);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

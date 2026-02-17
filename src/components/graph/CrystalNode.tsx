@@ -79,7 +79,7 @@ function getNodeStyles(retrievability: number) {
   };
 }
 
-export function CrystalNode({ id, data }: NodeProps<CrystalFlowNode>) {
+export function CrystalNode({ id, data, selected }: NodeProps<CrystalFlowNode>) {
   const retrievability = typeof data.retrievability === 'number' ? data.retrievability : 1.0;
   const styles = getNodeStyles(retrievability);
   const removeNode = useGraphStore((state) => state.removeNode);
@@ -108,7 +108,7 @@ export function CrystalNode({ id, data }: NodeProps<CrystalFlowNode>) {
   const lastReviewDate = data.last_review || data.last_reviewed_at;
 
   return (
-    <div className={`group relative w-52 rounded-2xl border px-5 py-4 transition-all duration-300 hover:scale-105 hover:border-opacity-100 hover:z-50 ${styles.container}`}>
+    <div className={`group relative w-52 rounded-2xl border px-5 py-4 transition-all duration-300 hover:scale-105 hover:border-opacity-100 hover:z-50 ${styles.container} ${selected ? 'ring-2 ring-white ring-offset-2 ring-offset-black scale-105 z-50' : ''}`}>
       {/* Tooltip */}
       <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-max max-w-[220px] rounded-xl bg-neural-gray-900/95 border border-white/10 p-3 text-xs text-neural-light opacity-0 transition-all duration-200 group-hover:opacity-100 group-hover:-top-24 pointer-events-none z-50 shadow-2xl backdrop-blur-md">
         <div className="flex items-center gap-2 mb-2 border-b border-white/5 pb-2">

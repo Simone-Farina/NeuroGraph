@@ -1,10 +1,18 @@
 'use client';
 
-import type { SuggestionInput } from '@/types/chat';
-
 type CrystallizationSuggestionProps = {
   toolCallId: string;
-  input: Partial<SuggestionInput>;
+  input: {
+    title?: string;
+    definition?: string;
+    core_insight?: string;
+    bloom_level?: string;
+    related_crystals?: Array<{
+      id: string;
+      title?: string;
+      relationship_type: 'PREREQUISITE' | 'RELATED' | 'BUILDS_ON';
+    }>;
+  };
   state: string;
   onCrystallize: () => void;
   onDismiss: () => void;
