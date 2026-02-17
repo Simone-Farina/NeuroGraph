@@ -27,7 +27,17 @@ export function CrystallizationSuggestion({
   onDismiss,
 }: CrystallizationSuggestionProps) {
   if (state === 'output-available') {
-    return null;
+    return (
+      <div className="crystallization-suggestion my-4 rounded-xl border border-neural-purple/20 bg-neural-purple/5 p-4 flex items-center gap-3">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-neural-purple/20 text-neural-purple">
+          💎
+        </span>
+        <div>
+          <p className="text-sm font-medium text-neural-light">Insight Crystallized</p>
+          <p className="text-xs text-neural-light/50">This concept has been added to your graph.</p>
+        </div>
+      </div>
+    );
   }
 
   if (!input) {
