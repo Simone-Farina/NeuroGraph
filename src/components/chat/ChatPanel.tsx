@@ -331,9 +331,18 @@ export function ChatPanel() {
       }
     }
 
+    // Optimistically generate conversation ID if this is the first message
+    if (!currentConversationId) {
+      const newId = crypto.randomUUID();
+      setCurrentConversationId(newId);
+      conversationIdRef.current = newId;
+      // We don't need to refresh conversations yet as it's not in the DB, 
+      // but setting the ID ensures the API receives it.
+    }
+
     sendMessage({ text: finalText });
     setInput('');
-  }, [input, status, isFetchingTranscript, sendMessage]);
+  }, [input, status, isFetchingTranscript, sendMessage, currentConversationId, setCurrentConversationId]);
 
   const handleCrystallize = useCallback(
     async (toolCallId: string) => {

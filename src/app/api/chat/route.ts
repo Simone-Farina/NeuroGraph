@@ -127,10 +127,26 @@ export async function POST(request: NextRequest) {
 
     let conversationId = parsed.data.conversationId;
 
-    if (!conversationId) {
+    // Check if conversation exists, if ID is provided
+    let conversationExists = false;
+    if (conversationId) {
+      const { count, error: countError } = await supabase
+        .from('conversations')
+        .select('*', { count: 'exact', head: true })
+        .eq('id', conversationId);
+
+      if (!countError && count !== null && count > 0) {
+        conversationExists = true;
+      }
+    }
+
+    if (!conversationId || !conversationExists) {
+      const newId = conversationId ?? crypto.randomUUID();
+      
       const { data: createdConversation, error: conversationError } = await supabase
         .from('conversations')
         .insert({
+          id: newId,
           user_id: user.id,
           title: createConversationTitle(latestUserText),
         })
