@@ -89,7 +89,7 @@ export default function ReviewPage() {
           </div>
           <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-neural-purple to-neural-cyan bg-clip-text text-transparent">All caught up!</h1>
           <p className="text-neural-light/60 mb-8 leading-relaxed">
-            You've reviewed all your due crystals. Great job consolidating your knowledge!
+            You&apos;ve reviewed all your due crystals. Great job consolidating your knowledge!
           </p>
           
           <div className="p-6 rounded-xl border border-white/5 bg-white/5 backdrop-blur-sm text-left">

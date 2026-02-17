@@ -49,7 +49,7 @@ export default function Home() {
           </div>
           <div className="p-6 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-sm">
             <h3 className="text-white font-bold mb-2">Retention</h3>
-            <p className="text-sm text-neural-light/50">Spaced repetition algorithms ensure you never forget what you've learned.</p>
+            <p className="text-sm text-neural-light/50">Spaced repetition algorithms ensure you never forget what you&apos;ve learned.</p>
           </div>
         </div>
       </div>

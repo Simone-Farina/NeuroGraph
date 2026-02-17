@@ -39,7 +39,7 @@ export default function Error({
             Review Cycle Interrupted
           </h2>
           <p className="text-neural-light/60 text-sm leading-relaxed">
-            We couldn't load the review interface. Your knowledge crystals are safe, but the visualization is currently unavailable.
+            We couldn&apos;t load the review interface. Your knowledge crystals are safe, but the visualization is currently unavailable.
           </p>
         </div>
 
