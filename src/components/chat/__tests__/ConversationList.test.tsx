@@ -35,7 +35,7 @@ describe('ConversationList', () => {
 
     // Check if delete button exists and has aria-label
     // Initially, it might not have aria-label, so this test expects to fail or pass if implemented
-    const deleteButtons = screen.getAllByTitle('Delete conversation');
+    const deleteButtons = screen.getAllByRole('button', { name: 'Delete conversation' });
     expect(deleteButtons.length).toBe(2);
 
     deleteButtons.forEach((button) => {
