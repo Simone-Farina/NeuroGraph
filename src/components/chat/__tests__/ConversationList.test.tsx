@@ -62,7 +62,7 @@ describe('ConversationList', () => {
       />
     );
 
-    const deleteButton = screen.getAllByTitle('Delete conversation')[0];
+    const deleteButton = screen.getAllByRole('button', { name: 'Delete conversation' })[0];
     fireEvent.click(deleteButton);
 
     expect(onDelete).toHaveBeenCalledTimes(1);
