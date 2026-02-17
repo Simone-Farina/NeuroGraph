@@ -124,6 +124,7 @@ export function ChatPanel() {
   const [input, setInput] = useState('');
   const [isFetchingTranscript, setIsFetchingTranscript] = useState(false);
   const [connectionNotice, setConnectionNotice] = useState<string | null>(null);
+  const [processingToolCalls, setProcessingToolCalls] = useState<Set<string>>(new Set());
   const [edgeSuggestions, setEdgeSuggestions] = useState<
     NonNullable<CreatedCrystalResponse['edge_suggestions']>
   >([]);
@@ -306,30 +307,48 @@ export function ChatPanel() {
 
   const handleCrystallize = useCallback(
     async (toolCallId: string) => {
+      if (processingToolCalls.has(toolCallId)) return;
+
+      setProcessingToolCalls((prev) => new Set(prev).add(toolCallId));
 
       // 1. Find the message and tool invocation
       const message = messages.find((m) =>
         m.parts.some((part) => isToolPartWithId(part, toolCallId))
       );
 
-      if (!message) {
-        console.error('Message not found for tool call');
-        return;
-      }
+        if (!message) {
+          console.error('Message not found for tool call');
+          setProcessingToolCalls((prev) => {
+            const next = new Set(prev);
+            next.delete(toolCallId);
+            return next;
+          });
+          return;
+        }
 
-      const part = message.parts.find((messagePart) => isToolPartWithId(messagePart, toolCallId));
+        const part = message.parts.find((messagePart) => isToolPartWithId(messagePart, toolCallId));
 
-      if (!part?.input) {
-        console.error('Tool part or input not found');
-        return;
-      }
+        if (!part?.input) {
+          console.error('Tool part or input not found');
+          setProcessingToolCalls((prev) => {
+            const next = new Set(prev);
+            next.delete(toolCallId);
+            return next;
+          });
+          return;
+        }
 
-      // 2. Validate message ID (must be UUID from DB, not temporary)
-      // Syncing in onFinish usually ensures this, but if the user clicks VERY fast there might be a race.
-      if (!currentConversationId) {
-        console.error('No conversation ID');
-        return;
-      }
+        // 2. Validate message ID (must be UUID from DB, not temporary)
+        // Syncing in onFinish usually ensures this, but if the user clicks VERY fast there might be a race.
+        if (!currentConversationId) {
+          console.error('No conversation ID');
+          setProcessingToolCalls((prev) => {
+            const next = new Set(prev);
+            next.delete(toolCallId);
+            return next;
+          });
+          return;
+        }
 
       const input = part.input;
       const sourceMessageIds = isUuid(message.id) ? [message.id] : undefined;
@@ -423,9 +442,15 @@ export function ChatPanel() {
       } catch (error) {
         console.error('Crystallization error:', error);
         alert('An error occurred while crystallizing.');
+      } finally {
+        setProcessingToolCalls((prev) => {
+          const next = new Set(prev);
+          next.delete(toolCallId);
+          return next;
+        });
       }
     },
-    [messages, currentConversationId, setMessages, showConnectionsNotice, upsertEdgeInStore]
+    [messages, currentConversationId, processingToolCalls, setMessages, showConnectionsNotice, upsertEdgeInStore]
   );
 
   const handleDismiss = useCallback((toolCallId: string) => {
@@ -503,6 +528,7 @@ export function ChatPanel() {
         <div className="min-h-0 flex-1 overflow-y-auto scroll-smooth">
           <MessageList
             messages={messages}
+            processingToolCalls={processingToolCalls}
             onCrystallize={handleCrystallize}
             onDismiss={handleDismiss}
           />

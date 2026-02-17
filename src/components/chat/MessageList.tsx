@@ -8,11 +8,12 @@ import { CrystallizationSuggestion } from '@/components/chat/CrystallizationSugg
 
 type MessageListProps = {
   messages: UIMessage[];
+  processingToolCalls?: Set<string>;
   onCrystallize?: (toolCallId: string) => void;
   onDismiss?: (toolCallId: string) => void;
 };
 
-export function MessageList({ messages, onCrystallize, onDismiss }: MessageListProps) {
+export function MessageList({ messages, processingToolCalls, onCrystallize, onDismiss }: MessageListProps) {
   if (!messages.length) {
     return (
       <div className="flex h-full items-center justify-center px-8 text-center text-sm text-neural-light/50">
@@ -89,6 +90,7 @@ export function MessageList({ messages, onCrystallize, onDismiss }: MessageListP
                           }>;
                         }}
                         state={toolPart.state}
+                        isProcessing={processingToolCalls?.has(toolPart.toolCallId)}
                         onCrystallize={() => onCrystallize?.(toolPart.toolCallId)}
                         onDismiss={() => onDismiss?.(toolPart.toolCallId)}
                       />

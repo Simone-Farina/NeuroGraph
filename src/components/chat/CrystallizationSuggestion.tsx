@@ -14,6 +14,7 @@ type CrystallizationSuggestionProps = {
     }>;
   };
   state: string;
+  isProcessing?: boolean;
   onCrystallize: () => void;
   onDismiss: () => void;
 };
@@ -21,6 +22,7 @@ type CrystallizationSuggestionProps = {
 export function CrystallizationSuggestion({
   input,
   state,
+  isProcessing,
   onCrystallize,
   onDismiss,
 }: CrystallizationSuggestionProps) {
@@ -80,14 +82,23 @@ export function CrystallizationSuggestion({
         <button
           type="button"
           onClick={onCrystallize}
-          className="flex-1 rounded-lg bg-gradient-to-r from-neural-cyan to-neural-purple px-4 py-2 text-xs font-bold text-white shadow-lg shadow-neural-purple/20 transition-all hover:shadow-neural-purple/40 hover:scale-[1.02] active:scale-[0.98]"
+          disabled={isProcessing}
+          className="flex-1 rounded-lg bg-gradient-to-r from-neural-cyan to-neural-purple px-4 py-2 text-xs font-bold text-white shadow-lg shadow-neural-purple/20 transition-all hover:shadow-neural-purple/40 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
         >
-          Crystallize Insight
+          {isProcessing ? (
+            <span className="flex items-center justify-center gap-2">
+              <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+              Crystallizing...
+            </span>
+          ) : (
+            'Crystallize Insight'
+          )}
         </button>
         <button
           type="button"
           onClick={onDismiss}
-          className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-neural-light/60 transition-all hover:bg-white/10 hover:text-neural-light"
+          disabled={isProcessing}
+          className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-neural-light/60 transition-all hover:bg-white/10 hover:text-neural-light disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Dismiss
         </button>
