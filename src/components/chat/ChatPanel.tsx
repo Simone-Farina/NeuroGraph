@@ -168,7 +168,7 @@ export function ChatPanel() {
       const id = response.headers.get('X-Conversation-Id');
       if (id && id !== currentConversationId) {
         setCurrentConversationId(id);
-        // Refresh conversations list to show the new one immediately
+        conversationIdRef.current = id;
         refreshConversations();
       }
     },

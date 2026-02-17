@@ -220,7 +220,7 @@ function GraphCanvas() {
       edgeTypes={edgeTypes}
       nodesConnectable={false}
       fitView
-      fitViewOptions={{ padding: 0.3 }}
+      fitViewOptions={{ padding: 0.6 }}
       className="bg-neural-dark"
       proOptions={{ hideAttribution: true }}
     >

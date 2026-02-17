@@ -32,19 +32,19 @@ export function ChatInput({
 
   return (
     <div className="border-t border-white/5 bg-neural-dark/80 backdrop-blur-xl p-4">
-      <div className="relative">
+      <div className="relative flex items-end gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 transition-all hover:border-white/20 hover:bg-white/10 focus-within:border-neural-cyan/50 focus-within:bg-white/10 focus-within:shadow-[0_0_15px_-3px_rgba(6,182,212,0.1)]">
         <textarea
           value={value}
           onChange={(event) => onChange(event.target.value)}
           onKeyDown={handleKeyDown}
           rows={1}
           placeholder="Ask a question or explore an idea..."
-          className="w-full resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-neural-light outline-none transition-all placeholder:text-neural-light/30 hover:border-white/20 hover:bg-white/10 focus:border-neural-cyan/50 focus:bg-white/10 focus:shadow-[0_0_15px_-3px_rgba(6,182,212,0.1)] min-h-[50px] max-h-[200px]"
+          className="flex-1 resize-none bg-transparent text-sm text-neural-light outline-none placeholder:text-neural-light/30 min-h-[24px] max-h-[200px]"
           disabled={disabled}
-          style={{ minHeight: '50px' }}
+          style={{ minHeight: '24px' }}
           data-tour="chat-input"
         />
-        <div className="absolute right-2 bottom-3">
+        <div className="shrink-0">
           {isStreaming ? (
             <button
               type="button"
