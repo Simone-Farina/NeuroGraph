@@ -131,6 +131,7 @@ export function ChatPanel() {
   >([]);
   const conversationIdRef = useRef(currentConversationId);
   const noticeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   // Keep the ref in sync
   conversationIdRef.current = currentConversationId;
@@ -162,7 +163,17 @@ export function ChatPanel() {
         'Content-Type': 'application/json',
       }),
     }),
+    // @ts-expect-error onResponse is available in recent versions but types might be outdated
+    onResponse: (response) => {
+      const id = response.headers.get('X-Conversation-Id');
+      if (id && id !== currentConversationId) {
+        setCurrentConversationId(id);
+        // Refresh conversations list to show the new one immediately
+        refreshConversations();
+      }
+    },
     onFinish: async ({ message }) => {
+      // Refresh conversation list in sidebar to show new/updated chat
       refreshConversations();
 
       const hasPendingToolCalls = message.parts.some(
@@ -190,12 +201,32 @@ export function ChatPanel() {
 
       const payload = await response.json();
       const loadedMessages = (payload.messages || []).map(
-        (msg: { id: string; role: string; content: string }) => ({
-          id: msg.id,
-          role: msg.role as 'user' | 'assistant',
-          parts: [{ type: 'text' as const, text: msg.content }],
-          content: msg.content,
-        })
+        (msg: { id: string; role: string; content: string; metadata?: { tool_calls?: any[] } }) => {
+          const parts: any[] = [];
+          if (msg.content) {
+            parts.push({ type: 'text', text: msg.content });
+          }
+          
+          if (msg.metadata?.tool_calls) {
+            msg.metadata.tool_calls.forEach((tc) => {
+              parts.push({
+                type: `tool-${tc.function.name}`,
+                toolCallId: tc.id,
+                state: 'call',
+                input: typeof tc.function.arguments === 'string' 
+                  ? JSON.parse(tc.function.arguments) 
+                  : tc.function.arguments,
+              });
+            });
+          }
+
+          return {
+            id: msg.id,
+            role: msg.role as 'user' | 'assistant',
+            parts,
+            content: msg.content,
+          };
+        }
       );
 
       setMessages(loadedMessages);
@@ -225,12 +256,10 @@ export function ChatPanel() {
   }, [messages.length, currentConversationId, refreshConversations]);
 
   useEffect(() => {
-    return () => {
-      if (noticeTimeoutRef.current) {
-        clearTimeout(noticeTimeoutRef.current);
-      }
-    };
-  }, []);
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, connectionNotice, edgeSuggestions]);
 
   const upsertEdgeInStore = useCallback(
     (edgeInput: {
@@ -515,7 +544,7 @@ export function ChatPanel() {
       <div className="flex min-w-0 flex-1 flex-col relative">
         <div className="absolute inset-0 bg-gradient-to-b from-neural-dark/0 via-neural-dark/0 to-neural-dark/20 pointer-events-none" />
         
-        <div className="min-h-0 flex-1 overflow-y-auto scroll-smooth">
+        <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto scroll-smooth">
           <MessageList
             messages={messages}
             processingToolCalls={processingToolCalls}

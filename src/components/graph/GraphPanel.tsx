@@ -5,7 +5,6 @@ import '@xyflow/react/dist/style.css';
 import { useEffect, useCallback, useRef } from 'react';
 import {
   Background,
-  Controls,
   Edge,
   MarkerType,
   Node,
@@ -221,10 +220,10 @@ function GraphCanvas() {
       edgeTypes={edgeTypes}
       nodesConnectable={false}
       fitView
+      fitViewOptions={{ padding: 0.3 }}
       className="bg-neural-dark"
       proOptions={{ hideAttribution: true }}
     >
-      <Controls className="!bg-neural-gray-800/80 !border-white/10 !fill-neural-light/70 [&>button]:!border-b-white/10 hover:[&>button]:!bg-white/5" />
       <Background color="rgba(255, 255, 255, 0.05)" gap={20} size={1} />
     </ReactFlow>
   );

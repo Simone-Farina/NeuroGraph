@@ -44,7 +44,7 @@ export function ChatInput({
           style={{ minHeight: '50px' }}
           data-tour="chat-input"
         />
-        <div className="absolute right-2 bottom-2">
+        <div className="absolute right-2 bottom-3">
           {isStreaming ? (
             <button
               type="button"

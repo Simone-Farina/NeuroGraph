@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
 
       const { data, error } = await supabase
         .from('messages')
-        .select('id, role, content')
+        .select('id, role, content, metadata')
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true });
 
@@ -51,6 +51,7 @@ export async function GET(request: NextRequest) {
           id: message.id,
           role: message.role,
           content: message.content,
+          metadata: message.metadata,
         }));
 
       return NextResponse.json({ messages });
@@ -178,14 +179,15 @@ export async function POST(request: NextRequest) {
           assistantText += event.chunk.text;
         }
       },
-      onFinish: async () => {
-        if (!assistantText.trim() || !conversationId) return;
+      onFinish: async (event) => {
+        if ((!assistantText.trim() && !event.toolCalls?.length) || !conversationId) return;
 
         try {
           const { error } = await supabase.from('messages').insert({
             conversation_id: conversationId,
             role: 'assistant',
             content: assistantText,
+            metadata: event.toolCalls?.length ? { tool_calls: event.toolCalls } : null,
           });
 
           if (error) {
