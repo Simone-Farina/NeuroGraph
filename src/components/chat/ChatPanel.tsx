@@ -117,20 +117,21 @@ function isToolPartWithId(part: unknown, toolCallId: string): part is Suggestion
   );
 }
 
+import { useConversationContext } from '@/lib/contexts/ConversationContext';
+
 export function ChatPanel() {
-  const [conversations, setConversations] = useState<ConversationSummary[]>([]);
-  const [conversationId, setConversationId] = useState<string | null>(null);
+  const { currentConversationId, setCurrentConversationId, refreshConversations } = useConversationContext();
   const [input, setInput] = useState('');
   const [isFetchingTranscript, setIsFetchingTranscript] = useState(false);
   const [connectionNotice, setConnectionNotice] = useState<string | null>(null);
   const [edgeSuggestions, setEdgeSuggestions] = useState<
     NonNullable<CreatedCrystalResponse['edge_suggestions']>
   >([]);
-  const conversationIdRef = useRef(conversationId);
+  const conversationIdRef = useRef(currentConversationId);
   const noticeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Keep the ref in sync
-  conversationIdRef.current = conversationId;
+  conversationIdRef.current = currentConversationId;
 
   const showConnectionsNotice = useCallback((message: string) => {
     if (noticeTimeoutRef.current) {
@@ -160,7 +161,7 @@ export function ChatPanel() {
       }),
     }),
     onFinish: async ({ message }) => {
-      await loadConversations();
+      refreshConversations();
 
       const hasPendingToolCalls = message.parts.some(
         (part) =>
@@ -170,7 +171,7 @@ export function ChatPanel() {
       );
 
       if (!hasPendingToolCalls && conversationIdRef.current) {
-        await loadConversation(conversationIdRef.current);
+        await loadMessages(conversationIdRef.current);
       }
     },
     onError: (error) => {
@@ -178,19 +179,7 @@ export function ChatPanel() {
     },
   });
 
-  const loadConversations = useCallback(async () => {
-    try {
-      const response = await fetch('/api/chat', { cache: 'no-store' });
-      if (!response.ok) return;
-
-      const payload = await response.json();
-      setConversations(payload.conversations || []);
-    } catch (error) {
-      console.error('Failed to load conversations', error);
-    }
-  }, []);
-
-  const loadConversation = useCallback(async (id: string) => {
+  const loadMessages = useCallback(async (id: string) => {
     try {
       const response = await fetch(`/api/chat?mode=messages&conversationId=${id}`, {
         cache: 'no-store',
@@ -208,7 +197,6 @@ export function ChatPanel() {
       );
 
       setMessages(loadedMessages);
-      setConversationId(id);
       setEdgeSuggestions([]);
       setConnectionNotice(null);
     } catch (error) {
@@ -216,47 +204,23 @@ export function ChatPanel() {
     }
   }, [setMessages]);
 
-  const handleNewConversation = useCallback(() => {
-    if (noticeTimeoutRef.current) {
-      clearTimeout(noticeTimeoutRef.current);
-      noticeTimeoutRef.current = null;
-    }
-
-    setMessages([]);
-    setConversationId(null);
-    setInput('');
-    setConnectionNotice(null);
-    setEdgeSuggestions([]);
-  }, [setMessages]);
-
-  const handleDeleteConversation = useCallback(async (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    if (!confirm('Are you sure you want to delete this conversation?')) return;
-
-    try {
-      const response = await fetch(`/api/conversations/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        setConversations((prev) => prev.filter((c) => c.id !== id));
-        if (conversationId === id) {
-          handleNewConversation();
-        }
-      } else {
-        const error = await response.json();
-        alert('Failed to delete conversation: ' + (error.error || 'Unknown error'));
-      }
-    } catch (error) {
-      console.error('Failed to delete conversation', error);
-      alert('An error occurred while deleting the conversation.');
-    }
-  }, [conversationId, handleNewConversation]);
-
-  // Load conversations on mount
+  // Load messages when currentConversationId changes
   useEffect(() => {
-    loadConversations();
-  }, [loadConversations]);
+    if (currentConversationId) {
+      loadMessages(currentConversationId);
+    } else {
+      setMessages([]);
+      setEdgeSuggestions([]);
+      setConnectionNotice(null);
+    }
+  }, [currentConversationId, loadMessages, setMessages]);
+
+  // Extract conversation ID from the first response (if new chat)
+  useEffect(() => {
+    if (messages.length >= 2 && !currentConversationId) {
+      refreshConversations();
+    }
+  }, [messages.length, currentConversationId, refreshConversations]);
 
   useEffect(() => {
     return () => {
@@ -265,20 +229,6 @@ export function ChatPanel() {
       }
     };
   }, []);
-
-  // Extract conversation ID from the first response
-  useEffect(() => {
-    if (messages.length >= 2 && !conversationId) {
-      loadConversations().then(() => {
-        setConversations((prev) => {
-          if (prev.length > 0 && !conversationIdRef.current) {
-            setConversationId(prev[0].id);
-          }
-          return prev;
-        });
-      });
-    }
-  }, [messages.length, conversationId, loadConversations]);
 
   const upsertEdgeInStore = useCallback(
     (edgeInput: {
@@ -376,8 +326,7 @@ export function ChatPanel() {
 
       // 2. Validate message ID (must be UUID from DB, not temporary)
       // Syncing in onFinish usually ensures this, but if the user clicks VERY fast there might be a race.
-      // We assume for now it's synced or the ID format is close enough (or we'll get a 400).
-      if (!conversationId) {
+      if (!currentConversationId) {
         console.error('No conversation ID');
         return;
       }
@@ -395,7 +344,7 @@ export function ChatPanel() {
             definition: input.definition,
             core_insight: input.core_insight,
             bloom_level: input.bloom_level,
-            source_conversation_id: conversationId,
+            source_conversation_id: currentConversationId,
             source_message_ids: sourceMessageIds,
             related_crystals: input.related_crystals ?? [],
           }),
@@ -476,7 +425,7 @@ export function ChatPanel() {
         alert('An error occurred while crystallizing.');
       }
     },
-    [messages, conversationId, setMessages, showConnectionsNotice, upsertEdgeInStore]
+    [messages, currentConversationId, setMessages, showConnectionsNotice, upsertEdgeInStore]
   );
 
   const handleDismiss = useCallback((toolCallId: string) => {
@@ -548,46 +497,6 @@ export function ChatPanel() {
 
   return (
     <section className="chat-panel flex h-full overflow-hidden border-r border-neural-gray-700 bg-neural-gray-900/30">
-      <aside className="hidden w-72 shrink-0 border-r border-white/5 p-4 lg:flex lg:flex-col bg-neural-dark/30">
-        <div className="mb-6 flex items-center justify-between">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-neural-light/40">Conversations</p>
-          <button
-            type="button"
-            onClick={handleNewConversation}
-            className="flex items-center justify-center rounded-md border border-white/10 bg-white/5 px-2.5 py-1.5 text-xs font-medium text-neural-light/80 transition hover:bg-white/10 hover:text-neural-cyan hover:border-neural-cyan/30"
-          >
-            + New Chat
-          </button>
-        </div>
-        <div className="space-y-1 overflow-y-auto pr-1 flex-1 scrollbar-hide">
-          {conversations.map((conversation) => (
-            <div key={conversation.id} className="group relative">
-              <button
-                type="button"
-                onClick={() => loadConversation(conversation.id)}
-                className={`w-full rounded-lg border px-3 py-2.5 text-left text-sm transition-all ${conversationId === conversation.id
-                    ? 'border-neural-cyan/30 bg-neural-cyan/5 text-neural-cyan shadow-[0_0_15px_-3px_rgba(6,182,212,0.1)]'
-                    : 'border-transparent text-neural-light/60 hover:bg-white/5 hover:text-neural-light'
-                  }`}
-              >
-                <p className="truncate font-medium pr-6">{conversation.title}</p>
-                <p className="truncate text-[10px] text-neural-light/30 mt-0.5 group-hover:text-neural-light/50 transition-colors">
-                   {new Date(conversation.updated_at).toLocaleDateString()}
-                </p>
-              </button>
-              <button
-                type="button"
-                onClick={(e) => handleDeleteConversation(e, conversation.id)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1.5 text-neural-light/30 hover:text-red-400 transition-all"
-                title="Delete conversation"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-              </button>
-            </div>
-          ))}
-        </div>
-      </aside>
-
       <div className="flex min-w-0 flex-1 flex-col relative">
         <div className="absolute inset-0 bg-gradient-to-b from-neural-dark/0 via-neural-dark/0 to-neural-dark/20 pointer-events-none" />
         

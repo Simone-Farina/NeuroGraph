@@ -5,28 +5,15 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/lib/auth/AuthContext';
-import { ConversationSummary } from '@/types/chat';
 import { useOnboarding } from '@/components/onboarding/OnboardingTour';
+import { useConversationContext } from '@/lib/contexts/ConversationContext';
 
-type AppSidebarProps = {
-  conversations: ConversationSummary[];
-  currentConversationId: string | null;
-  onSelectConversation: (id: string) => void;
-  onNewConversation: () => void;
-  onDeleteConversation: (e: React.MouseEvent, id: string) => void;
-};
-
-export function AppSidebar({
-  conversations,
-  currentConversationId,
-  onSelectConversation,
-  onNewConversation,
-  onDeleteConversation,
-}: AppSidebarProps) {
+export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { signOut, user } = useAuth();
   const { startTour } = useOnboarding();
+  const { conversations, currentConversationId, setCurrentConversationId, deleteConversation } = useConversationContext();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   // Load collapsed state from localStorage on mount
@@ -41,6 +28,27 @@ export function AppSidebar({
     const newState = !isCollapsed;
     setIsCollapsed(newState);
     localStorage.setItem('neurograph_sidebar_collapsed', String(newState));
+  };
+
+  const handleSelectConversation = (id: string) => {
+    if (pathname !== '/app') {
+      router.push('/app');
+    }
+    setCurrentConversationId(id);
+  };
+
+  const handleNewConversation = () => {
+    if (pathname !== '/app') {
+      router.push('/app');
+    }
+    setCurrentConversationId(null);
+  };
+
+  const handleDeleteConversation = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    if (confirm('Are you sure you want to delete this conversation?')) {
+      deleteConversation(id);
+    }
   };
 
   const navItems = [
@@ -110,10 +118,7 @@ export function AppSidebar({
           <button
             type="button"
             onClick={() => {
-              if (pathname !== '/app') {
-                router.push('/app');
-              }
-              onNewConversation();
+              handleNewConversation();
             }}
             className={`flex items-center justify-center rounded-md border border-white/10 bg-white/5 text-xs font-medium text-neural-light/80 transition hover:bg-white/10 hover:text-neural-cyan hover:border-neural-cyan/30 ${
               isCollapsed ? 'w-8 h-8 p-0' : 'px-2.5 py-1.5'
@@ -134,10 +139,7 @@ export function AppSidebar({
               <button
                 type="button"
                 onClick={() => {
-                  if (pathname !== '/app') {
-                    router.push('/app');
-                  }
-                  onSelectConversation(conversation.id);
+                  handleSelectConversation(conversation.id);
                 }}
                 className={`w-full rounded-lg border px-3 py-2.5 text-left text-sm transition-all ${
                   currentConversationId === conversation.id && pathname === '/app'
@@ -160,7 +162,7 @@ export function AppSidebar({
               {!isCollapsed && (
                 <button
                   type="button"
-                  onClick={(e) => onDeleteConversation(e, conversation.id)}
+                  onClick={(e) => handleDeleteConversation(e, conversation.id)}
                   className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1.5 text-neural-light/30 hover:text-red-400 transition-all"
                   title="Delete conversation"
                 >
