@@ -125,6 +125,7 @@ export function ChatPanel() {
   const [isFetchingTranscript, setIsFetchingTranscript] = useState(false);
   const [connectionNotice, setConnectionNotice] = useState<string | null>(null);
   const [processingToolCalls, setProcessingToolCalls] = useState<Set<string>>(new Set());
+  const processingToolCallsRef = useRef<Set<string>>(new Set());
   const [edgeSuggestions, setEdgeSuggestions] = useState<
     NonNullable<CreatedCrystalResponse['edge_suggestions']>
   >([]);
@@ -307,9 +308,10 @@ export function ChatPanel() {
 
   const handleCrystallize = useCallback(
     async (toolCallId: string) => {
-      if (processingToolCalls.has(toolCallId)) return;
+      if (processingToolCallsRef.current.has(toolCallId)) return;
 
-      setProcessingToolCalls((prev) => new Set(prev).add(toolCallId));
+      processingToolCallsRef.current.add(toolCallId);
+      setProcessingToolCalls(new Set(processingToolCallsRef.current));
 
       // 1. Find the message and tool invocation
       const message = messages.find((m) =>
@@ -318,11 +320,8 @@ export function ChatPanel() {
 
         if (!message) {
           console.error('Message not found for tool call');
-          setProcessingToolCalls((prev) => {
-            const next = new Set(prev);
-            next.delete(toolCallId);
-            return next;
-          });
+          processingToolCallsRef.current.delete(toolCallId);
+          setProcessingToolCalls(new Set(processingToolCallsRef.current));
           return;
         }
 
@@ -330,11 +329,8 @@ export function ChatPanel() {
 
         if (!part?.input) {
           console.error('Tool part or input not found');
-          setProcessingToolCalls((prev) => {
-            const next = new Set(prev);
-            next.delete(toolCallId);
-            return next;
-          });
+          processingToolCallsRef.current.delete(toolCallId);
+          setProcessingToolCalls(new Set(processingToolCallsRef.current));
           return;
         }
 
@@ -342,11 +338,8 @@ export function ChatPanel() {
         // Syncing in onFinish usually ensures this, but if the user clicks VERY fast there might be a race.
         if (!currentConversationId) {
           console.error('No conversation ID');
-          setProcessingToolCalls((prev) => {
-            const next = new Set(prev);
-            next.delete(toolCallId);
-            return next;
-          });
+          processingToolCallsRef.current.delete(toolCallId);
+          setProcessingToolCalls(new Set(processingToolCallsRef.current));
           return;
         }
 
@@ -443,14 +436,11 @@ export function ChatPanel() {
         console.error('Crystallization error:', error);
         alert('An error occurred while crystallizing.');
       } finally {
-        setProcessingToolCalls((prev) => {
-          const next = new Set(prev);
-          next.delete(toolCallId);
-          return next;
-        });
+        processingToolCallsRef.current.delete(toolCallId);
+        setProcessingToolCalls(new Set(processingToolCallsRef.current));
       }
     },
-    [messages, currentConversationId, processingToolCalls, setMessages, showConnectionsNotice, upsertEdgeInStore]
+    [messages, currentConversationId, setMessages, showConnectionsNotice, upsertEdgeInStore]
   );
 
   const handleDismiss = useCallback((toolCallId: string) => {
