@@ -1,0 +1,14 @@
+
+> NeuroGraph@1.0.0 dev
+> next dev
+
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+ ✓ Ready in 1781ms
+ ○ Compiling /test-ux-chat-input ...
+ ✓ Compiled /test-ux-chat-input in 6.3s (521 modules)
+ ✓ Compiled in 686ms (245 modules)
+ GET /test-ux-chat-input 200 in 7011ms
+ ✓ Compiled in 393ms (224 modules)
