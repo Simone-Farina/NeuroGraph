@@ -39,6 +39,7 @@ export function ChatInput({
           onKeyDown={handleKeyDown}
           rows={1}
           placeholder="Ask a question or explore an idea..."
+          aria-label="Message input"
           className="flex-1 resize-none bg-transparent text-sm text-neural-light outline-none placeholder:text-neural-light/30 min-h-[24px] max-h-[200px]"
           disabled={disabled}
           style={{ minHeight: '24px' }}
@@ -49,8 +50,9 @@ export function ChatInput({
             <button
               type="button"
               onClick={onStop}
-              className="rounded-lg border border-red-500/30 bg-red-500/10 p-2 text-red-400 transition-all hover:bg-red-500/20 hover:shadow-[0_0_15px_-3px_rgba(239,68,68,0.4)]"
+              className="rounded-lg border border-red-500/30 bg-red-500/10 p-2 text-red-400 transition-all hover:bg-red-500/20 hover:shadow-[0_0_15px_-3px_rgba(239,68,68,0.4)] focus-visible:ring-2 focus-visible:ring-red-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-neural-dark outline-none"
               title="Stop Generating"
+              aria-label="Stop generating"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -66,17 +68,41 @@ export function ChatInput({
               type="button"
               onClick={onSubmit}
               disabled={disabled || !value.trim()}
-              className="rounded-lg bg-gradient-to-r from-neural-cyan to-neural-purple p-2 text-white transition-all hover:shadow-[0_0_15px_-3px_rgba(6,182,212,0.4)] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
+              className="rounded-lg bg-gradient-to-r from-neural-cyan to-neural-purple p-2 text-white transition-all hover:shadow-[0_0_15px_-3px_rgba(6,182,212,0.4)] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none focus-visible:ring-2 focus-visible:ring-neural-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-neural-dark outline-none"
               title="Send Message"
+              aria-label="Send message"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                className="h-4 w-4"
-              >
-                <path d="M3.105 2.289a.75.75 0 00-.826.95l1.414 4.925A1.5 1.5 0 005.135 9.25h6.115a.75.75 0 010 1.5H5.135a1.5 1.5 0 00-1.442 1.086l-1.414 4.926a.75.75 0 00.826.95 28.896 28.896 0 0015.293-7.154.75.75 0 000-1.115A28.897 28.897 0 003.105 2.289z" />
-              </svg>
+              {disabled && value.trim() ? (
+                <svg
+                  className="animate-spin h-4 w-4 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className="h-4 w-4"
+                >
+                  <path d="M3.105 2.289a.75.75 0 00-.826.95l1.414 4.925A1.5 1.5 0 005.135 9.25h6.115a.75.75 0 010 1.5H5.135a1.5 1.5 0 00-1.442 1.086l-1.414 4.926a.75.75 0 00.826.95 28.896 28.896 0 0015.293-7.154.75.75 0 000-1.115A28.897 28.897 0 003.105 2.289z" />
+                </svg>
+              )}
             </button>
           )}
         </div>
