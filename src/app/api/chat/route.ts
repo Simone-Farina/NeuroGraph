@@ -125,6 +125,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'A user message is required' }, { status: 400 });
     }
 
+    const { data: isAllowed, error: rateLimitError } = await supabase.rpc('check_rate_limit');
+
+    if (rateLimitError) {
+      console.error('Rate limit check failed:', rateLimitError.message);
+    } else if (isAllowed === false) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     let conversationId = parsed.data.conversationId;
 
     // Check if conversation exists, if ID is provided

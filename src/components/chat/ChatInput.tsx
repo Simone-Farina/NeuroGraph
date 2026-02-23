@@ -20,6 +20,7 @@ export function ChatInput({
   disabled = false,
 }: ChatInputProps) {
   const hasYouTubeUrl = isYouTubeUrl(value);
+  const isSending = disabled && !isStreaming && Boolean(value.trim());
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === 'Enter' && !event.shiftKey) {
@@ -43,6 +44,7 @@ export function ChatInput({
           disabled={disabled}
           style={{ minHeight: '24px' }}
           data-tour="chat-input"
+          aria-label="Message input"
         />
         <div className="shrink-0">
           {isStreaming ? (
@@ -68,12 +70,13 @@ export function ChatInput({
               disabled={disabled || !value.trim()}
               className="rounded-lg bg-gradient-to-r from-neural-cyan to-neural-purple p-2 text-white transition-all hover:shadow-[0_0_15px_-3px_rgba(6,182,212,0.4)] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
               title="Send Message"
+              aria-label="Send message"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 20 20"
                 fill="currentColor"
-                className="h-4 w-4"
+                className={`h-4 w-4 ${isSending ? 'animate-spin' : ''}`}
               >
                 <path d="M3.105 2.289a.75.75 0 00-.826.95l1.414 4.925A1.5 1.5 0 005.135 9.25h6.115a.75.75 0 010 1.5H5.135a1.5 1.5 0 00-1.442 1.086l-1.414 4.926a.75.75 0 00.826.95 28.896 28.896 0 0015.293-7.154.75.75 0 000-1.115A28.897 28.897 0 003.105 2.289z" />
               </svg>

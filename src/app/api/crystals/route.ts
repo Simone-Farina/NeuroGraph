@@ -108,7 +108,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { related_crystals: relatedCrystalsInput = [], source_message_ids: _sourceMessageIds, ...crystalInput } = parsed.data;
+    const {
+      related_crystals: relatedCrystalsInput = [],
+      source_message_ids: sourceMessageIds,
+      ...crystalInput
+    } = parsed.data;
 
     const now = new Date();
     const nextReview = new Date(now.getTime() + 24 * 60 * 60 * 1000);
@@ -117,6 +121,7 @@ export async function POST(request: NextRequest) {
       .from('crystals')
       .insert({
         ...crystalInput,
+        source_message_ids: sourceMessageIds ?? [],
         user_id: user.id,
         embedding: null,
         stability: 1.0,
