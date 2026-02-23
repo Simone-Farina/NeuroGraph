@@ -29,7 +29,11 @@ export async function createTestUserAndLogin(page: Page) {
     throw new Error(`Failed to create test user: ${createError?.message}`);
   }
 
-  await page.goto('http://localhost:3000/login');
+  await page.goto('/login');
+
+  await page.evaluate(() => {
+    localStorage.setItem('neurograph_tour_completed', 'true');
+  });
   
   await page.locator('button:has-text("Password")').click();
   

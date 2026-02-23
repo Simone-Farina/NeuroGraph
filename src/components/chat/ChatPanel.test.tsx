@@ -2,13 +2,18 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { ChatPanel } from './ChatPanel';
 import { vi, describe, it, expect } from 'vitest';
 
+const mockSendMessage = vi.fn();
+const mockSetMessages = vi.fn();
+const mockStop = vi.fn();
+
 // Mock dependencies
 vi.mock('@ai-sdk/react', () => ({
   useChat: () => ({
     messages: [],
-    sendMessage: vi.fn(),
-    setMessages: vi.fn(),
+    sendMessage: mockSendMessage,
+    setMessages: mockSetMessages,
     status: 'ready',
+    stop: mockStop,
   }),
 }));
 
@@ -30,6 +35,14 @@ vi.mock('@/components/chat/EdgeSuggestions', () => ({
   EdgeSuggestions: () => <div data-testid="edge-suggestions">Edge Suggestions</div>,
 }));
 
+vi.mock('@/lib/contexts/ConversationContext', () => ({
+  useConversationContext: () => ({
+    currentConversationId: null,
+    setCurrentConversationId: vi.fn(),
+    refreshConversations: vi.fn(),
+  }),
+}));
+
 // Mock fetch for loadConversations
 global.fetch = vi.fn(() =>
   Promise.resolve({
@@ -39,11 +52,10 @@ global.fetch = vi.fn(() =>
 ) as any;
 
 describe('ChatPanel', () => {
-  it('renders ConversationList and ChatInput', async () => {
+  it('renders chat input', async () => {
     render(<ChatPanel />);
     await waitFor(() => {
-      expect(screen.getByTestId('conversation-list')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText(/Ask a question or explore an idea.../i)).toBeInTheDocument();
     });
-    expect(screen.getByPlaceholderText(/Ask a question or explore an idea.../i)).toBeInTheDocument();
   });
 });
