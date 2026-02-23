@@ -37,6 +37,8 @@ const parameters = z.object({
     .describe('Optional graph connection suggestions using existing crystal ids'),
 });
 
+export const crystallizationSchema = parameters;
+
 /**
  * Tool the AI calls when it identifies a durable insight worth crystallizing.
  *

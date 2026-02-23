@@ -119,6 +119,66 @@ export const crystalQueries = {
       edges: firstRow?.edges || [],
     };
   },
+
+  async getNeighborhoodsBatch(
+    client: TypedClient,
+    crystalIds: string[],
+    maxDepth: number = 1
+  ): Promise<Map<string, { crystals: Crystal[]; edges: CrystalEdge[] }>> {
+    if (maxDepth !== 1) {
+      throw new Error('Batch neighborhood retrieval only supports depth 1');
+    }
+
+    if (!crystalIds || crystalIds.length === 0) {
+      return new Map();
+    }
+
+    const { data: edges, error: edgesError } = await client
+      .from('crystal_edges')
+      .select('*')
+      .or(`source_crystal_id.in.(${crystalIds.join(',')}),target_crystal_id.in.(${crystalIds.join(',')})`);
+
+    if (edgesError) throw edgesError;
+
+    const allCrystalIds = new Set<string>(crystalIds);
+    edges?.forEach((edge) => {
+      allCrystalIds.add(edge.source_crystal_id);
+      allCrystalIds.add(edge.target_crystal_id);
+    });
+
+    const { data: crystals, error: crystalsError } = await client
+      .from('crystals')
+      .select('*')
+      .in('id', Array.from(allCrystalIds));
+
+    if (crystalsError) throw crystalsError;
+
+    const crystalsMap = new Map<string, Crystal>();
+    crystals?.forEach((crystal) => crystalsMap.set(crystal.id, crystal));
+
+    const result = new Map<string, { crystals: Crystal[]; edges: CrystalEdge[] }>();
+
+    crystalIds.forEach((id) => {
+      const crystalEdges = edges?.filter((edge) => edge.source_crystal_id === id || edge.target_crystal_id === id) || [];
+
+      const neighborhoodCrystalIds = new Set<string>([id]);
+      crystalEdges.forEach((edge) => {
+        neighborhoodCrystalIds.add(edge.source_crystal_id);
+        neighborhoodCrystalIds.add(edge.target_crystal_id);
+      });
+
+      const neighborhoodCrystals = Array.from(neighborhoodCrystalIds)
+        .map((crystalId) => crystalsMap.get(crystalId))
+        .filter((crystal): crystal is Crystal => !!crystal);
+
+      result.set(id, {
+        crystals: neighborhoodCrystals,
+        edges: crystalEdges,
+      });
+    });
+
+    return result;
+  },
 };
 
 export const edgeQueries = {

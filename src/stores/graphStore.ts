@@ -8,6 +8,7 @@ type GraphStore = {
   setGraph: (nodes: Node[], edges: Edge[]) => void;
   addNode: (node: Node) => void;
   addEdge: (edge: Edge) => void;
+  addEdges: (edges: Edge[]) => void;
   removeNode: (nodeId: string) => void;
   removeEdge: (edgeId: string) => void;
   updateNode: (nodeId: string, data: Partial<Node['data']>) => void;
@@ -26,6 +27,10 @@ export const useGraphStore = create<GraphStore>((set) => ({
   addEdge: (edge) =>
     set((state) => ({
       edges: [...state.edges, edge],
+    })),
+  addEdges: (edges) =>
+    set((state) => ({
+      edges: [...state.edges, ...edges],
     })),
   removeNode: (nodeId) =>
     set((state) => ({
