@@ -7,6 +7,7 @@
    ```bash
    NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+   # Only required for local E2E/test helper utilities
    SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
    ```
 
@@ -19,6 +20,20 @@
 3. Click "Run"
 4. Copy and paste `migrations/002_query_functions.sql`
 5. Click "Run"
+6. Copy and paste `migrations/003_fsrs_schema.sql`
+7. Click "Run"
+8. Copy and paste `migrations/004_update_rpc_fsrs.sql`
+9. Click "Run"
+10. Copy and paste `migrations/005_rate_limit.sql`
+11. Click "Run"
+12. Copy and paste `migrations/006_fix_retrievability.sql`
+13. Click "Run"
+14. Copy and paste `migrations/007_fix_recursive_query.sql`
+15. Click "Run"
+16. Copy and paste `migrations/008_add_content_and_editing.sql`
+17. Click "Run"
+18. Copy and paste `migrations/009_add_messages_metadata.sql`
+19. Click "Run"
 
 ### Option 2: Supabase CLI
 

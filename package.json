@@ -12,6 +12,8 @@
     "test:watch": "vitest watch",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
+    "deploy:preflight": "node scripts/deploy-preflight.mjs",
+    "deploy:vercel": "npm run deploy:preflight && npx vercel --prod --yes",
     "env:opencode": "bash scripts/switch-environment.sh opencode",
     "env:antigravity": "bash scripts/switch-environment.sh antigravity"
   },
