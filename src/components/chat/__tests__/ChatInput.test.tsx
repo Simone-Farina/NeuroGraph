@@ -125,6 +125,24 @@ describe('ChatInput', () => {
     expect(screen.getByLabelText('Send message')).toBeInTheDocument();
   });
 
+  it('renders stop button with accessible label when streaming', () => {
+    const mockOnStop = vi.fn();
+    render(
+      <ChatInput
+        value=""
+        onChange={mockOnChange}
+        onSubmit={mockOnSubmit}
+        isStreaming={true}
+        onStop={mockOnStop}
+      />
+    );
+
+    const stopButton = screen.getByLabelText('Stop generating response');
+    expect(stopButton).toBeInTheDocument();
+    fireEvent.click(stopButton);
+    expect(mockOnStop).toHaveBeenCalled();
+  });
+
   it('shows loading spinner when sending', () => {
     // disabled=true and value present = loading/sending
     render(
