@@ -1,0 +1,923 @@
+============================================================================================
+NEUROGRAPH MASTER SPECIFICATION FILE (PORTABLE CONTEXT PACK)
+============================================================================================
+Last updated (UTC): 2026-02-24T21:08:44Z
+Git: (see repo history; this file is committed alongside code)
+Purpose:
+- This is the single master context file for NeuroGraph.
+- It is designed to be copy/pasted into any LLM chat or shared as a standalone file.
+- It includes both a curated overview and verbatim source documents (appendices).
+
+Update policy (human-maintained):
+- Keep the curated sections (0-5) accurate and current.
+- Append new project decisions and conventions as they stabilize.
+- Refresh this file after meaningful product, architecture, or workflow changes.
+
+============================================================================================
+0. HOW TO USE THIS FILE (HUMANS + LLMS)
+============================================================================================
+Primary intent:
+- Make one portable file sufficient for planning, implementation, and handoff context.
+- Keep strategy and implementation details in one place without leaking secrets.
+- Preserve exact source docs in appendices so assistants can quote canonical text.
+
+Reader modes:
+- Fast orientation mode:
+  - Read sections 1-5 first.
+  - Use section 2 for product/repo state and active priorities.
+  - Use section 3 for stack and implementation ground truth.
+- Deep context mode:
+  - Read sections 1-5, then go directly to appendices.
+  - Treat appendix files as authoritative for command-level guidance and templates.
+
+Rules for AI assistants:
+- Do not invent repository state.
+- Prefer current implementation facts over older conceptual drafts.
+- Treat roadmap items as prioritized intent, not implied implementation.
+- Keep outputs scoped to explicit IN/OUT constraints in specs.
+- If uncertain, preserve behavior and ask only when required to avoid unsafe changes.
+
+Rules for maintainers:
+- Never store secrets in this file.
+- Keep roadmap order and product positioning internally consistent across sections.
+- Avoid stale metadata like hardcoded commit hashes in the header.
+- Keep appendices curated to living docs that materially improve portability.
+
+What this file is not:
+- Not a full changelog.
+- Not a substitute for test output or deployment logs.
+- Not a place for transient brainstorming notes.
+
+Portable-context principle:
+- Curated sections should be understandable without opening the repo.
+- Appendices should provide exact operational details where precision matters.
+- The combination should support high-quality work in low-context environments.
+
+============================================================================================
+1. HIGH-LEVEL PROJECT IDEA (PRODUCT VISION)
+============================================================================================
+NeuroGraph is a generative mastery-learning environment.
+Its core promise is to convert open-ended exploration into durable understanding.
+It avoids two failure modes at once:
+- Rigid top-down curriculum paths that suppress curiosity.
+- Entropic note-taking that accumulates text without mastery structure.
+
+NeuroGraph sits between those extremes:
+- Conversation is the discovery engine.
+- Crystallization creates durable conceptual units.
+- Retention discipline keeps those units retrievable over time.
+
+Core loop: Organic Discovery -> Crystallized Knowledge -> Rigorous Retention.
+
+Gas-to-crystal cognitive loop:
+- Gas phase (exploration through chat):
+  - The user thinks out loud with AI.
+  - Questions, wrong turns, and reformulations are treated as useful signals.
+  - The system optimizes for conceptual movement, not immediate correctness.
+- Phase transition (crystallization):
+  - A background process monitors depth and conceptual density.
+  - When understanding becomes structurally meaningful, a node is created.
+  - This is selective to avoid noise and conservative against duplicates.
+- Solid phase (graph + retention):
+  - The concept joins a persistent knowledge graph.
+  - Memory decay is treated as a product reality, not a user failure.
+  - Review cycles maintain retrieval fitness and long-range coherence.
+
+Pedagogical principles:
+- Atomicity:
+  - Each node should represent one indivisible concept.
+  - Atomic granularity improves diagnostics, remediation, and transfer.
+- Strict prerequisite structure:
+  - The graph behaves like a directed dependency structure.
+  - Advanced understanding depends on mastered foundations.
+- Non-interference:
+  - Explanation and verification are separate phases.
+  - Verification is intentionally gating to reduce illusion of competence.
+- FIRe (fractional implicit repetition):
+  - Success on higher-level tasks can reinforce prerequisite concepts indirectly.
+  - Intended to produce trickle-down reinforcement across dependencies.
+  - This principle is part of the product model even where implementation is pending.
+
+Concept model domains:
+- Node as concept:
+  - Captures a concise definition and durable core insight.
+  - Represents what is learned, not merely what was said.
+- Edge as learning relationship:
+  - Encodes prerequisite, enabling, or related-concept links.
+  - Supports both navigation and pedagogical influence.
+- User state over concept:
+  - Tracks personal mastery and memory health for each concept.
+  - Keeps conceptual truth global while mastery remains individual.
+
+Graph quality thesis:
+- Growth quality matters more than growth count.
+- Node creation should follow demonstrated conceptual depth.
+- The graph should become denser in value, not merely larger in size.
+
+Anticipatory structure:
+- Ghost-node style projections are intended to suggest likely next concepts.
+- These are navigational affordances, not commitments.
+- They support curiosity while preserving learner autonomy.
+
+Retention stance:
+- Passive exposure is insufficient for durable knowledge.
+- Retrieval practice is required to keep the graph operational.
+- Stability is continuous maintenance, not a one-time event.
+
+Dependency-health stance:
+- Downstream learning quality depends on foundation quality.
+- If prerequisite confidence falls, progress pressure should favor repair first.
+- Product success is measured by long-range coherence, not short-term completion.
+
+Intended user journey:
+- Explore -> crystallize -> practice -> re-explore.
+- Repeated cycles increase graph fidelity and user mastery.
+- Over time, the learner accumulates a living map of validated understanding.
+
+Differentiator:
+- Graph-first is not a secondary visualization.
+- The graph is the primary operational interface for knowledge and progress.
+
+Divergence note (factual deltas only):
+- Original architecture drafts described Neo4j + Pinecone + relational storage.
+- Current implementation uses Supabase Postgres + pgvector as a consolidated stack.
+- Original frontend draft referenced Next.js 15; implementation is currently Next.js 14.2.
+- Original retention framing centered on SM-2; implementation now uses FSRS via ts-fsrs.
+- Ghost Nodes and FIRe remain intended but are not yet implemented.
+
+Scope discipline reminder:
+- Vision defines destination and learning philosophy.
+- State and roadmap sections define what is actually live now.
+- Keep these layers separate to avoid planning drift.
+
+============================================================================================
+2. WHAT HAS BEEN DONE (PROJECT STATE SNAPSHOT)
+============================================================================================
+State framing:
+- This repository is an implemented MVP with active polish.
+- Core loop and foundational systems are in production-shape development.
+- The roadmap remains intentionally narrow and prioritized.
+
+Working now:
+- Core MVP loop is live:
+  - Chat-first discovery flow is implemented.
+  - Crystal creation is integrated into the conversation workflow.
+  - Graph-canvas navigation is available for crystal relationships.
+- Data persistence is in place with Supabase:
+  - Conversations, messages, crystals, and edges are persisted.
+  - Data-access patterns support day-to-day product flows.
+- Retention support is integrated:
+  - FSRS-based scheduling metadata is present.
+  - Review-flow support exists and is wired into app behavior.
+- AI plumbing is usable:
+  - Multi-provider support and baseline retrieval helpers are implemented.
+  - Day-to-day AI use is functional across the current stack.
+- Test infrastructure is present:
+  - Unit/integration coverage via Vitest.
+  - End-to-end coverage path via Playwright.
+
+Partial / in-progress quality:
+- Graph-first UX is functional but still being polished for consistency and clarity.
+- AI output quality is usable but uneven across prompts/providers in some flows.
+- Crystal detail supports content editing, but the full durable-page workflow is not complete.
+
+Planned initiatives:
+- Crystal pages with stronger markdown authoring, linking, and durable workflows.
+- Ghost Nodes to preview likely next concepts and guide discovery.
+- FIRe-style implicit reinforcement for prerequisite maintenance.
+
+Roadmap (priority order, authoritative):
+1) Crystal-as-page
+2) AI quality
+3) Ghost Nodes
+4) FIRe
+
+Known rough edges:
+- There are known defects and rough edges in current MVP flows.
+- The active posture is ongoing stability and UX consistency polish.
+- No currently known rough edge changes roadmap priority order.
+
+Process/status posture:
+- Scope discipline is a recurring quality lever.
+- Alignment work (env parity, state ownership, contract clarity) materially affects reliability.
+- Delivery quality improves when changes stay tied to explicit acceptance criteria.
+
+What this section intentionally excludes:
+- No commit-log chronology.
+- No commit-hash changelog.
+- No speculative architecture proposals presented as implemented facts.
+
+Execution guidance for assistants:
+- Treat this section as operational state, not product theory.
+- Resolve conflicts in favor of section 3 implementation details and appendix sources.
+- Keep roadmap language and ordering consistent with the list above.
+
+============================================================================================
+3. REPOSITORY CONVENTIONS (CODE + DATA + TESTING)
+============================================================================================
+Implementation baseline:
+- Framework/runtime:
+  - Next.js 14.2 (App Router)
+  - React 18
+  - TypeScript
+- Data and storage:
+  - Supabase/Postgres as primary persistence layer
+  - pgvector for embeddings and vector similarity
+  - Relational + vector behavior consolidated in one stack
+- Product architecture:
+  - React Flow for graph-canvas UI
+  - Zustand for client state management
+  - Vercel AI SDK for AI interaction layer
+  - ts-fsrs for spaced repetition scheduling logic
+- Test stack:
+  - Vitest for unit/integration testing
+  - Playwright for end-to-end flows
+
+Repository shape (high signal paths):
+- src/app/
+  - App Router routes, layouts, and API handlers.
+- src/lib/db/
+  - DB clients, query helpers, migration SQL, setup/verification utilities.
+- src/lib/ai/
+  - Provider selection, model plumbing, and retrieval support helpers.
+- docs/
+  - Prompt contracts, feature specs, and workflow documentation.
+- scripts/
+  - Operational scripts including deploy preflight and environment workflow helpers.
+
+Database migration canon:
+- Canonical migration lineage is 001 through 009 under src/lib/db/migrations/.
+- The expected sequence currently includes:
+  - 001_initial_schema.sql
+  - 002_query_functions.sql
+  - 003_fsrs_schema.sql
+  - 004_update_rpc_fsrs.sql
+  - 005_rate_limit.sql
+  - 006_fix_retrievability.sql
+  - 007_fix_recursive_query.sql
+  - 008_add_content_and_editing.sql
+  - 009_add_messages_metadata.sql
+
+Environment and deployment conventions:
+- Public client vars must use NEXT_PUBLIC_ prefix.
+- Required variable names and provider-conditional checks live in:
+  - .env.example
+  - scripts/deploy-preflight.mjs
+- Deploy preflight should be run before production deploy attempts.
+
+Testing conventions:
+- Keep changes verifiable by automated checks wherever practical.
+- Prefer narrow, deterministic tests for logic-sensitive behavior.
+- Preserve end-to-end test intent for critical interaction flows.
+
+Quality and ownership conventions:
+- Prefer server-source truth where ownership and correctness matter.
+- Keep data/state ownership boundaries explicit.
+- Be conservative with broad refactors unless the spec scope requires them.
+
+Compatibility posture:
+- Treat framework/version compatibility as a delivery risk surface.
+- Keep dependency upgrades intentional and coordinated with test/build validation.
+
+============================================================================================
+4. AI WORKFLOW (AIDER-FIRST, CODE-AWARE PLANNING)
+============================================================================================
+Goal:
+- Planning and implementation decisions should be made with direct codebase awareness.
+
+Primary workflow:
+- Use Aider as the default code-aware assistant in terminal.
+- Use ask mode first to shape scope and acceptance criteria without editing.
+- Switch to code mode only after scope converges.
+
+Why this workflow:
+- It reduces context drift between planning and implementation.
+- It controls spend by separating ideation from code editing.
+- It improves consistency between spec intent and shipped diffs.
+
+Operational baseline:
+- Keep OpenRouter/API setup external to this file (do not store secrets here).
+- Use repo-map context intentionally; avoid excessive token waste.
+- Track decisions in concise artifacts (feature brief/spec) before implementation.
+
+Recommended flow:
+1) Clarify feature intent via advisor-style brief.
+2) Convert brief to implementation spec with explicit IN/OUT and acceptance criteria.
+3) Open Aider in ask mode against the target spec/documents.
+4) Converge on plan and edge cases.
+5) Execute in code mode with tests and build checks.
+
+Working principles:
+- Scope discipline beats broad speculative rewrites.
+- Keep planning outputs testable and executable.
+- Prefer stable process contracts over tool-specific novelty.
+
+Fallback/adjacent tools:
+- Free long-form ideation tools can be used upstream for brainstorming.
+- Final planning before coding should remain code-aware and repo-grounded.
+
+============================================================================================
+5. MODEL SELECTION (OPENROUTER)
+============================================================================================
+Intent:
+- Use a rubric, not a permanently hardcoded model choice.
+- Re-evaluate model fit periodically as offerings and costs shift.
+
+Selection rubric:
+- Reasoning quality for planning and tradeoff handling.
+- Edit reliability for producing correct, minimal diffs.
+- Agentic stability for multi-step work without scope drift.
+- Cost profile for expected token volume.
+- Context-window suitability for specs + repo-map usage.
+- Consistency and low hallucination rate in practical tasks.
+
+Role separation:
+- Planner model: strongest reasoning within budget.
+- Editor model: strongest patch correctness and low rework rate.
+- Fast helper model: low-cost utility for small bounded tasks.
+
+Evaluation loop:
+- Run recurring benchmark tasks across candidates (small fix, refactor, test add).
+- Record pass/fail, correction count, and practical latency.
+- Promote/demote models based on observed delivery quality.
+
+Update sources:
+- Aider leaderboards: https://aider.chat/docs/leaderboards/
+- OpenRouter model catalog: https://openrouter.ai/models
+- Local listing via Aider: aider --list-models openrouter/
+
+Current model-set notes:
+- Keep entries minimal and current; remove stale candidates quickly.
+- Avoid overfitting to one benchmark source.
+
+MODEL SET (intentionally minimal)
+- Planner (ask mode):
+- Editor (code mode):
+- Fast helper:
+
+CANDIDATES
+| model | role | context | cost (in/out) | strengths | weaknesses | keep? |
+|-------|------|---------|---------------|-----------|------------|-------|
+|       |      |         |               |           |            |       |
+
+============================================================================================
+APPENDICES: VERBATIM SOURCE DOCUMENTS (MERGED)
+============================================================================================
+These appendices are merged verbatim from living docs to preserve operational fidelity.
+No .sisyphus/* files are included as verbatim blocks in this edition.
+
+Condensed History (derived from .sisyphus/drafts/condensed-history.md):
+- NeuroGraph MVP: built the first end-to-end loop with strict scope guardrails; key choices included user-confirmed crystallization and Postgres+pgvector consolidation.
+- NeuroGraph Bugs and Gaps: focused on correctness/spec compliance, fixing high-value defects while deferring selected complexity.
+- NeuroGraph Polish Sprint: improved editing/navigation/resilience and advanced crystal-as-page direction with usability-focused polish.
+- NeuroGraph Dev Process: established cost-aware brief->spec->execution workflow and hardened preflight/env-alignment practices.
+- Cross-cutting pattern: scope discipline and alignment work repeatedly produced better reliability and delivery quality.
+
+============================================================================================
+BEGIN FILE: .env.example
+============================================================================================
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+
+# Only required for local E2E/test helper utilities (not required by app runtime)
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
+
+# AI Provider Configuration
+AI_PROVIDER=openai
+
+# OpenAI API Key (Required for embeddings and AI_PROVIDER=openai)
+OPENAI_API_KEY=sk-your-openai-key-here
+
+# Anthropic API Key
+ANTHROPIC_API_KEY=sk-ant-your-anthropic-key-here
+
+# Google API Key
+GOOGLE_API_KEY=your-google-api-key-here
+
+# Application Configuration
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+============================================================================================
+END FILE: .env.example
+============================================================================================
+
+============================================================================================
+BEGIN FILE: scripts/deploy-preflight.mjs
+============================================================================================
+#!/usr/bin/env node
+
+import nextEnv from '@next/env';
+
+const { loadEnvConfig } = nextEnv;
+loadEnvConfig(process.cwd());
+
+const requiredAlways = [
+  'NEXT_PUBLIC_SUPABASE_URL',
+  'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+  'OPENAI_API_KEY',
+];
+
+const validProviders = new Set(['openai', 'anthropic', 'google', 'mock']);
+const providerRaw = process.env.AI_PROVIDER ?? 'openai';
+const provider = providerRaw.toLowerCase();
+
+const missing = [];
+
+for (const key of requiredAlways) {
+  if (!process.env[key]) {
+    missing.push(key);
+  }
+}
+
+if (!validProviders.has(provider)) {
+  console.error(`Invalid AI_PROVIDER: "${providerRaw}".`);
+  console.error('Valid values: openai, anthropic, google, mock');
+  process.exit(1);
+}
+
+if (provider === 'anthropic' && !process.env.ANTHROPIC_API_KEY) {
+  missing.push('ANTHROPIC_API_KEY');
+}
+
+if (provider === 'google' && !process.env.GOOGLE_API_KEY) {
+  missing.push('GOOGLE_API_KEY');
+}
+
+if (!process.env.NEXT_PUBLIC_APP_URL) {
+  console.warn('Warning: NEXT_PUBLIC_APP_URL is not set.');
+  console.warn('Set it to your Vercel URL for production links and callbacks.');
+}
+
+if (provider === 'mock') {
+  console.warn('Warning: AI_PROVIDER=mock is intended for local test environments.');
+}
+
+if (missing.length > 0) {
+  console.error('\nDeployment preflight failed. Missing environment variables:');
+  for (const key of missing) {
+    console.error(`- ${key}`);
+  }
+  process.exit(1);
+}
+
+console.log('Deployment preflight passed. Required environment variables are set.');
+============================================================================================
+END FILE: scripts/deploy-preflight.mjs
+============================================================================================
+
+============================================================================================
+BEGIN FILE: src/lib/db/README.md
+============================================================================================
+# NeuroGraph Database Setup
+
+## Prerequisites
+
+1. **Supabase Project**: Create a project at [supabase.com](https://supabase.com)
+2. **Environment Variables**: Set in `.env.local`:
+   ```bash
+   NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+   # Only required for local E2E/test helper utilities
+   SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+   ```
+
+## Running Migrations
+
+### Option 1: Supabase Dashboard (SQL Editor)
+
+1. Go to your Supabase project → SQL Editor
+2. Copy and paste `migrations/001_initial_schema.sql`
+3. Click "Run"
+4. Copy and paste `migrations/002_query_functions.sql`
+5. Click "Run"
+6. Copy and paste `migrations/003_fsrs_schema.sql`
+7. Click "Run"
+8. Copy and paste `migrations/004_update_rpc_fsrs.sql`
+9. Click "Run"
+10. Copy and paste `migrations/005_rate_limit.sql`
+11. Click "Run"
+12. Copy and paste `migrations/006_fix_retrievability.sql`
+13. Click "Run"
+14. Copy and paste `migrations/007_fix_recursive_query.sql`
+15. Click "Run"
+16. Copy and paste `migrations/008_add_content_and_editing.sql`
+17. Click "Run"
+18. Copy and paste `migrations/009_add_messages_metadata.sql`
+19. Click "Run"
+
+### Option 2: Supabase CLI
+
+```bash
+# Install Supabase CLI
+npm install -g supabase
+
+# Login to Supabase
+supabase login
+
+# Link to your project
+supabase link --project-ref your-project-ref
+
+# Run migrations
+supabase db push
+```
+
+## Seeding Development Data
+
+```bash
+# Seed database with sample data (5 crystals, 6 edges, 1 conversation)
+npx tsx src/lib/db/seed.ts
+```
+
+## Running Performance Spike
+
+Test recursive CTE performance with 500 nodes + 1500 edges:
+
+```bash
+npx tsx src/lib/db/performance-spike.ts
+```
+
+Expected result: < 100ms average query time
+
+## Schema Overview
+
+### Tables
+
+- **conversations**: User chat sessions
+- **messages**: Individual messages within conversations
+- **crystals**: Knowledge nodes with embeddings and spaced repetition metadata
+- **crystal_edges**: Relationships between crystals
+
+### Indexes
+
+- HNSW index on `crystals.embedding` for fast vector similarity search
+- B-tree indexes on foreign keys and `next_review_due`
+
+### RLS Policies
+
+All tables have Row Level Security enabled:
+- Users can only access their own data
+- Policy: `auth.uid() = user_id`
+
+### Functions
+
+- `find_similar_crystals(embedding, user_id, threshold, limit)`: Vector similarity search
+- `get_crystal_neighborhood(crystal_id, max_depth)`: Recursive graph traversal (2-hop max)
+
+## Query Helpers
+
+Import from `@/lib/db/queries`:
+
+```typescript
+import { crystalQueries, edgeQueries, conversationQueries, messageQueries } from '@/lib/db/queries';
+
+await crystalQueries.create({ ... });
+await crystalQueries.getById(id);
+await crystalQueries.getDueForReview(userId);
+await crystalQueries.findSimilar(embedding, userId);
+await crystalQueries.getNeighborhood(crystalId, 2);
+```
+
+## Troubleshooting
+
+### pgvector extension not available
+
+If you get `extension "vector" does not exist`:
+
+1. Go to Supabase Dashboard → Database → Extensions
+2. Enable "vector" extension
+3. Re-run migrations
+
+### RLS blocking queries
+
+If queries return empty results unexpectedly:
+
+1. Check that you're authenticated: `supabase.auth.getUser()`
+2. Verify user_id matches: `auth.uid()` should equal the row's `user_id`
+3. Temporarily disable RLS for debugging: `ALTER TABLE table_name DISABLE ROW LEVEL SECURITY;` (NOT for production)
+============================================================================================
+END FILE: src/lib/db/README.md
+============================================================================================
+
+============================================================================================
+BEGIN FILE: docs/prompts/gemini-advisor.md
+============================================================================================
+You are the high-level Advisor for the NeuroGraph project.
+
+Your job: help the human clarify what to build next, why it matters, and what to decide before implementation.
+
+## Project Context (NeuroGraph)
+
+- Product: a conversation-first thinking companion that crystallizes insights into a knowledge graph.
+- Differentiator vs Recall-style tools: the GRAPH is the primary interface (graph-first), not a secondary view.
+- Current stage: MVP is complete; known bugs exist but are not the focus of ideation.
+- Time budget: 5-10 hours/week.
+- Cost constraints: prefer free (Gemini) for ideation/specs; reserve expensive tools for implementation.
+- Feature priorities (current): Crystal-as-page > AI quality > Ghost Nodes/FIRe > stabilize/deploy.
+
+## Operating Rules
+
+- Stay in ideation and prioritization. Do NOT produce implementation steps or pseudo-code.
+- Be concrete. Prefer decision points, risks, and testable outcomes.
+- If information is missing, ask up to 5 targeted questions, then proceed with assumptions (explicitly labeled).
+- Keep outputs lean: one feature brief should fit in ~1-2 pages.
+
+## Output Contract (always follow)
+
+Return a markdown Feature Brief with this exact structure:
+
+```markdown
+# Feature Brief: {Name}
+
+## One-liner
+{One sentence describing the value.}
+
+## Problem
+{What user problem does this solve? Why now?}
+
+## User Story
+As a [user], I want to [action] so that [benefit].
+
+## Proposed Approach (Conceptual)
+{High-level approach only. No code.}
+
+## Scope
+### IN
+-
+
+### OUT
+-
+
+## Success Signals
+-
+
+## Risks / Tradeoffs
+-
+
+## Open Questions
+-
+
+## Assumptions
+-
+```
+
+## Quality Bar
+
+- Align with graph-first UX and conversation-first workflow.
+- Avoid vague scope; IN/OUT must be crisp.
+- Highlight anything that could blow up the 5-10h/week budget.
+============================================================================================
+END FILE: docs/prompts/gemini-advisor.md
+============================================================================================
+
+============================================================================================
+BEGIN FILE: docs/prompts/gemini-specwriter.md
+============================================================================================
+You are the Spec Writer for the NeuroGraph project.
+
+Your job: transform a Feature Brief into an implementation-oriented Feature Specification that can be handed to a coding agent for planning/execution.
+
+## Project Context (NeuroGraph)
+
+- Product: conversation-first thinking companion that crystallizes insights into a knowledge graph.
+- Differentiator: graph-first primary interface.
+- Constraints: 5-10 hours/week; keep specs lean and executable.
+
+## Inputs You Receive
+
+1. A Feature Brief (markdown) from the Advisor.
+2. Optional extra context (screenshots, notes, constraints).
+
+## Operating Rules
+
+- Output MUST follow the template structure below, with NO missing sections.
+- Write for implementation: concrete requirements, explicit IN/OUT scope, testable acceptance criteria.
+- If you must invent details, label them as assumptions and add them to `## Open Questions`.
+- Do NOT include code.
+
+## Output Contract (strict)
+
+Return ONLY a markdown document that follows this exact structure and headings:
+
+```markdown
+# Feature: {Name}
+
+## Problem
+What user problem does this solve? Why now?
+
+## User Story
+As a [user], I want to [action] so that [benefit].
+
+## Scope
+### IN (must deliver)
+- [ ]
+
+### OUT (explicitly excluded)
+- [ ]
+
+## Technical Design
+### Data Model Changes
+-
+
+### API Changes
+-
+
+### UI Changes
+-
+
+## Acceptance Criteria
+- [ ]
+
+## Guardrails
+-
+
+## Open Questions
+-
+```
+
+## Acceptance Criteria Rules
+
+- Use checkboxes (`- [ ]`).
+- Each item must be verifiable (by a test, by a UI behavior, or by a deterministic condition).
+- Include at least 5 criteria for non-trivial features.
+
+## Guardrails Rules
+
+- Include at least 3 "do not" rules that prevent common scope creep and sloppy AI output.
+- Explicitly state what NOT to refactor.
+============================================================================================
+END FILE: docs/prompts/gemini-specwriter.md
+============================================================================================
+
+============================================================================================
+BEGIN FILE: docs/specs/_template.md
+============================================================================================
+# Feature: {Name}
+
+## Problem
+What user problem does this solve? Why now?
+
+## User Story
+As a [user], I want to [action] so that [benefit].
+
+## Scope
+
+### IN (must deliver)
+- [ ]
+
+### OUT (explicitly excluded)
+- [ ]
+
+## Technical Design
+
+### Data Model Changes
+-
+
+### API Changes
+-
+
+### UI Changes
+-
+
+## Acceptance Criteria
+- [ ]
+
+## Guardrails
+-
+
+## Open Questions
+-
+============================================================================================
+END FILE: docs/specs/_template.md
+============================================================================================
+
+============================================================================================
+BEGIN FILE: docs/specs/README.md
+============================================================================================
+# Feature Specs
+
+This folder contains implementation-oriented feature specifications used as the handoff between:
+
+- Gemini "Advisor" -> feature brief
+- Gemini "Spec Writer" -> full feature spec
+- Aider (OpenRouter) -> code-aware planning + implementation
+
+## Create a New Spec
+
+1. Copy the template:
+
+```bash
+cp docs/specs/_template.md "docs/specs/<feature-slug>.md"
+```
+
+2. Fill every section.
+
+3. Keep it concrete:
+- Prefer verifiable acceptance criteria over ideas.
+- If you must assume something, write it in `## Open Questions`.
+
+## Naming Convention
+
+- File: `docs/specs/<feature-slug>.md`
+- Slug: lowercase, hyphen-separated (example: `crystal-as-page`)
+
+## Handoff to Planning
+
+When the spec is ready, use it as the input to Aider so planning has direct codebase access:
+
+```bash
+export OPENROUTER_API_KEY=<your_openrouter_key>
+
+# Start in ask mode (no file edits) to refine scope and approach
+aider --model openrouter/<provider>/<model> --chat-mode ask docs/specs/<feature-slug>.md
+```
+
+Recommended workflow inside Aider:
+
+- Use `/ask` to agree on scope, approach, and acceptance criteria.
+- Switch to `/code` (or rerun with `--chat-mode code`) only when ready to implement.
+
+For broader project context, keep a single portable context file updated:
+
+- `MASTER_SPECIFICATION.txt`
+
+## Validation Checklist (Before Planning)
+
+- [ ] `## Scope` contains both `IN` and `OUT`
+- [ ] `## Technical Design` explains data/API/UI changes (or explicitly says "none")
+- [ ] `## Acceptance Criteria` items are testable/verifiable
+- [ ] `## Guardrails` contains at least 3 "do not" rules
+- [ ] `## Open Questions` is empty OR explicitly lists blockers to resolve first
+============================================================================================
+END FILE: docs/specs/README.md
+============================================================================================
+
+============================================================================================
+BEGIN FILE: docs/specs/crystal-as-page.md
+============================================================================================
+# Feature: Crystal-as-Page
+
+## Problem
+Crystals need to become durable knowledge artifacts, not just brief summaries. Users need a page-like surface to expand a crystal with examples, personal notes, and links. Without this, long-term use becomes fragmented (notes live elsewhere) and the graph loses value as the primary interface.
+
+## User Story
+As a learner, I want each crystal to be a rich markdown page so that I can grow my understanding over time and navigate knowledge through the graph.
+
+## Scope
+
+### IN (must deliver)
+- [ ] Crystal detail panel supports editing markdown content (edit mode)
+- [ ] Crystal detail panel supports rendering markdown content (preview mode)
+- [ ] Markdown is persisted to the existing crystal content field and reloads on refresh
+- [ ] Wiki-link style references (`[[Crystal Title]]`) are detected and displayed as outbound links
+- [ ] Backlinks list exists (crystals that reference the current crystal)
+- [ ] Basic crystal search/filtering exists to jump between pages
+
+### OUT (explicitly excluded)
+- [ ] Offline-first sync and conflict resolution
+- [ ] Real-time collaboration
+- [ ] Full Obsidian plugin ecosystem
+- [ ] Multi-pane workspace layout
+- [ ] WYSIWYG editor (rich toolbar, complex formatting UI)
+
+## Technical Design
+
+### Data Model Changes
+- No new required fields if `crystals.content` already exists.
+- Backlinks can be computed dynamically by parsing content, or stored in a dedicated table later if performance requires it.
+- If title-based wiki-links are insufficient, add an ID-based reference format in a follow-up (OUT of scope for this spec).
+
+### API Changes
+- Ensure there is a supported update path for crystal content (example: `PATCH /api/crystals/[id]` to update `content`).
+- If API already exists, extend validation so `content` accepts markdown text.
+- Add (or extend) an endpoint to query backlinks efficiently if the UI requires it.
+
+### UI Changes
+- Replace the plain content textarea in the crystal detail panel with:
+  - Edit mode: markdown editor surface
+  - Preview mode: markdown renderer with GFM (tables, lists, code blocks)
+- Add links section:
+  - Outbound links: parsed `[[...]]` references
+  - Backlinks: other crystals referencing current one
+- Add a simple search/filter input to jump between crystals/pages.
+
+## Acceptance Criteria
+- [ ] Editing a crystal's markdown persists and reloads correctly (no data loss)
+- [ ] Markdown renders with GFM features (lists, tables, fenced code blocks)
+- [ ] Rendering does not allow unsafe HTML/XSS by default
+- [ ] Outbound wiki-links are detected and shown as clickable items
+- [ ] Backlinks list updates after saving content in another crystal
+- [ ] Search/filter lets me navigate to a crystal page in under 3 interactions
+
+## Guardrails
+- Do NOT refactor chat/crystallization flow as part of this feature
+- Do NOT add a complex editor framework unless strictly necessary
+- Do NOT render raw HTML from markdown without sanitization
+- Do NOT introduce background jobs or new infra for backlinks in this iteration
+
+## Open Questions
+- Should backlinks create real graph edges or remain a separate "page links" layer?
+- How should wiki-links behave on crystal rename (title collisions, broken links)?
+- Minimum acceptable editor UX: tabbed edit/preview vs split view?
+============================================================================================
+END FILE: docs/specs/crystal-as-page.md
+============================================================================================

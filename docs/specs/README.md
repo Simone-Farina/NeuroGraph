@@ -4,7 +4,7 @@ This folder contains implementation-oriented feature specifications used as the 
 
 - Gemini "Advisor" -> feature brief
 - Gemini "Spec Writer" -> full feature spec
-- OpenCode/Prometheus -> execution plan (`/start-work`)
+- Aider (OpenRouter) -> code-aware planning + implementation
 
 ## Create a New Spec
 
@@ -27,12 +27,23 @@ cp docs/specs/_template.md "docs/specs/<feature-slug>.md"
 
 ## Handoff to Planning
 
-When the spec is ready, use it as the input to Prometheus:
+When the spec is ready, use it as the input to Aider so planning has direct codebase access:
 
-- Start a new planning session and paste the spec content.
-- Or reference the file path: `docs/specs/<feature-slug>.md`
+```bash
+export OPENROUTER_API_KEY=<your_openrouter_key>
 
-The output should be a work plan under `.sisyphus/plans/`.
+# Start in ask mode (no file edits) to refine scope and approach
+aider --model openrouter/<provider>/<model> --chat-mode ask docs/specs/<feature-slug>.md
+```
+
+Recommended workflow inside Aider:
+
+- Use `/ask` to agree on scope, approach, and acceptance criteria.
+- Switch to `/code` (or rerun with `--chat-mode code`) only when ready to implement.
+
+For broader project context, keep a single portable context file updated:
+
+- `MASTER_SPECIFICATION.txt`
 
 ## Validation Checklist (Before Planning)
 

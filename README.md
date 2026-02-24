@@ -95,9 +95,14 @@ NeuroGraph is a Next.js app for turning conversations into connected knowledge c
 
 ## Project Plans
 
-Planning artifacts are versioned in:
+The canonical, portable context file is:
+
+- `MASTER_SPECIFICATION.txt`
+
+Historical planning artifacts (Sisyphus/OpenCode-era) are versioned in:
 
 - `.sisyphus/plans/neurograph-mvp.md`
+- `.sisyphus/plans/neurograph-dev-process.md`
 
 The repo is configured to keep plan markdown files while ignoring other local Sisyphus runtime state.
 
