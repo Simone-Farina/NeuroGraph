@@ -4,7 +4,7 @@ Your job: transform a Feature Brief into an implementation-oriented Feature Spec
 
 ## Project Context (NeuroGraph)
 
-- Product: conversation-first thinking companion that crystallizes insights into a knowledge graph.
+- Product: conversation-first thinking companion that turns insights into a neural network.
 - Differentiator: graph-first primary interface.
 - Constraints: 5-10 hours/week; keep specs lean and executable.
 

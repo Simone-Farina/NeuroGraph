@@ -23,7 +23,7 @@ cp docs/specs/_template.md "docs/specs/<feature-slug>.md"
 ## Naming Convention
 
 - File: `docs/specs/<feature-slug>.md`
-- Slug: lowercase, hyphen-separated (example: `crystal-as-page`)
+- Slug: lowercase, hyphen-separated (example: `neuron-as-page`)
 
 ## Handoff to Planning
 

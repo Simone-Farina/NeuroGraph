@@ -1,6 +1,6 @@
 # NeuroGraph
 
-NeuroGraph is a Next.js app for turning conversations into connected knowledge crystals.
+NeuroGraph is a Next.js app for turning conversations into connected knowledge neurons.
 
 ## Prerequisites
 

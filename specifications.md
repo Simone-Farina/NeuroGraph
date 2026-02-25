@@ -1,15 +1,15 @@
 NEUROGRAPH – TECHNICAL & PRODUCT SPECIFICATIONSVersion: 1.0 (MVP Definition)
 Status: Blueprint
-Core Philosophy: "Organic Discovery $\rightarrow$ Crystallized Knowledge $\rightarrow$ Rigorous Retention"
+Core Philosophy: "Organic Discovery $\rightarrow$ Structured Knowledge $\rightarrow$ Rigorous Retention"
 
 1. VISIONE E CONCETTO DI PRODOTTO
 NeuroGraph è una piattaforma di Mastery Learning Generativo.
 A differenza dei corsi tradizionali (struttura top-down imposta) o delle note personali (struttura bottom-up caotica), NeuroGraph ibrida i due approcci.
 
-1.1 Il Ciclo "Gas-to-Crystal"
+1.1 Il Ciclo "Discovery-to-Neuron"
 L'esperienza utente si basa su tre stati della materia cognitiva:
 Stato Gassoso (Chat & Discovery): L'utente esplora liberamente argomenti tramite conversazione naturale con l'AI. È la fase di curiosità, simile a Zettelkasten o Obsidian.
-Transizione di Fase (Crystallization Trigger): Un sistema di background monitora la "densità concettuale". Quando l'utente raggiunge un insight (comprensione profonda), il sistema solidifica quel momento in un Nodo.
+Transizione di Fase (Neurogenesis Trigger): Un sistema di background monitora la "densità concettuale". Quando l'utente raggiunge un insight (comprensione profonda), il sistema solidifica quel momento in un Neuron.
 Stato Solido (Graph & Retention): Il Nodo diventa parte permanente del Grafo di Conoscenza (Knowledge Graph). Da quel momento, è soggetto a leggi di decadimento mnemonico (Forgetting Curve) e deve essere mantenuto attivo tramite esercizi (Active Recall).
 
 1.2 Obiettivi Pedagogici (Math Academy Principles)
@@ -79,7 +79,7 @@ TypeScripttype UserNodeState = {
 
 4. FUNCTIONAL LOGIC & ALGORITHMS
 
-4.1 The "Crystallization Trigger" Algorithm
+4.1 The "Neurogenesis Trigger" Algorithm
 Come il sistema decide di creare un nodo dalla chat.
 Input: Finestra di contesto degli ultimi 10 messaggi (chat_history).
 Processo:Topic Modeling: L'AI estrae i concetti chiave discussi.
@@ -211,8 +211,8 @@ Questi 21 parametri funzionano bene per la maggior parte degli utenti senza otti
 - consecutive_correct (number) → RIMOSSO dal calcolo SRS. Mantenuto opzionalmente per statistiche UI.
 
 6.5.3 Colonne da aggiungere
-TypeScript// Nuovi campi nella Crystal entity
-type CrystalFSRSFields = {
+TypeScript// Nuovi campi nella Neuron entity
+type NeuronFSRSFields = {
   difficulty: number;        // D ∈ [1, 10] — resistenza alla consolidazione
   state: 'New' | 'Learning' | 'Review' | 'Relearning'; // Stato della carta FSRS
   reps: number;              // Review riuscite consecutive (usato internamente da FSRS)
@@ -222,13 +222,13 @@ type CrystalFSRSFields = {
 };
 
 6.5.4 Migrazione Database (SQL)
-ALTER TABLE crystals ADD COLUMN difficulty REAL NOT NULL DEFAULT 5.0;
-ALTER TABLE crystals ADD COLUMN state TEXT NOT NULL DEFAULT 'New';
-ALTER TABLE crystals ADD COLUMN reps INTEGER NOT NULL DEFAULT 0;
-ALTER TABLE crystals ADD COLUMN lapses INTEGER NOT NULL DEFAULT 0;
-ALTER TABLE crystals ADD COLUMN elapsed_days INTEGER NOT NULL DEFAULT 0;
-ALTER TABLE crystals ADD COLUMN scheduled_days INTEGER NOT NULL DEFAULT 0;
-ALTER TABLE crystals DROP COLUMN ease_factor;
+ALTER TABLE neurons ADD COLUMN difficulty REAL NOT NULL DEFAULT 5.0;
+ALTER TABLE neurons ADD COLUMN state TEXT NOT NULL DEFAULT 'New';
+ALTER TABLE neurons ADD COLUMN reps INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE neurons ADD COLUMN lapses INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE neurons ADD COLUMN elapsed_days INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE neurons ADD COLUMN scheduled_days INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE neurons DROP COLUMN ease_factor;
 -- consecutive_correct mantenuto per statistiche ma non usato da FSRS
 
 6.6 Integrazione con ts-fsrs
@@ -244,21 +244,21 @@ const scheduler: FSRS = fsrs({
 });
 
 6.6.2 Scheduling di una review
-TypeScriptfunction scheduleReview(crystal: Crystal, rating: Rating, now: Date) {
+TypeScriptfunction scheduleReview(neuron: Neuron, rating: Rating, now: Date) {
   const card: Card = {
-    due: new Date(crystal.next_review_due),
-    stability: crystal.stability,
-    difficulty: crystal.difficulty,
-    elapsed_days: crystal.elapsed_days,
-    scheduled_days: crystal.scheduled_days,
-    reps: crystal.reps,
-    lapses: crystal.lapses,
-    state: mapState(crystal.state),
-    last_review: crystal.last_review ? new Date(crystal.last_review) : undefined,
+    due: new Date(neuron.next_review_due),
+    stability: neuron.stability,
+    difficulty: neuron.difficulty,
+    elapsed_days: neuron.elapsed_days,
+    scheduled_days: neuron.scheduled_days,
+    reps: neuron.reps,
+    lapses: neuron.lapses,
+    state: mapState(neuron.state),
+    last_review: neuron.last_review ? new Date(neuron.last_review) : undefined,
   };
   const result = scheduler.repeat(card, now);
   const scheduled = result[rating]; // { card: Card, log: ReviewLog }
-  // Aggiorna crystal nel database con i nuovi valori da scheduled.card
+  // Aggiorna il neuron nel database con i nuovi valori da scheduled.card
   return {
     stability: scheduled.card.stability,
     difficulty: scheduled.card.difficulty,

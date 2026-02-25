@@ -1,364 +1,111 @@
+--- START OF FILE MASTER_SPECIFICATION.txt ---
+
 ============================================================================================
 NEUROGRAPH MASTER SPECIFICATION FILE (PORTABLE CONTEXT PACK)
 ============================================================================================
-Last updated (UTC): 2026-02-24T21:08:44Z
-Git: (see repo history; this file is committed alongside code)
+Last updated: 2026-02-25
 Purpose:
 - This is the single master context file for NeuroGraph.
 - It is designed to be copy/pasted into any LLM chat or shared as a standalone file.
 - It includes both a curated overview and verbatim source documents (appendices).
 
-Update policy (human-maintained):
-- Keep the curated sections (0-5) accurate and current.
-- Append new project decisions and conventions as they stabilize.
-- Refresh this file after meaningful product, architecture, or workflow changes.
-
 ============================================================================================
 0. HOW TO USE THIS FILE (HUMANS + LLMS)
 ============================================================================================
-Primary intent:
-- Make one portable file sufficient for planning, implementation, and handoff context.
-- Keep strategy and implementation details in one place without leaking secrets.
-- Preserve exact source docs in appendices so assistants can quote canonical text.
-
-Reader modes:
-- Fast orientation mode:
-  - Read sections 1-5 first.
-  - Use section 2 for product/repo state and active priorities.
-  - Use section 3 for stack and implementation ground truth.
-- Deep context mode:
-  - Read sections 1-5, then go directly to appendices.
-  - Treat appendix files as authoritative for command-level guidance and templates.
+Primary intent: Make one portable file sufficient for planning, implementation, and handoff context.
 
 Rules for AI assistants:
 - Do not invent repository state.
+- ALIGN WITH NOMENCLATURE: Use terms like Neuron (node), Synapse (edge), Neurogenesis (creation), and Neural Network (graph).
 - Prefer current implementation facts over older conceptual drafts.
-- Treat roadmap items as prioritized intent, not implied implementation.
 - Keep outputs scoped to explicit IN/OUT constraints in specs.
-- If uncertain, preserve behavior and ask only when required to avoid unsafe changes.
-
-Rules for maintainers:
-- Never store secrets in this file.
-- Keep roadmap order and product positioning internally consistent across sections.
-- Avoid stale metadata like hardcoded commit hashes in the header.
-- Keep appendices curated to living docs that materially improve portability.
-
-What this file is not:
-- Not a full changelog.
-- Not a substitute for test output or deployment logs.
-- Not a place for transient brainstorming notes.
-
-Portable-context principle:
-- Curated sections should be understandable without opening the repo.
-- Appendices should provide exact operational details where precision matters.
-- The combination should support high-quality work in low-context environments.
 
 ============================================================================================
-1. HIGH-LEVEL PROJECT IDEA (PRODUCT VISION)
+1. HIGH-LEVEL PROJECT IDEA (PRODUCT VISION & IDENTITY)
 ============================================================================================
-NeuroGraph is a generative mastery-learning environment.
-Its core promise is to convert open-ended exploration into durable understanding.
-It avoids two failure modes at once:
-- Rigid top-down curriculum paths that suppress curiosity.
-- Entropic note-taking that accumulates text without mastery structure.
+NeuroGraph is an Active Generative Mastery environment. 
+It strictly opposes passive ingestion tools (like Recall.ai). We do not auto-generate massive webs of summary nodes from PDFs/videos. We build a personalized Neural Network through active exploration, strict prerequisites, and rigorous retention (The "Math Academy" way).
 
-NeuroGraph sits between those extremes:
-- Conversation is the discovery engine.
-- Crystallization creates durable conceptual units.
-- Retention discipline keeps those units retrievable over time.
+Core Nomenclature:
+- Neuron: The atomic, indivisible unit of core knowledge.
+- Synapse (formerly Edge): The directed relationship or prerequisite dependency between Neurons.
+- Neurogenesis: The phase transition from ephemeral chat to permanent Neuron.
+- Neural Network/Brain: The user's total knowledge graph.
 
-Core loop: Organic Discovery -> Crystallized Knowledge -> Rigorous Retention.
+The 40/60 Spatial Interface:
+- Left Panel (40%): The active operational zone. Context-switching between Ephemeral Chat, Note Editor, and FSRS Review.
+- Right Panel (60%): The visual Neural Network (React Flow). 
+- Bidirectional Sync: Navigating to a Neuron on the left automatically pans/zooms and highlights the node on the right.
 
-Gas-to-crystal cognitive loop:
-- Gas phase (exploration through chat):
-  - The user thinks out loud with AI.
-  - Questions, wrong turns, and reformulations are treated as useful signals.
-  - The system optimizes for conceptual movement, not immediate correctness.
-- Phase transition (crystallization):
-  - A background process monitors depth and conceptual density.
-  - When understanding becomes structurally meaningful, a node is created.
-  - This is selective to avoid noise and conservative against duplicates.
-- Solid phase (graph + retention):
-  - The concept joins a persistent knowledge graph.
-  - Memory decay is treated as a product reality, not a user failure.
-  - Review cycles maintain retrieval fitness and long-range coherence.
+The Ephemeral Discovery Engine (Chat):
+- Tabula Rasa: Learning starts with a blank chat, driven by user inquiry.
+- 14-Day Time-to-Live (TTL): Chats auto-delete after 14 days. This is a deliberate "forcing function" to prevent digital hoarding and force the user to extract value (Neurogenesis or Note injection) into permanent storage.
+- In-Place Extraction: Users can select text in chat to append to existing Neurons via a popup, without losing UI context.
 
-Pedagogical principles:
-- Atomicity:
-  - Each node should represent one indivisible concept.
-  - Atomic granularity improves diagnostics, remediation, and transfer.
-- Strict prerequisite structure:
-  - The graph behaves like a directed dependency structure.
-  - Advanced understanding depends on mastered foundations.
-- Non-interference:
-  - Explanation and verification are separate phases.
-  - Verification is intentionally gating to reduce illusion of competence.
-- FIRe (fractional implicit repetition):
-  - Success on higher-level tasks can reinforce prerequisite concepts indirectly.
-  - Intended to produce trickle-down reinforcement across dependencies.
-  - This principle is part of the product model even where implementation is pending.
+The AI "Bouncer" & Synaptic Charge:
+- Synaptic Charge (Carica Sinaptica): A visual UI indicator that fills up as the semantic density of the chat increases. Prevents frustration by showing progress toward Neurogenesis.
+- The Custode (Bouncer): To prevent duplicate or junk nodes, the AI runs background vector checks. If the chat nears an existing concept, it interrupts: "Are we discussing [Neuron X]? Want to continue there?"
+- Wiki-links for Minor Entities: Historical figures or examples (e.g., "Adolf Hitler" in a biology context) DO NOT get their own Neurons. They remain [[wiki-links]] within the Markdown notes, acting as triggers for new ephemeral chats.
 
-Concept model domains:
-- Node as concept:
-  - Captures a concise definition and durable core insight.
-  - Represents what is learned, not merely what was said.
-- Edge as learning relationship:
-  - Encodes prerequisite, enabling, or related-concept links.
-  - Supports both navigation and pedagogical influence.
-- User state over concept:
-  - Tracks personal mastery and memory health for each concept.
-  - Keeps conceptual truth global while mastery remains individual.
+Pedagogical Principles:
+- Atomicity: Each Neuron is one concept.
+- Strict Prerequisite DAG: Advanced understanding depends on mastered foundations. A decaying foundation locks or flags dependent Neurons.
+- FSRS-6: Rigorous spaced repetition of Neurons.
 
-Graph quality thesis:
-- Growth quality matters more than growth count.
-- Node creation should follow demonstrated conceptual depth.
-- The graph should become denser in value, not merely larger in size.
-
-Anticipatory structure:
-- Ghost-node style projections are intended to suggest likely next concepts.
-- These are navigational affordances, not commitments.
-- They support curiosity while preserving learner autonomy.
-
-Retention stance:
-- Passive exposure is insufficient for durable knowledge.
-- Retrieval practice is required to keep the graph operational.
-- Stability is continuous maintenance, not a one-time event.
-
-Dependency-health stance:
-- Downstream learning quality depends on foundation quality.
-- If prerequisite confidence falls, progress pressure should favor repair first.
-- Product success is measured by long-range coherence, not short-term completion.
-
-Intended user journey:
-- Explore -> crystallize -> practice -> re-explore.
-- Repeated cycles increase graph fidelity and user mastery.
-- Over time, the learner accumulates a living map of validated understanding.
-
-Differentiator:
-- Graph-first is not a secondary visualization.
-- The graph is the primary operational interface for knowledge and progress.
-
-Divergence note (factual deltas only):
-- Original architecture drafts described Neo4j + Pinecone + relational storage.
-- Current implementation uses Supabase Postgres + pgvector as a consolidated stack.
-- Original frontend draft referenced Next.js 15; implementation is currently Next.js 14.2.
-- Original retention framing centered on SM-2; implementation now uses FSRS via ts-fsrs.
-- Ghost Nodes and FIRe remain intended but are not yet implemented.
-
-Scope discipline reminder:
-- Vision defines destination and learning philosophy.
-- State and roadmap sections define what is actually live now.
-- Keep these layers separate to avoid planning drift.
+AI "Divide et Impera" Cost Strategy:
+- Routine chat ping-pong and background "Synaptic Charge" evaluation are handled by ultra-cheap models (e.g., GPT-4o-mini / Haiku).
+- Heavy, expensive models (e.g., GPT-4o / Sonnet) are reserved STRICTLY for the final "Neurogenesis" Markdown synthesis.
 
 ============================================================================================
 2. WHAT HAS BEEN DONE (PROJECT STATE SNAPSHOT)
 ============================================================================================
 State framing:
-- This repository is an implemented MVP with active polish.
-- Core loop and foundational systems are in production-shape development.
-- The roadmap remains intentionally narrow and prioritized.
+- MVP core loop is live (Chat -> Node creation -> Graph canvas).
+- Data persistence via Supabase Postgres + pgvector.
+- Spaced repetition scheduling via ts-fsrs.
 
-Working now:
-- Core MVP loop is live:
-  - Chat-first discovery flow is implemented.
-  - Crystal creation is integrated into the conversation workflow.
-  - Graph-canvas navigation is available for crystal relationships.
-- Data persistence is in place with Supabase:
-  - Conversations, messages, crystals, and edges are persisted.
-  - Data-access patterns support day-to-day product flows.
-- Retention support is integrated:
-  - FSRS-based scheduling metadata is present.
-  - Review-flow support exists and is wired into app behavior.
-- AI plumbing is usable:
-  - Multi-provider support and baseline retrieval helpers are implemented.
-  - Day-to-day AI use is functional across the current stack.
-- Test infrastructure is present:
-  - Unit/integration coverage via Vitest.
-  - End-to-end coverage path via Playwright.
-
-Partial / in-progress quality:
-- Graph-first UX is functional but still being polished for consistency and clarity.
-- AI output quality is usable but uneven across prompts/providers in some flows.
-- Crystal detail supports content editing, but the full durable-page workflow is not complete.
-
-Planned initiatives:
-- Crystal pages with stronger markdown authoring, linking, and durable workflows.
-- Ghost Nodes to preview likely next concepts and guide discovery.
-- FIRe-style implicit reinforcement for prerequisite maintenance.
+Legacy Code Note: 
+- The codebase now uses the Neuron/Synapse naming consistently for active application features.
+- Legacy naming remains only in historical migration files for traceability.
 
 Roadmap (priority order, authoritative):
-1) Crystal-as-page
-2) AI quality
-3) Ghost Nodes
-4) FIRe
-
-Known rough edges:
-- There are known defects and rough edges in current MVP flows.
-- The active posture is ongoing stability and UX consistency polish.
-- No currently known rough edge changes roadmap priority order.
-
-Process/status posture:
-- Scope discipline is a recurring quality lever.
-- Alignment work (env parity, state ownership, contract clarity) materially affects reliability.
-- Delivery quality improves when changes stay tied to explicit acceptance criteria.
-
-What this section intentionally excludes:
-- No commit-log chronology.
-- No commit-hash changelog.
-- No speculative architecture proposals presented as implemented facts.
-
-Execution guidance for assistants:
-- Treat this section as operational state, not product theory.
-- Resolve conflicts in favor of section 3 implementation details and appendix sources.
-- Keep roadmap language and ordering consistent with the list above.
+1) Neuron-as-page (Rich Markdown Editor, In-place extraction, [[wiki-links]])
+2) 40/60 Split UI & Bidirectional Graph Sync
+3) Ephemeral Chat (14-day TTL & Synaptic Charge visual indicator)
+4) Multi-Agent AI Pipeline (Bouncer/Custode implementation)
+5) FIRe / Ghost Nodes
 
 ============================================================================================
 3. REPOSITORY CONVENTIONS (CODE + DATA + TESTING)
 ============================================================================================
 Implementation baseline:
-- Framework/runtime:
-  - Next.js 14.2 (App Router)
-  - React 18
-  - TypeScript
-- Data and storage:
-  - Supabase/Postgres as primary persistence layer
-  - pgvector for embeddings and vector similarity
-  - Relational + vector behavior consolidated in one stack
-- Product architecture:
-  - React Flow for graph-canvas UI
-  - Zustand for client state management
-  - Vercel AI SDK for AI interaction layer
-  - ts-fsrs for spaced repetition scheduling logic
-- Test stack:
-  - Vitest for unit/integration testing
-  - Playwright for end-to-end flows
-
-Repository shape (high signal paths):
-- src/app/
-  - App Router routes, layouts, and API handlers.
-- src/lib/db/
-  - DB clients, query helpers, migration SQL, setup/verification utilities.
-- src/lib/ai/
-  - Provider selection, model plumbing, and retrieval support helpers.
-- docs/
-  - Prompt contracts, feature specs, and workflow documentation.
-- scripts/
-  - Operational scripts including deploy preflight and environment workflow helpers.
+- Next.js 14.2 (App Router), React 18, TypeScript.
+- Supabase/Postgres (relational + pgvector consolidated).
+- Zustand (client state) + React Flow (graph canvas UI).
+- Vercel AI SDK (LLM interactions).
 
 Database migration canon:
-- Canonical migration lineage is 001 through 009 under src/lib/db/migrations/.
-- The expected sequence currently includes:
-  - 001_initial_schema.sql
-  - 002_query_functions.sql
-  - 003_fsrs_schema.sql
-  - 004_update_rpc_fsrs.sql
-  - 005_rate_limit.sql
-  - 006_fix_retrievability.sql
-  - 007_fix_recursive_query.sql
-  - 008_add_content_and_editing.sql
-  - 009_add_messages_metadata.sql
+- Migrations 001 through 009 established the original graph schema that was later reset to `neurons` and `synapses`.
 
-Environment and deployment conventions:
-- Public client vars must use NEXT_PUBLIC_ prefix.
-- Required variable names and provider-conditional checks live in:
-  - .env.example
-  - scripts/deploy-preflight.mjs
-- Deploy preflight should be run before production deploy attempts.
-
-Testing conventions:
-- Keep changes verifiable by automated checks wherever practical.
-- Prefer narrow, deterministic tests for logic-sensitive behavior.
-- Preserve end-to-end test intent for critical interaction flows.
-
-Quality and ownership conventions:
-- Prefer server-source truth where ownership and correctness matter.
+Testing & Quality:
 - Keep data/state ownership boundaries explicit.
-- Be conservative with broad refactors unless the spec scope requires them.
-
-Compatibility posture:
-- Treat framework/version compatibility as a delivery risk surface.
-- Keep dependency upgrades intentional and coordinated with test/build validation.
+- Prefer narrow, deterministic tests for logic-sensitive behavior via Vitest. E2E via Playwright.
 
 ============================================================================================
 4. AI WORKFLOW (AIDER-FIRST, CODE-AWARE PLANNING)
 ============================================================================================
-Goal:
-- Planning and implementation decisions should be made with direct codebase awareness.
-
-Primary workflow:
-- Use Aider as the default code-aware assistant in terminal.
-- Use ask mode first to shape scope and acceptance criteria without editing.
-- Switch to code mode only after scope converges.
-
-Why this workflow:
-- It reduces context drift between planning and implementation.
-- It controls spend by separating ideation from code editing.
-- It improves consistency between spec intent and shipped diffs.
-
-Operational baseline:
-- Keep OpenRouter/API setup external to this file (do not store secrets here).
-- Use repo-map context intentionally; avoid excessive token waste.
-- Track decisions in concise artifacts (feature brief/spec) before implementation.
-
-Recommended flow:
-1) Clarify feature intent via advisor-style brief.
-2) Convert brief to implementation spec with explicit IN/OUT and acceptance criteria.
-3) Open Aider in ask mode against the target spec/documents.
-4) Converge on plan and edge cases.
-5) Execute in code mode with tests and build checks.
-
-Working principles:
-- Scope discipline beats broad speculative rewrites.
+- Use Aider as the default code-aware assistant.
+- Ask mode first to shape scope -> Code mode to execute.
 - Keep planning outputs testable and executable.
-- Prefer stable process contracts over tool-specific novelty.
-
-Fallback/adjacent tools:
-- Free long-form ideation tools can be used upstream for brainstorming.
-- Final planning before coding should remain code-aware and repo-grounded.
 
 ============================================================================================
 5. MODEL SELECTION (OPENROUTER)
 ============================================================================================
-Intent:
-- Use a rubric, not a permanently hardcoded model choice.
-- Re-evaluate model fit periodically as offerings and costs shift.
-
-Selection rubric:
-- Reasoning quality for planning and tradeoff handling.
-- Edit reliability for producing correct, minimal diffs.
-- Agentic stability for multi-step work without scope drift.
-- Cost profile for expected token volume.
-- Context-window suitability for specs + repo-map usage.
-- Consistency and low hallucination rate in practical tasks.
-
-Role separation:
-- Planner model: strongest reasoning within budget.
-- Editor model: strongest patch correctness and low rework rate.
-- Fast helper model: low-cost utility for small bounded tasks.
-
-Evaluation loop:
-- Run recurring benchmark tasks across candidates (small fix, refactor, test add).
-- Record pass/fail, correction count, and practical latency.
-- Promote/demote models based on observed delivery quality.
-
-Update sources:
-- Aider leaderboards: https://aider.chat/docs/leaderboards/
-- OpenRouter model catalog: https://openrouter.ai/models
-- Local listing via Aider: aider --list-models openrouter/
-
-Current model-set notes:
-- Keep entries minimal and current; remove stale candidates quickly.
-- Avoid overfitting to one benchmark source.
-
-MODEL SET (intentionally minimal)
-- Planner (ask mode):
-- Editor (code mode):
-- Fast helper:
-
-CANDIDATES
-| model | role | context | cost (in/out) | strengths | weaknesses | keep? |
-|-------|------|---------|---------------|-----------|------------|-------|
-|       |      |         |               |           |            |       |
+Multi-Tier Model Strategy:
+- Planner / Synthesizer (Neurogenesis): High reasoning, high cost (e.g., GPT-4o, Claude 3.5 Sonnet).
+- Conversationalist (Chat loop): Fast, low cost (e.g., GPT-4o-mini, Claude 3.5 Haiku).
+- Sentinel / Charger (Background eval): Heuristics or ultra-cheap token analysis.
+- Editor (Aider code mode): Strongest patch correctness (e.g., Claude 3.5 Sonnet).
 
 ============================================================================================
 APPENDICES: VERBATIM SOURCE DOCUMENTS (MERGED)
@@ -367,9 +114,9 @@ These appendices are merged verbatim from living docs to preserve operational fi
 No .sisyphus/* files are included as verbatim blocks in this edition.
 
 Condensed History (derived from .sisyphus/drafts/condensed-history.md):
-- NeuroGraph MVP: built the first end-to-end loop with strict scope guardrails; key choices included user-confirmed crystallization and Postgres+pgvector consolidation.
+- NeuroGraph MVP: built the first end-to-end loop with strict scope guardrails; key choices included user-confirmed neurogenesis and Postgres+pgvector consolidation.
 - NeuroGraph Bugs and Gaps: focused on correctness/spec compliance, fixing high-value defects while deferring selected complexity.
-- NeuroGraph Polish Sprint: improved editing/navigation/resilience and advanced crystal-as-page direction with usability-focused polish.
+- NeuroGraph Polish Sprint: improved editing/navigation/resilience and advanced neuron-as-page direction with usability-focused polish.
 - NeuroGraph Dev Process: established cost-aware brief->spec->execution workflow and hardened preflight/env-alignment practices.
 - Cross-cutting pattern: scope discipline and alignment work repeatedly produced better reliability and delivery quality.
 
@@ -524,7 +271,7 @@ supabase db push
 ## Seeding Development Data
 
 ```bash
-# Seed database with sample data (5 crystals, 6 edges, 1 conversation)
+# Seed database with sample data (5 neurons, 6 synapses, 1 conversation)
 npx tsx src/lib/db/seed.ts
 ```
 
@@ -544,12 +291,12 @@ Expected result: < 100ms average query time
 
 - **conversations**: User chat sessions
 - **messages**: Individual messages within conversations
-- **crystals**: Knowledge nodes with embeddings and spaced repetition metadata
-- **crystal_edges**: Relationships between crystals
+- **neurons**: Knowledge nodes with embeddings and spaced repetition metadata
+- **synapses**: Relationships between neurons
 
 ### Indexes
 
-- HNSW index on `crystals.embedding` for fast vector similarity search
+- HNSW index on `neurons.embedding` for fast vector similarity search
 - B-tree indexes on foreign keys and `next_review_due`
 
 ### RLS Policies
@@ -560,21 +307,21 @@ All tables have Row Level Security enabled:
 
 ### Functions
 
-- `find_similar_crystals(embedding, user_id, threshold, limit)`: Vector similarity search
-- `get_crystal_neighborhood(crystal_id, max_depth)`: Recursive graph traversal (2-hop max)
+- `find_similar_neurons(embedding, user_id, threshold, limit)`: Vector similarity search
+- `get_neuron_neighborhood(neuron_id, max_depth)`: Recursive graph traversal (2-hop max)
 
 ## Query Helpers
 
 Import from `@/lib/db/queries`:
 
 ```typescript
-import { crystalQueries, edgeQueries, conversationQueries, messageQueries } from '@/lib/db/queries';
+import { neuronQueries, synapseQueries, conversationQueries, messageQueries } from '@/lib/db/queries';
 
-await crystalQueries.create({ ... });
-await crystalQueries.getById(id);
-await crystalQueries.getDueForReview(userId);
-await crystalQueries.findSimilar(embedding, userId);
-await crystalQueries.getNeighborhood(crystalId, 2);
+await neuronQueries.create({ ... });
+await neuronQueries.getById(id);
+await neuronQueries.getDueForReview(userId);
+await neuronQueries.findSimilar(embedding, userId);
+await neuronQueries.getNeighborhood(neuronId, 2);
 ```
 
 ## Troubleshooting
@@ -607,12 +354,12 @@ Your job: help the human clarify what to build next, why it matters, and what to
 
 ## Project Context (NeuroGraph)
 
-- Product: a conversation-first thinking companion that crystallizes insights into a knowledge graph.
+- Product: a conversation-first thinking companion that turns insights into a neural network.
 - Differentiator vs Recall-style tools: the GRAPH is the primary interface (graph-first), not a secondary view.
 - Current stage: MVP is complete; known bugs exist but are not the focus of ideation.
 - Time budget: 5-10 hours/week.
 - Cost constraints: prefer free (Gemini) for ideation/specs; reserve expensive tools for implementation.
-- Feature priorities (current): Crystal-as-page > AI quality > Ghost Nodes/FIRe > stabilize/deploy.
+- Feature priorities (current): Neuron-as-page > AI quality > Ghost Nodes/FIRe > stabilize/deploy.
 
 ## Operating Rules
 
@@ -678,7 +425,7 @@ Your job: transform a Feature Brief into an implementation-oriented Feature Spec
 
 ## Project Context (NeuroGraph)
 
-- Product: conversation-first thinking companion that crystallizes insights into a knowledge graph.
+- Product: conversation-first thinking companion that turns insights into a neural network.
 - Differentiator: graph-first primary interface.
 - Constraints: 5-10 hours/week; keep specs lean and executable.
 
@@ -818,7 +565,7 @@ cp docs/specs/_template.md "docs/specs/<feature-slug>.md"
 ## Naming Convention
 
 - File: `docs/specs/<feature-slug>.md`
-- Slug: lowercase, hyphen-separated (example: `crystal-as-page`)
+- Slug: lowercase, hyphen-separated (example: `neuron-as-page`)
 
 ## Handoff to Planning
 
@@ -852,25 +599,25 @@ END FILE: docs/specs/README.md
 ============================================================================================
 
 ============================================================================================
-BEGIN FILE: docs/specs/crystal-as-page.md
+BEGIN FILE: docs/specs/neuron-as-page.md
 ============================================================================================
-# Feature: Crystal-as-Page
+# Feature: Neuron-as-Page
 
 ## Problem
-Crystals need to become durable knowledge artifacts, not just brief summaries. Users need a page-like surface to expand a crystal with examples, personal notes, and links. Without this, long-term use becomes fragmented (notes live elsewhere) and the graph loses value as the primary interface.
+Neurons need to become durable knowledge artifacts, not just brief summaries. Users need a page-like surface to expand a neuron with examples, personal notes, and links. Without this, long-term use becomes fragmented (notes live elsewhere) and the graph loses value as the primary interface.
 
 ## User Story
-As a learner, I want each crystal to be a rich markdown page so that I can grow my understanding over time and navigate knowledge through the graph.
+As a learner, I want each neuron to be a rich markdown page so that I can grow my understanding over time and navigate knowledge through the graph.
 
 ## Scope
 
 ### IN (must deliver)
-- [ ] Crystal detail panel supports editing markdown content (edit mode)
-- [ ] Crystal detail panel supports rendering markdown content (preview mode)
-- [ ] Markdown is persisted to the existing crystal content field and reloads on refresh
-- [ ] Wiki-link style references (`[[Crystal Title]]`) are detected and displayed as outbound links
-- [ ] Backlinks list exists (crystals that reference the current crystal)
-- [ ] Basic crystal search/filtering exists to jump between pages
+- [ ] Neuron detail panel supports editing markdown content (edit mode)
+- [ ] Neuron detail panel supports rendering markdown content (preview mode)
+- [ ] Markdown is persisted to the existing neuron content field and reloads on refresh
+- [ ] Wiki-link style references (`[[Neuron Title]]`) are detected and displayed as outbound links
+- [ ] Backlinks list exists (neurons that reference the current neuron)
+- [ ] Basic neuron search/filtering exists to jump between pages
 
 ### OUT (explicitly excluded)
 - [ ] Offline-first sync and conflict resolution
@@ -882,42 +629,42 @@ As a learner, I want each crystal to be a rich markdown page so that I can grow 
 ## Technical Design
 
 ### Data Model Changes
-- No new required fields if `crystals.content` already exists.
+- No new required fields if `neurons.content` already exists.
 - Backlinks can be computed dynamically by parsing content, or stored in a dedicated table later if performance requires it.
 - If title-based wiki-links are insufficient, add an ID-based reference format in a follow-up (OUT of scope for this spec).
 
 ### API Changes
-- Ensure there is a supported update path for crystal content (example: `PATCH /api/crystals/[id]` to update `content`).
+- Ensure there is a supported update path for neuron content (example: `PATCH /api/neurons/[id]` to update `content`).
 - If API already exists, extend validation so `content` accepts markdown text.
 - Add (or extend) an endpoint to query backlinks efficiently if the UI requires it.
 
 ### UI Changes
-- Replace the plain content textarea in the crystal detail panel with:
+- Replace the plain content textarea in the neuron detail panel with:
   - Edit mode: markdown editor surface
   - Preview mode: markdown renderer with GFM (tables, lists, code blocks)
 - Add links section:
   - Outbound links: parsed `[[...]]` references
-  - Backlinks: other crystals referencing current one
-- Add a simple search/filter input to jump between crystals/pages.
+- Backlinks: other neurons referencing current one
+- Add a simple search/filter input to jump between neurons/pages.
 
 ## Acceptance Criteria
-- [ ] Editing a crystal's markdown persists and reloads correctly (no data loss)
+- [ ] Editing a neuron's markdown persists and reloads correctly (no data loss)
 - [ ] Markdown renders with GFM features (lists, tables, fenced code blocks)
 - [ ] Rendering does not allow unsafe HTML/XSS by default
 - [ ] Outbound wiki-links are detected and shown as clickable items
-- [ ] Backlinks list updates after saving content in another crystal
-- [ ] Search/filter lets me navigate to a crystal page in under 3 interactions
+- [ ] Backlinks list updates after saving content in another neuron
+- [ ] Search/filter lets me navigate to a neuron page in under 3 interactions
 
 ## Guardrails
-- Do NOT refactor chat/crystallization flow as part of this feature
+- Do NOT refactor chat/neurogenesis flow as part of this feature
 - Do NOT add a complex editor framework unless strictly necessary
 - Do NOT render raw HTML from markdown without sanitization
 - Do NOT introduce background jobs or new infra for backlinks in this iteration
 
 ## Open Questions
 - Should backlinks create real graph edges or remain a separate "page links" layer?
-- How should wiki-links behave on crystal rename (title collisions, broken links)?
+- How should wiki-links behave on neuron rename (title collisions, broken links)?
 - Minimum acceptable editor UX: tabbed edit/preview vs split view?
 ============================================================================================
-END FILE: docs/specs/crystal-as-page.md
+END FILE: docs/specs/neuron-as-page.md
 ============================================================================================

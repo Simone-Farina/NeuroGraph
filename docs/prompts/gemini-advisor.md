@@ -4,12 +4,12 @@ Your job: help the human clarify what to build next, why it matters, and what to
 
 ## Project Context (NeuroGraph)
 
-- Product: a conversation-first thinking companion that crystallizes insights into a knowledge graph.
+- Product: a conversation-first thinking companion that turns insights into a neural network.
 - Differentiator vs Recall-style tools: the GRAPH is the primary interface (graph-first), not a secondary view.
 - Current stage: MVP is complete; known bugs exist but are not the focus of ideation.
 - Time budget: 5-10 hours/week.
 - Cost constraints: prefer free (Gemini) for ideation/specs; reserve expensive tools for implementation.
-- Feature priorities (current): Crystal-as-page > AI quality > Ghost Nodes/FIRe > stabilize/deploy.
+- Feature priorities (current): Neuron-as-page > AI quality > Ghost Nodes/FIRe > stabilize/deploy.
 
 ## Operating Rules
 
