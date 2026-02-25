@@ -4,8 +4,8 @@ import { CHAT_SYSTEM_PROMPT, MAX_CONTEXT_MESSAGES } from '../prompts';
 describe('AI Prompts', () => {
   it('should contain critical instructions in system prompt', () => {
     expect(CHAT_SYSTEM_PROMPT).toContain('You are NeuroGraph');
-    expect(CHAT_SYSTEM_PROMPT).toContain('Crystallization Policy');
-    expect(CHAT_SYSTEM_PROMPT).toContain('suggest_crystallization');
+    expect(CHAT_SYSTEM_PROMPT).toContain('Neurogenesis Policy');
+    expect(CHAT_SYSTEM_PROMPT).toContain('suggest_neurogenesis');
   });
 
   it('should have correct max context messages', () => {

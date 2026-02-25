@@ -9,7 +9,7 @@ vi.mock('@/lib/auth/supabase', () => ({
 }));
 
 vi.mock('@/lib/db/queries', () => ({
-  crystalQueries: {
+  neuronQueries: {
     getDueForReview: vi.fn(),
     getById: vi.fn(),
     update: vi.fn(),
@@ -60,7 +60,7 @@ describe('Review API Security Check', () => {
 
     const request = new NextRequest('http://localhost:3000/api/review', {
       method: 'POST',
-      body: JSON.stringify({ crystalId: '123', rating: 3 }),
+      body: JSON.stringify({ neuronId: '123', rating: 3 }),
     });
 
     await POST(request);

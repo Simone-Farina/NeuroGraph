@@ -1,33 +1,33 @@
 import { describe, it, expect } from 'vitest';
-import { crystallizationSchema } from '../tools';
+import { neurogenesisSchema } from '../tools';
 
-describe('Crystallization Tool Schema', () => {
+describe('Neurogenesis Tool Schema', () => {
   it('should validate a complete valid input', () => {
     const validInput = {
       title: 'Valid Title',
-      definition: 'This is a valid definition for the crystal.',
+      definition: 'This is a valid definition for the neuron.',
       core_insight: 'This is a core insight that explains the concept.',
       bloom_level: 'Understand',
-      related_crystals: [
+      related_neurons: [
         {
           id: '123e4567-e89b-12d3-a456-426614174000',
-          title: 'Related Crystal',
+          title: 'Related Neuron',
           relationship_type: 'RELATED',
         },
       ],
     };
-    const result = crystallizationSchema.safeParse(validInput);
+    const result = neurogenesisSchema.safeParse(validInput);
     expect(result.success).toBe(true);
   });
 
   it('should validate minimal valid input', () => {
     const minimalInput = {
       title: 'Valid Title',
-      definition: 'This is a valid definition for the crystal.',
+      definition: 'This is a valid definition for the neuron.',
       core_insight: 'This is a core insight that explains the concept.',
       bloom_level: 'Apply',
     };
-    const result = crystallizationSchema.safeParse(minimalInput);
+    const result = neurogenesisSchema.safeParse(minimalInput);
     expect(result.success).toBe(true);
   });
 
@@ -35,7 +35,7 @@ describe('Crystallization Tool Schema', () => {
     const invalidInput = {
       title: 'Valid Title',
     };
-    const result = crystallizationSchema.safeParse(invalidInput);
+    const result = neurogenesisSchema.safeParse(invalidInput);
     expect(result.success).toBe(false);
     if (!result.success) {
       const errors = result.error.flatten().fieldErrors;
@@ -49,7 +49,7 @@ describe('Crystallization Tool Schema', () => {
     it('should validate title length', () => {
       // Too short
       expect(
-        crystallizationSchema.safeParse({
+        neurogenesisSchema.safeParse({
           title: 'No',
           definition: 'Valid definition text here.',
           core_insight: 'Valid core insight text here.',
@@ -59,7 +59,7 @@ describe('Crystallization Tool Schema', () => {
 
       // Too long
       expect(
-        crystallizationSchema.safeParse({
+        neurogenesisSchema.safeParse({
           title: 'a'.repeat(121),
           definition: 'Valid definition text here.',
           core_insight: 'Valid core insight text here.',
@@ -71,7 +71,7 @@ describe('Crystallization Tool Schema', () => {
     it('should validate definition length', () => {
        // Too short
        expect(
-        crystallizationSchema.safeParse({
+        neurogenesisSchema.safeParse({
           title: 'Valid Title',
           definition: 'Short',
           core_insight: 'Valid core insight text here.',
@@ -81,7 +81,7 @@ describe('Crystallization Tool Schema', () => {
 
       // Too long
       expect(
-        crystallizationSchema.safeParse({
+        neurogenesisSchema.safeParse({
           title: 'Valid Title',
           definition: 'a'.repeat(281),
           core_insight: 'Valid core insight text here.',
@@ -93,7 +93,7 @@ describe('Crystallization Tool Schema', () => {
     it('should validate core_insight length', () => {
        // Too short
        expect(
-        crystallizationSchema.safeParse({
+        neurogenesisSchema.safeParse({
           title: 'Valid Title',
           definition: 'Valid definition text here.',
           core_insight: 'Short',
@@ -103,7 +103,7 @@ describe('Crystallization Tool Schema', () => {
 
       // Too long
       expect(
-        crystallizationSchema.safeParse({
+        neurogenesisSchema.safeParse({
           title: 'Valid Title',
           definition: 'Valid definition text here.',
           core_insight: 'a'.repeat(501),
@@ -114,7 +114,7 @@ describe('Crystallization Tool Schema', () => {
 
     it('should validate bloom_level enum', () => {
       expect(
-        crystallizationSchema.safeParse({
+        neurogenesisSchema.safeParse({
           title: 'Valid Title',
           definition: 'Valid definition text here.',
           core_insight: 'Valid core insight text here.',
@@ -124,36 +124,36 @@ describe('Crystallization Tool Schema', () => {
     });
   });
 
-  describe('Related Crystals Validation', () => {
-    it('should validate related_crystals array length', () => {
+  describe('Related Neurons Validation', () => {
+    it('should validate related_neurons array length', () => {
       const validInput = {
         title: 'Valid Title',
         definition: 'Valid definition text here.',
         core_insight: 'Valid core insight text here.',
         bloom_level: 'Remember',
-        related_crystals: Array(6).fill({
+        related_neurons: Array(6).fill({
           id: '123e4567-e89b-12d3-a456-426614174000',
           relationship_type: 'RELATED',
         }),
       };
-      const result = crystallizationSchema.safeParse(validInput);
+      const result = neurogenesisSchema.safeParse(validInput);
       expect(result.success).toBe(false);
     });
 
-    it('should validate related crystal id is uuid', () => {
+    it('should validate related neuron id is uuid', () => {
       const invalidIdInput = {
         title: 'Valid Title',
         definition: 'Valid definition text here.',
         core_insight: 'Valid core insight text here.',
         bloom_level: 'Remember',
-        related_crystals: [
+        related_neurons: [
             {
                 id: 'not-a-uuid',
                 relationship_type: 'RELATED',
             }
         ],
       };
-      const result = crystallizationSchema.safeParse(invalidIdInput);
+      const result = neurogenesisSchema.safeParse(invalidIdInput);
       expect(result.success).toBe(false);
     });
 
@@ -163,14 +163,14 @@ describe('Crystallization Tool Schema', () => {
         definition: 'Valid definition text here.',
         core_insight: 'Valid core insight text here.',
         bloom_level: 'Remember',
-        related_crystals: [
+        related_neurons: [
             {
                 id: '123e4567-e89b-12d3-a456-426614174000',
                 relationship_type: 'INVALID_TYPE',
             }
         ],
       };
-      const result = crystallizationSchema.safeParse(invalidTypeInput);
+      const result = neurogenesisSchema.safeParse(invalidTypeInput);
       expect(result.success).toBe(false);
     });
   });

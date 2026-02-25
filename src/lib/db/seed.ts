@@ -54,7 +54,7 @@ export async function seedDatabase() {
 
   console.log(`✅ Created ${messages.data.length} messages\n`);
 
-  const crystalData = [
+  const neuronData = [
     {
       title: 'Supply and Demand Equilibrium',
       definition: 'The price point where quantity supplied equals quantity demanded, creating market stability.',
@@ -87,12 +87,12 @@ export async function seedDatabase() {
     },
   ];
 
-  const crystals = await supabase
-    .from('crystals')
+  const neurons = await supabase
+    .from('neurons')
     .insert(
-      crystalData.map((c, i) => ({
+      neuronData.map((n, i) => ({
         user_id: TEST_USER_ID,
-        ...c,
+        ...n,
         source_conversation_id: conversation.data.id,
         source_message_ids: [messages.data[i % messages.data.length].id],
         embedding: generateMockEmbedding(),
@@ -106,64 +106,64 @@ export async function seedDatabase() {
     )
     .select();
 
-  if (crystals.error) {
-    console.error('Error creating crystals:', crystals.error);
-    throw crystals.error;
+  if (neurons.error) {
+    console.error('Error creating neurons:', neurons.error);
+    throw neurons.error;
   }
 
-  console.log(`✅ Created ${crystals.data.length} crystals:`);
-  crystals.data.forEach((c) => console.log(`   - ${c.title}`));
+  console.log(`✅ Created ${neurons.data.length} neurons:`);
+  neurons.data.forEach((n) => console.log(`   - ${n.title}`));
   console.log();
 
-  const [c1, c2, c3, c4, c5] = crystals.data;
+  const [n1, n2, n3, n4, n5] = neurons.data;
 
   const edges = await supabase
-    .from('crystal_edges')
+    .from('synapses')
     .insert([
       {
         user_id: TEST_USER_ID,
-        source_crystal_id: c1.id,
-        target_crystal_id: c2.id,
+        source_neuron_id: n1.id,
+        target_neuron_id: n2.id,
         type: 'RELATED' as const,
         weight: 0.8,
         ai_suggested: true,
       },
       {
         user_id: TEST_USER_ID,
-        source_crystal_id: c2.id,
-        target_crystal_id: c5.id,
+        source_neuron_id: n2.id,
+        target_neuron_id: n5.id,
         type: 'BUILDS_ON' as const,
         weight: 0.7,
         ai_suggested: true,
       },
       {
         user_id: TEST_USER_ID,
-        source_crystal_id: c3.id,
-        target_crystal_id: c4.id,
+        source_neuron_id: n3.id,
+        target_neuron_id: n4.id,
         type: 'PREREQUISITE' as const,
         weight: 0.9,
         ai_suggested: false,
       },
       {
         user_id: TEST_USER_ID,
-        source_crystal_id: c1.id,
-        target_crystal_id: c5.id,
+        source_neuron_id: n1.id,
+        target_neuron_id: n5.id,
         type: 'RELATED' as const,
         weight: 0.6,
         ai_suggested: true,
       },
       {
         user_id: TEST_USER_ID,
-        source_crystal_id: c3.id,
-        target_crystal_id: c1.id,
+        source_neuron_id: n3.id,
+        target_neuron_id: n1.id,
         type: 'RELATED' as const,
         weight: 0.5,
         ai_suggested: true,
       },
       {
         user_id: TEST_USER_ID,
-        source_crystal_id: c4.id,
-        target_crystal_id: c1.id,
+        source_neuron_id: n4.id,
+        target_neuron_id: n1.id,
         type: 'BUILDS_ON' as const,
         weight: 0.7,
         ai_suggested: true,
@@ -176,10 +176,10 @@ export async function seedDatabase() {
     throw edges.error;
   }
 
-  console.log(`✅ Created ${edges.data.length} crystal edges\n`);
+  console.log(`✅ Created ${edges.data.length} synapses\n`);
 
   console.log('🎉 Database seeded successfully!');
-  console.log(`📊 Summary: 1 conversation, ${messages.data.length} messages, ${crystals.data.length} crystals, ${edges.data.length} edges`);
+  console.log(`📊 Summary: 1 conversation, ${messages.data.length} messages, ${neurons.data.length} neurons, ${edges.data.length} synapses`);
 }
 
 if (require.main === module) {

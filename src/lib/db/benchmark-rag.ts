@@ -1,11 +1,11 @@
 import { supabase } from './client';
-import { crystalQueries } from './queries';
+import { neuronQueries } from './queries';
 import type { BloomLevel } from '@/types/database';
 
-const SPIKE_USER_ID = '00000000-0000-0000-0000-000000000003'; // Different ID for this benchmark
-const NUM_CRYSTALS = 500;
+const SPIKE_USER_ID = '00000000-0000-0000-0000-000000000003';
+const NUM_NEURONS = 500;
 const NUM_EDGES = 1500;
-const BATCH_TEST_SIZE = 5; // Simulating the RAG context retrieval of 5 crystals
+const BATCH_TEST_SIZE = 5;
 
 function generateMockEmbedding(): number[] {
   return Array.from({ length: 1536 }, () => Math.random() * 2 - 1);
@@ -17,7 +17,7 @@ function randomBloomLevel(): BloomLevel {
 }
 
 async function createPerformanceData() {
-  console.log(`🔧 Creating performance test data: ${NUM_CRYSTALS} crystals, ${NUM_EDGES} edges\n`);
+  console.log(`🔧 Creating performance test data: ${NUM_NEURONS} neurons, ${NUM_EDGES} synapses\n`);
 
   const conversationResult = await supabase
     .from('conversations')
@@ -43,15 +43,15 @@ async function createPerformanceData() {
   if (messageResult.error) throw messageResult.error;
 
   const batchSize = 100;
-  const crystalIds: string[] = [];
+  const neuronIds: string[] = [];
 
-  for (let i = 0; i < NUM_CRYSTALS; i += batchSize) {
-    const batch = Array.from({ length: Math.min(batchSize, NUM_CRYSTALS - i) }, (_, j) => {
+  for (let i = 0; i < NUM_NEURONS; i += batchSize) {
+    const batch = Array.from({ length: Math.min(batchSize, NUM_NEURONS - i) }, (_, j) => {
       const idx = i + j;
       return {
         user_id: SPIKE_USER_ID,
-        title: `RAG Benchmark Crystal ${idx}`,
-        definition: `Test crystal for RAG benchmark number ${idx}`,
+        title: `RAG Benchmark Neuron ${idx}`,
+        definition: `Test neuron for RAG benchmark number ${idx}`,
         core_insight: `Insight ${idx}`,
         bloom_level: randomBloomLevel(),
         source_conversation_id: conversationResult.data.id,
@@ -62,7 +62,6 @@ async function createPerformanceData() {
         next_review_due: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
         review_count: 0,
         consecutive_correct: 0,
-        // FSRS fields
         difficulty: 5.0,
         state: 'New' as const,
         reps: 0,
@@ -72,49 +71,49 @@ async function createPerformanceData() {
       };
     });
 
-    const result = await supabase.from('crystals').insert(batch).select('id');
+    const result = await supabase.from('neurons').insert(batch).select('id');
     if (result.error) throw result.error;
 
-    crystalIds.push(...result.data.map((c) => c.id));
-    console.log(`  Created crystals ${i}-${i + batch.length - 1}`);
+    neuronIds.push(...result.data.map((n) => n.id));
+    console.log(`  Created neurons ${i}-${i + batch.length - 1}`);
   }
 
-  console.log(`✅ Created ${crystalIds.length} crystals\n`);
+  console.log(`✅ Created ${neuronIds.length} neurons\n`);
 
   const edgeTypes = ['PREREQUISITE', 'RELATED', 'BUILDS_ON'] as const;
   const edgeBatchSize = 200;
 
   for (let i = 0; i < NUM_EDGES; i += edgeBatchSize) {
     const batch = Array.from({ length: Math.min(edgeBatchSize, NUM_EDGES - i) }, () => {
-      const sourceIdx = Math.floor(Math.random() * crystalIds.length);
-      let targetIdx = Math.floor(Math.random() * crystalIds.length);
+      const sourceIdx = Math.floor(Math.random() * neuronIds.length);
+      let targetIdx = Math.floor(Math.random() * neuronIds.length);
 
       while (targetIdx === sourceIdx) {
-        targetIdx = Math.floor(Math.random() * crystalIds.length);
+        targetIdx = Math.floor(Math.random() * neuronIds.length);
       }
 
       return {
         user_id: SPIKE_USER_ID,
-        source_crystal_id: crystalIds[sourceIdx],
-        target_crystal_id: crystalIds[targetIdx],
+        source_neuron_id: neuronIds[sourceIdx],
+        target_neuron_id: neuronIds[targetIdx],
         type: edgeTypes[Math.floor(Math.random() * edgeTypes.length)],
         weight: Math.random(),
         ai_suggested: Math.random() > 0.5,
       };
     });
 
-    const result = await supabase.from('crystal_edges').insert(batch).select('id');
+    const result = await supabase.from('synapses').insert(batch).select('id');
     if (result.error) throw result.error;
 
-    console.log(`  Created edges ${i}-${i + batch.length - 1}`);
+    console.log(`  Created synapses ${i}-${i + batch.length - 1}`);
   }
 
-  console.log(`✅ Created ${NUM_EDGES} edges\n`);
+  console.log(`✅ Created ${NUM_EDGES} synapses\n`);
 
-  return { crystalIds };
+  return { neuronIds };
 }
 
-async function benchmarkImplementations(crystalIds: string[]) {
+async function benchmarkImplementations(neuronIds: string[]) {
   console.log(`⚡ Benchmarking RAG neighborhood retrieval (batch size: ${BATCH_TEST_SIZE})...\n`);
 
   const iterations = 10;
@@ -122,29 +121,20 @@ async function benchmarkImplementations(crystalIds: string[]) {
   const timingsBatch: number[] = [];
 
   for (let i = 0; i < iterations; i++) {
-    // Select random crystals for this iteration
     const testIds: string[] = [];
     for (let k = 0; k < BATCH_TEST_SIZE; k++) {
-      testIds.push(crystalIds[Math.floor(Math.random() * crystalIds.length)]);
+      testIds.push(neuronIds[Math.floor(Math.random() * neuronIds.length)]);
     }
 
-    // 1. Measure Concurrent RPCs (Baseline)
     const startConcurrent = performance.now();
     await Promise.all(
-      testIds.map(id => crystalQueries.getNeighborhood(supabase, id, 1))
+      testIds.map(id => neuronQueries.getNeighborhood(supabase, id, 1))
     );
     const endConcurrent = performance.now();
     timingsConcurrent.push(endConcurrent - startConcurrent);
 
-    // 2. Measure Batched Query (Optimized)
     const startBatch = performance.now();
-    // @ts-ignore - function might not exist yet if running before implementation
-    if (crystalQueries.getNeighborhoodsBatch) {
-      // @ts-ignore
-      await crystalQueries.getNeighborhoodsBatch(supabase, testIds, 1);
-    } else {
-      console.warn('getNeighborhoodsBatch not implemented yet');
-    }
+    await neuronQueries.getNeighborhoodsBatch(supabase, testIds, 1);
     const endBatch = performance.now();
     timingsBatch.push(endBatch - startBatch);
 
@@ -166,13 +156,10 @@ async function benchmarkImplementations(crystalIds: string[]) {
 async function cleanup() {
   console.log('\n🧹 Cleaning up performance test data...');
 
-  // Delete edges
-  await supabase.from('crystal_edges').delete().eq('user_id', SPIKE_USER_ID);
+  await supabase.from('synapses').delete().eq('user_id', SPIKE_USER_ID);
 
-  // Delete crystals
-  await supabase.from('crystals').delete().eq('user_id', SPIKE_USER_ID);
+  await supabase.from('neurons').delete().eq('user_id', SPIKE_USER_ID);
 
-  // Clean up conversation and messages
   const { data: conversations } = await supabase
     .from('conversations')
     .select('id')
@@ -196,8 +183,8 @@ async function cleanup() {
 async function runBenchmark() {
   try {
     console.log('🚀 NeuroGraph RAG Benchmark\n');
-    const { crystalIds } = await createPerformanceData();
-    await benchmarkImplementations(crystalIds);
+    const { neuronIds } = await createPerformanceData();
+    await benchmarkImplementations(neuronIds);
     await cleanup();
     console.log('🎉 Benchmark completed successfully!');
   } catch (error) {

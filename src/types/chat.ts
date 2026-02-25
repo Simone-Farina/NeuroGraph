@@ -11,7 +11,7 @@ export type SuggestionInput = {
   definition: string;
   core_insight: string;
   bloom_level: string;
-  related_crystals?: Array<{
+  related_neurons?: Array<{
     id: string;
     title?: string;
     relationship_type: RelationshipType;
@@ -27,9 +27,9 @@ export type SuggestionToolPart = {
   output?: unknown;
 };
 
-export type EdgeSuggestion = {
-  source_crystal_id: string;
-  target_crystal_id: string;
+export type SynapseSuggestion = {
+  source_neuron_id: string;
+  target_neuron_id: string;
   target_title: string;
   type: RelationshipType;
   weight: number;
@@ -37,27 +37,27 @@ export type EdgeSuggestion = {
   source: 'vector' | 'ai';
 };
 
-export type CreatedCrystalResponse = {
-  crystal: {
+export type CreatedNeuronResponse = {
+  neuron: {
     id: string;
     title: string;
     retrievability: number;
   };
-  edges?: Array<{
+  synapses?: Array<{
     id: string;
-    source_crystal_id: string;
-    target_crystal_id: string;
+    source_neuron_id: string;
+    target_neuron_id: string;
     type: RelationshipType;
     weight?: number;
   }>;
-  edge_suggestions?: EdgeSuggestion[];
+  synapse_suggestions?: SynapseSuggestion[];
 };
 
-export type EdgeUpsertResponse = {
-  edge: {
+export type SynapseUpsertResponse = {
+  synapse: {
     id: string;
-    source_crystal_id: string;
-    target_crystal_id: string;
+    source_neuron_id: string;
+    target_neuron_id: string;
     type: RelationshipType;
     weight: number;
   };

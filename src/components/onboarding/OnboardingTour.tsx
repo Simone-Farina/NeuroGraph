@@ -45,7 +45,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
         element: '[data-tour="graph-panel"]',
         popover: {
           title: 'Knowledge Graph',
-          description: 'Watch your knowledge crystallize into connected nodes as you chat.',
+          description: 'Watch your knowledge turn into connected neurons as you chat.',
           side: 'left',
           align: 'center',
         },
@@ -56,7 +56,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
       steps.push({
         element: '.react-flow__node',
         popover: {
-          title: 'Crystal Node',
+          title: 'Neuron Node',
           description: 'Click on any node to see details, edit content, or explore connections.',
           side: 'right',
           align: 'center',
@@ -68,7 +68,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
       element: '[data-tour="review-badge"]',
       popover: {
         title: 'Spaced Repetition',
-        description: 'Review your crystals to strengthen your memory pathways.',
+        description: 'Review your neurons to strengthen your memory pathways.',
         side: 'bottom',
         align: 'end',
       },

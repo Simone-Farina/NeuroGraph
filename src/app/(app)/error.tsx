@@ -39,7 +39,7 @@ export default function Error({
             Neural Link Interrupted
           </h2>
           <p className="text-neural-light/60 text-sm leading-relaxed">
-            We encountered an unexpected error while processing your request. The knowledge crystal remains intact.
+            We encountered an unexpected error while processing your request. The knowledge neuron remains intact.
           </p>
         </div>
 

@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { Card, Rating, State } from 'ts-fsrs';
+import { Card, Rating } from 'ts-fsrs';
 
 import { createServerSupabaseClient } from '@/lib/auth/supabase';
-import { crystalQueries } from '@/lib/db/queries';
+import { neuronQueries } from '@/lib/db/queries';
 import { scheduleReview, scheduler, mapStateToFSRS } from '@/lib/ai/fsrs';
 
-// Schema for the review submission
 const reviewSchema = z.object({
-  crystalId: z.string().uuid(),
-  rating: z.number().int().min(1).max(4), // 1=Again, 2=Hard, 3=Good, 4=Easy
+  neuronId: z.string().uuid(),
+  rating: z.number().int().min(1).max(4),
 });
 
 function formatInterval(date: Date, now: Date): string {
@@ -36,26 +35,25 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const crystals = await crystalQueries.getDueForReview(supabase, user.id);
-
+    const neurons = await neuronQueries.getDueForReview(supabase, user.id);
     const now = new Date();
 
-    const reviewsWithIntervals = (crystals || []).map((crystal) => {
+    const reviewsWithIntervals = (neurons || []).map((neuron) => {
       const card: Card = {
-        due: new Date(crystal.next_review_due),
-        stability: crystal.stability,
-        difficulty: crystal.difficulty,
-        elapsed_days: crystal.elapsed_days,
-        scheduled_days: crystal.scheduled_days,
-        reps: crystal.reps,
-        lapses: crystal.lapses,
-        state: mapStateToFSRS(crystal.state),
-        last_review: crystal.last_review ? new Date(crystal.last_review) : undefined,
+        due: new Date(neuron.next_review_due),
+        stability: neuron.stability,
+        difficulty: neuron.difficulty,
+        elapsed_days: neuron.elapsed_days,
+        scheduled_days: neuron.scheduled_days,
+        reps: neuron.reps,
+        lapses: neuron.lapses,
+        state: mapStateToFSRS(neuron.state),
+        last_review: neuron.last_review ? new Date(neuron.last_review) : undefined,
         learning_steps: 0,
       };
 
       const schedule = scheduler.repeat(card, now);
-      
+
       const intervals = {
         1: formatInterval(schedule[Rating.Again].card.due, now),
         2: formatInterval(schedule[Rating.Hard].card.due, now),
@@ -64,7 +62,7 @@ export async function GET() {
       };
 
       return {
-        ...crystal,
+        ...neuron,
         intervals,
       };
     });
@@ -98,37 +96,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { crystalId, rating } = parsed.data;
+    const { neuronId, rating } = parsed.data;
+    const neuron = await neuronQueries.getById(supabase, neuronId);
 
-    // 1. Fetch the crystal
-    const crystal = await crystalQueries.getById(supabase, crystalId);
-
-    if (!crystal) {
-      return NextResponse.json({ error: 'Crystal not found' }, { status: 404 });
+    if (!neuron) {
+      return NextResponse.json({ error: 'Neuron not found' }, { status: 404 });
     }
 
-    if (crystal.user_id !== user.id) {
+    if (neuron.user_id !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // 2. Calculate the new schedule using FSRS
-    // We cast the rating to the specific Rating enum type (safe due to zod validation)
     const fsrsRating = rating as Rating;
-    const updates = scheduleReview(crystal, fsrsRating);
+    const updates = scheduleReview(neuron, fsrsRating);
+    const isCorrect = fsrsRating >= Rating.Hard;
 
-    // 3. Update the crystal in the database
-    // We also increment review_count and update consecutive_correct for stats
-    const isCorrect = fsrsRating >= Rating.Hard; // Hard, Good, Easy count as correct
-    
     const finalUpdates = {
       ...updates,
-      review_count: crystal.review_count + 1,
-      consecutive_correct: isCorrect ? crystal.consecutive_correct + 1 : 0,
+      review_count: neuron.review_count + 1,
+      consecutive_correct: isCorrect ? neuron.consecutive_correct + 1 : 0,
     };
 
-    const updatedCrystal = await crystalQueries.update(supabase, crystal.id, finalUpdates);
+    const updatedNeuron = await neuronQueries.update(supabase, neuron.id, finalUpdates);
 
-    return NextResponse.json({ crystal: updatedCrystal });
+    return NextResponse.json({ neuron: updatedNeuron });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unexpected error';
     console.error('Review error:', message);

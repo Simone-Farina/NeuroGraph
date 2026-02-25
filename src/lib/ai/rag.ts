@@ -1,7 +1,8 @@
 import { SupabaseClient } from '@supabase/supabase-js';
+
 import { generateEmbedding } from '@/lib/ai/embeddings';
-import { crystalQueries } from '@/lib/db/queries';
-import { Crystal, Database } from '@/types/database';
+import { neuronQueries } from '@/lib/db/queries';
+import { Neuron, Database } from '@/types/database';
 
 export async function getRelevantContext(
   message: string,
@@ -10,60 +11,53 @@ export async function getRelevantContext(
 ): Promise<{ ragContext: string; ragCatalog: string }> {
   try {
     const embedding = await generateEmbedding(message);
-    
-    const similarCrystals = await crystalQueries.findSimilar(
-      client,
-      embedding,
-      userId,
-      5,
-      0.3
-    );
 
-    if (similarCrystals.length === 0) {
-      const { data: recentCrystals } = await client
-        .from('crystals')
+    const similarNeurons = await neuronQueries.findSimilar(client, embedding, userId, 5, 0.3);
+
+    if (similarNeurons.length === 0) {
+      const { data: recentNeurons } = await client
+        .from('neurons')
         .select('id, title')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(40);
 
-      const ragCatalog = recentCrystals && recentCrystals.length > 0
-        ? recentCrystals.map(c => `- ${c.id}: ${c.title}`).join('\n')
-        : '- none yet';
+      const ragCatalog =
+        recentNeurons && recentNeurons.length > 0
+          ? recentNeurons.map((neuron) => `- ${neuron.id}: ${neuron.title}`).join('\n')
+          : '- none yet';
 
       return { ragContext: '', ragCatalog };
     }
 
     const neighborhoods = await Promise.all(
-      similarCrystals.map(crystal => 
-        crystalQueries.getNeighborhood(client, crystal.id, 1)
-      )
+      similarNeurons.map((neuron) => neuronQueries.getNeighborhood(client, neuron.id, 1))
     );
-    
-    const allCrystalsMap = new Map<string, Crystal>();
-    
-    similarCrystals.forEach(c => allCrystalsMap.set(c.id, c));
-    
-    neighborhoods.forEach(n => {
-      n.crystals.forEach(c => {
-        if (!allCrystalsMap.has(c.id)) {
-          allCrystalsMap.set(c.id, c);
+
+    const allNeuronsMap = new Map<string, Neuron>();
+
+    similarNeurons.forEach((neuron) => allNeuronsMap.set(neuron.id, neuron));
+
+    neighborhoods.forEach((neighborhood) => {
+      neighborhood.neurons.forEach((neuron) => {
+        if (!allNeuronsMap.has(neuron.id)) {
+          allNeuronsMap.set(neuron.id, neuron);
         }
       });
     });
 
-    const contextLines = similarCrystals.map((crystal, index) => {
+    const contextLines = similarNeurons.map((neuron, index) => {
       const neighborhood = neighborhoods[index];
-      const neighbors = neighborhood.crystals.filter(c => c.id !== crystal.id);
-      const neighborTitles = neighbors.map(n => n.title).join(', ');
-      
-      return `- Crystal ${crystal.title}: ${crystal.definition} (Neighbors: ${neighborTitles || 'none'})`;
+      const neighbors = neighborhood.neurons.filter((candidate) => candidate.id !== neuron.id);
+      const neighborTitles = neighbors.map((neighbor) => neighbor.title).join(', ');
+
+      return `- Neuron ${neuron.title}: ${neuron.definition} (Neighbors: ${neighborTitles || 'none'})`;
     });
 
-    const ragContext = `\n\n## Relevant Knowledge Context\nYou have previously crystallized these insights which are semantically relevant to the current conversation:\n${contextLines.join('\n')}`;
-    
-    const ragCatalog = Array.from(allCrystalsMap.values())
-      .map(c => `- ${c.id}: ${c.title}`)
+    const ragContext = `\n\n## Relevant Knowledge Context\nYou have previously generated these neurons which are semantically relevant to the current conversation:\n${contextLines.join('\n')}`;
+
+    const ragCatalog = Array.from(allNeuronsMap.values())
+      .map((neuron) => `- ${neuron.id}: ${neuron.title}`)
       .join('\n');
 
     return { ragContext, ragCatalog };

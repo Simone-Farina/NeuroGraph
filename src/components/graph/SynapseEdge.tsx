@@ -1,19 +1,14 @@
 'use client';
 
-import {
-  BaseEdge,
-  Edge,
-  EdgeProps,
-  getBezierPath,
-} from '@xyflow/react';
+import { BaseEdge, Edge, EdgeProps, getBezierPath } from '@xyflow/react';
 
-type CrystalEdgeData = {
+type SynapseEdgeData = {
   typeLabel?: 'PREREQUISITE' | 'RELATED' | 'BUILDS_ON';
 };
 
-type CrystalFlowEdge = Edge<CrystalEdgeData, 'crystalEdge'>;
+type SynapseFlowEdge = Edge<SynapseEdgeData, 'synapseEdge'>;
 
-export function CrystalEdge({
+export function SynapseEdge({
   id,
   sourceX,
   sourceY,
@@ -23,7 +18,7 @@ export function CrystalEdge({
   targetPosition,
   markerEnd,
   data,
-}: EdgeProps<CrystalFlowEdge>) {
+}: EdgeProps<SynapseFlowEdge>) {
   const [edgePath] = getBezierPath({
     sourceX,
     sourceY,
@@ -35,7 +30,7 @@ export function CrystalEdge({
 
   const typeLabel = data?.typeLabel ?? 'RELATED';
   const styleByType: Record<
-    NonNullable<CrystalEdgeData['typeLabel']>,
+    NonNullable<SynapseEdgeData['typeLabel']>,
     {
       stroke: string;
       strokeWidth: number;
@@ -63,7 +58,6 @@ export function CrystalEdge({
   };
   const { showArrow, ...edgeStyle } = styleByType[typeLabel];
 
-  // Glow style based on edge color
   const glowStyle = {
     ...edgeStyle,
     strokeWidth: edgeStyle.strokeWidth * 4,

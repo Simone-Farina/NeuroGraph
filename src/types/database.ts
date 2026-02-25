@@ -6,10 +6,10 @@ export type BloomLevel =
   | 'Evaluate'
   | 'Create';
 
-export type EdgeType = 'PREREQUISITE' | 'RELATED' | 'BUILDS_ON';
+export type SynapseType = 'PREREQUISITE' | 'RELATED' | 'BUILDS_ON';
 export type MessageRole = 'user' | 'assistant' | 'system';
 
-export type Crystal = {
+export type Neuron = {
   id: string;
   user_id: string;
   title: string;
@@ -38,12 +38,12 @@ export type Crystal = {
   updated_at: string;
 };
 
-export type CrystalEdge = {
+export type Synapse = {
   id: string;
   user_id: string;
-  source_crystal_id: string;
-  target_crystal_id: string;
-  type: EdgeType;
+  source_neuron_id: string;
+  target_neuron_id: string;
+  type: SynapseType;
   weight: number;
   ai_suggested: boolean;
   created_at: string;
@@ -69,8 +69,8 @@ export type Message = {
 export type Database = {
   public: {
     Tables: {
-      crystals: {
-        Row: Crystal;
+      neurons: {
+        Row: Neuron;
         Insert: {
           id?: string;
           user_id: string;
@@ -99,22 +99,22 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
         };
-        Update: Partial<Crystal>;
+        Update: Partial<Neuron>;
         Relationships: [];
       };
-      crystal_edges: {
-        Row: CrystalEdge;
+      synapses: {
+        Row: Synapse;
         Insert: {
           id?: string;
           user_id: string;
-          source_crystal_id: string;
-          target_crystal_id: string;
-          type: EdgeType;
+          source_neuron_id: string;
+          target_neuron_id: string;
+          type: SynapseType;
           weight?: number;
           ai_suggested?: boolean;
           created_at?: string;
         };
-        Update: Partial<CrystalEdge>;
+        Update: Partial<Synapse>;
         Relationships: [];
       };
       conversations: {
@@ -145,21 +145,21 @@ export type Database = {
     };
     Views: {};
     Functions: {
-      find_similar_crystals: {
+      find_similar_neurons: {
         Args: {
           query_embedding: number[];
           match_user_id: string;
           match_threshold?: number;
           match_count?: number;
         };
-        Returns: Array<Crystal & { similarity: number }>;
+        Returns: Array<Neuron & { similarity: number }>;
       };
-      get_crystal_neighborhood: {
+      get_neuron_neighborhood: {
         Args: {
-          root_crystal_id: string;
+          root_neuron_id: string;
           max_depth?: number;
         };
-        Returns: Array<{ crystals: Crystal[] | null; edges: CrystalEdge[] | null }>;
+        Returns: Array<{ neurons: Neuron[] | null; synapses: Synapse[] | null }>;
       };
       update_updated_at_column: {
         Args: Record<string, never>;

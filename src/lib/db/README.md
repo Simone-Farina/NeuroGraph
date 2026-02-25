@@ -54,7 +54,7 @@ supabase db push
 ## Seeding Development Data
 
 ```bash
-# Seed database with sample data (5 crystals, 6 edges, 1 conversation)
+# Seed database with sample data (5 neurons, 6 synapses, 1 conversation)
 npx tsx src/lib/db/seed.ts
 ```
 
@@ -74,12 +74,12 @@ Expected result: < 100ms average query time
 
 - **conversations**: User chat sessions
 - **messages**: Individual messages within conversations
-- **crystals**: Knowledge nodes with embeddings and spaced repetition metadata
-- **crystal_edges**: Relationships between crystals
+- **neurons**: Knowledge nodes with embeddings and spaced repetition metadata
+- **synapses**: Relationships between neurons
 
 ### Indexes
 
-- HNSW index on `crystals.embedding` for fast vector similarity search
+- HNSW index on `neurons.embedding` for fast vector similarity search
 - B-tree indexes on foreign keys and `next_review_due`
 
 ### RLS Policies
@@ -90,21 +90,21 @@ All tables have Row Level Security enabled:
 
 ### Functions
 
-- `find_similar_crystals(embedding, user_id, threshold, limit)`: Vector similarity search
-- `get_crystal_neighborhood(crystal_id, max_depth)`: Recursive graph traversal (2-hop max)
+- `find_similar_neurons(embedding, user_id, threshold, limit)`: Vector similarity search
+- `get_neuron_neighborhood(neuron_id, max_depth)`: Recursive graph traversal (2-hop max)
 
 ## Query Helpers
 
 Import from `@/lib/db/queries`:
 
 ```typescript
-import { crystalQueries, edgeQueries, conversationQueries, messageQueries } from '@/lib/db/queries';
+import { neuronQueries, synapseQueries, conversationQueries, messageQueries } from '@/lib/db/queries';
 
-await crystalQueries.create({ ... });
-await crystalQueries.getById(id);
-await crystalQueries.getDueForReview(userId);
-await crystalQueries.findSimilar(embedding, userId);
-await crystalQueries.getNeighborhood(crystalId, 2);
+await neuronQueries.create({ ... });
+await neuronQueries.getById(id);
+await neuronQueries.getDueForReview(userId);
+await neuronQueries.findSimilar(embedding, userId);
+await neuronQueries.getNeighborhood(neuronId, 2);
 ```
 
 ## Troubleshooting

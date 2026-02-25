@@ -6,13 +6,13 @@ vi.mock('@/lib/ai/embeddings', () => ({
 }));
 
 vi.mock('@/lib/db/queries', () => ({
-  crystalQueries: {
+  neuronQueries: {
     findSimilar: vi.fn(),
     getNeighborhood: vi.fn(),
   },
 }));
 
-import { crystalQueries } from '@/lib/db/queries';
+import { neuronQueries } from '@/lib/db/queries';
 
 function createMockClient() {
   return {
@@ -33,8 +33,8 @@ describe('RAG - getRelevantContext', () => {
     vi.clearAllMocks();
   });
 
-  it('should return empty context when no similar crystals found', async () => {
-    (crystalQueries.findSimilar as any).mockResolvedValue([]);
+  it('should return empty context when no similar neurons found', async () => {
+    (neuronQueries.findSimilar as any).mockResolvedValue([]);
     const client = createMockClient();
 
     const result = await getRelevantContext('test query', 'user-1', client);
@@ -43,18 +43,18 @@ describe('RAG - getRelevantContext', () => {
     expect(result.ragCatalog).toBeDefined();
   });
 
-  it('should return context lines for similar crystals with neighbors', async () => {
-    const similarCrystals = [
-      { id: 'c1', title: 'Neural Networks', definition: 'A computing system inspired by biological neural networks', similarity: 0.85 },
-      { id: 'c2', title: 'Backpropagation', definition: 'Algorithm for training neural networks', similarity: 0.72 },
+  it('should return context lines for similar neurons with neighbors', async () => {
+    const similarNeurons = [
+      { id: 'n1', title: 'Neural Networks', definition: 'A computing system inspired by biological neural networks', similarity: 0.85 },
+      { id: 'n2', title: 'Backpropagation', definition: 'Algorithm for training neural networks', similarity: 0.72 },
     ];
-    (crystalQueries.findSimilar as any).mockResolvedValue(similarCrystals);
-    (crystalQueries.getNeighborhood as any).mockImplementation((_client: any, crystalId: string) => ({
-      crystals: [
-        ...similarCrystals.filter(c => c.id === crystalId),
-        { id: 'c3', title: 'Gradient Descent' },
+    (neuronQueries.findSimilar as any).mockResolvedValue(similarNeurons);
+    (neuronQueries.getNeighborhood as any).mockImplementation((_client: any, neuronId: string) => ({
+      neurons: [
+        ...similarNeurons.filter((n) => n.id === neuronId),
+        { id: 'n3', title: 'Gradient Descent' },
       ],
-      edges: [],
+      synapses: [],
     }));
 
     const client = createMockClient();
@@ -66,28 +66,28 @@ describe('RAG - getRelevantContext', () => {
     expect(result.ragContext).toContain('Relevant Knowledge Context');
   });
 
-  it('should build ragCatalog from all crystals in neighborhoods', async () => {
-    const similarCrystals = [
-      { id: 'c1', title: 'Crystal A', definition: 'Def A', similarity: 0.9 },
+  it('should build ragCatalog from all neurons in neighborhoods', async () => {
+    const similarNeurons = [
+      { id: 'n1', title: 'Neuron A', definition: 'Def A', similarity: 0.9 },
     ];
-    (crystalQueries.findSimilar as any).mockResolvedValue(similarCrystals);
-    (crystalQueries.getNeighborhood as any).mockResolvedValue({
-      crystals: [
-        { id: 'c1', title: 'Crystal A' },
-        { id: 'c2', title: 'Crystal B' },
+    (neuronQueries.findSimilar as any).mockResolvedValue(similarNeurons);
+    (neuronQueries.getNeighborhood as any).mockResolvedValue({
+      neurons: [
+        { id: 'n1', title: 'Neuron A' },
+        { id: 'n2', title: 'Neuron B' },
       ],
-      edges: [],
+      synapses: [],
     });
 
     const client = createMockClient();
     const result = await getRelevantContext('query', 'user-1', client);
 
-    expect(result.ragCatalog).toContain('c1: Crystal A');
-    expect(result.ragCatalog).toContain('c2: Crystal B');
+    expect(result.ragCatalog).toContain('n1: Neuron A');
+    expect(result.ragCatalog).toContain('n2: Neuron B');
   });
 
   it('should gracefully handle errors and return empty context', async () => {
-    (crystalQueries.findSimilar as any).mockRejectedValue(new Error('DB connection lost'));
+    (neuronQueries.findSimilar as any).mockRejectedValue(new Error('DB connection lost'));
 
     const client = createMockClient();
     const result = await getRelevantContext('query', 'user-1', client);
@@ -97,12 +97,12 @@ describe('RAG - getRelevantContext', () => {
   });
 
   it('should pass authenticated client to findSimilar', async () => {
-    (crystalQueries.findSimilar as any).mockResolvedValue([]);
+    (neuronQueries.findSimilar as any).mockResolvedValue([]);
     const client = createMockClient();
 
     await getRelevantContext('query', 'user-1', client);
 
-    expect(crystalQueries.findSimilar).toHaveBeenCalledWith(
+    expect(neuronQueries.findSimilar).toHaveBeenCalledWith(
       client,
       expect.any(Array),
       'user-1',

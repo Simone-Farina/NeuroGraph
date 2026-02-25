@@ -1,27 +1,27 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Crystal, CrystalEdge, Conversation, Message, Database } from '@/types/database';
+import type { Neuron, Synapse, Conversation, Message, Database } from '@/types/database';
 
 type TypedClient = SupabaseClient<Database>;
 
-type CrystalInsert = Database['public']['Tables']['crystals']['Insert'];
-type CrystalUpdate = Database['public']['Tables']['crystals']['Update'];
-type EdgeInsert = Database['public']['Tables']['crystal_edges']['Insert'];
+type NeuronInsert = Database['public']['Tables']['neurons']['Insert'];
+type NeuronUpdate = Database['public']['Tables']['neurons']['Update'];
+type SynapseInsert = Database['public']['Tables']['synapses']['Insert'];
 
-export const crystalQueries = {
-  async create(client: TypedClient, data: CrystalInsert): Promise<Crystal> {
-    const { data: crystal, error } = await client
-      .from('crystals')
+export const neuronQueries = {
+  async create(client: TypedClient, data: NeuronInsert): Promise<Neuron> {
+    const { data: neuron, error } = await client
+      .from('neurons')
       .insert(data)
       .select()
       .single();
 
     if (error) throw error;
-    return crystal;
+    return neuron;
   },
 
-  async getById(client: TypedClient, id: string): Promise<Crystal | null> {
+  async getById(client: TypedClient, id: string): Promise<Neuron | null> {
     const { data, error } = await client
-      .from('crystals')
+      .from('neurons')
       .select('*')
       .eq('id', id)
       .single();
@@ -33,9 +33,9 @@ export const crystalQueries = {
     return data;
   },
 
-  async getByUserId(client: TypedClient, userId: string): Promise<Crystal[]> {
+  async getByUserId(client: TypedClient, userId: string): Promise<Neuron[]> {
     const { data, error } = await client
-      .from('crystals')
+      .from('neurons')
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
@@ -44,9 +44,9 @@ export const crystalQueries = {
     return data;
   },
 
-  async update(client: TypedClient, id: string, updates: CrystalUpdate): Promise<Crystal> {
+  async update(client: TypedClient, id: string, updates: NeuronUpdate): Promise<Neuron> {
     const { data, error } = await client
-      .from('crystals')
+      .from('neurons')
       .update(updates)
       .eq('id', id)
       .select()
@@ -58,16 +58,16 @@ export const crystalQueries = {
 
   async delete(client: TypedClient, id: string): Promise<void> {
     const { error } = await client
-      .from('crystals')
+      .from('neurons')
       .delete()
       .eq('id', id);
 
     if (error) throw error;
   },
 
-  async getDueForReview(client: TypedClient, userId: string, limit: number = 20): Promise<Crystal[]> {
+  async getDueForReview(client: TypedClient, userId: string, limit: number = 20): Promise<Neuron[]> {
     const { data, error } = await client
-      .from('crystals')
+      .from('neurons')
       .select('*')
       .eq('user_id', userId)
       .not('next_review_due', 'is', null)
@@ -85,8 +85,8 @@ export const crystalQueries = {
     userId: string,
     limit: number = 5,
     threshold: number = 0.3
-  ): Promise<Array<Crystal & { similarity: number }>> {
-    const { data, error } = await client.rpc('find_similar_crystals', {
+  ): Promise<Array<Neuron & { similarity: number }>> {
+    const { data, error } = await client.rpc('find_similar_neurons', {
       query_embedding: embedding,
       match_user_id: userId,
       match_threshold: threshold,
@@ -99,14 +99,14 @@ export const crystalQueries = {
 
   async getNeighborhood(
     client: TypedClient,
-    crystalId: string,
+    neuronId: string,
     maxDepth: number = 2
   ): Promise<{
-    crystals: Crystal[];
-    edges: CrystalEdge[];
+    neurons: Neuron[];
+    synapses: Synapse[];
   }> {
-    const { data, error } = await client.rpc('get_crystal_neighborhood', {
-      root_crystal_id: crystalId,
+    const { data, error } = await client.rpc('get_neuron_neighborhood', {
+      root_neuron_id: neuronId,
       max_depth: maxDepth,
     });
 
@@ -115,65 +115,67 @@ export const crystalQueries = {
     const firstRow = data?.[0];
 
     return {
-      crystals: firstRow?.crystals || [],
-      edges: firstRow?.edges || [],
+      neurons: firstRow?.neurons || [],
+      synapses: firstRow?.synapses || [],
     };
   },
 
   async getNeighborhoodsBatch(
     client: TypedClient,
-    crystalIds: string[],
+    neuronIds: string[],
     maxDepth: number = 1
-  ): Promise<Map<string, { crystals: Crystal[]; edges: CrystalEdge[] }>> {
+  ): Promise<Map<string, { neurons: Neuron[]; synapses: Synapse[] }>> {
     if (maxDepth !== 1) {
       throw new Error('Batch neighborhood retrieval only supports depth 1');
     }
 
-    if (!crystalIds || crystalIds.length === 0) {
+    if (!neuronIds || neuronIds.length === 0) {
       return new Map();
     }
 
-    const { data: edges, error: edgesError } = await client
-      .from('crystal_edges')
+    const { data: synapses, error: synapsesError } = await client
+      .from('synapses')
       .select('*')
-      .or(`source_crystal_id.in.(${crystalIds.join(',')}),target_crystal_id.in.(${crystalIds.join(',')})`);
+      .or(`source_neuron_id.in.(${neuronIds.join(',')}),target_neuron_id.in.(${neuronIds.join(',')})`);
 
-    if (edgesError) throw edgesError;
+    if (synapsesError) throw synapsesError;
 
-    const allCrystalIds = new Set<string>(crystalIds);
-    edges?.forEach((edge) => {
-      allCrystalIds.add(edge.source_crystal_id);
-      allCrystalIds.add(edge.target_crystal_id);
+    const allNeuronIds = new Set<string>(neuronIds);
+    synapses?.forEach((synapse) => {
+      allNeuronIds.add(synapse.source_neuron_id);
+      allNeuronIds.add(synapse.target_neuron_id);
     });
 
-    const { data: crystals, error: crystalsError } = await client
-      .from('crystals')
+    const { data: neurons, error: neuronsError } = await client
+      .from('neurons')
       .select('*')
-      .in('id', Array.from(allCrystalIds));
+      .in('id', Array.from(allNeuronIds));
 
-    if (crystalsError) throw crystalsError;
+    if (neuronsError) throw neuronsError;
 
-    const crystalsMap = new Map<string, Crystal>();
-    crystals?.forEach((crystal) => crystalsMap.set(crystal.id, crystal));
+    const neuronsMap = new Map<string, Neuron>();
+    neurons?.forEach((neuron) => neuronsMap.set(neuron.id, neuron));
 
-    const result = new Map<string, { crystals: Crystal[]; edges: CrystalEdge[] }>();
+    const result = new Map<string, { neurons: Neuron[]; synapses: Synapse[] }>();
 
-    crystalIds.forEach((id) => {
-      const crystalEdges = edges?.filter((edge) => edge.source_crystal_id === id || edge.target_crystal_id === id) || [];
+    neuronIds.forEach((id) => {
+      const neuronSynapses = synapses?.filter(
+        (synapse) => synapse.source_neuron_id === id || synapse.target_neuron_id === id
+      ) || [];
 
-      const neighborhoodCrystalIds = new Set<string>([id]);
-      crystalEdges.forEach((edge) => {
-        neighborhoodCrystalIds.add(edge.source_crystal_id);
-        neighborhoodCrystalIds.add(edge.target_crystal_id);
+      const neighborhoodNeuronIds = new Set<string>([id]);
+      neuronSynapses.forEach((synapse) => {
+        neighborhoodNeuronIds.add(synapse.source_neuron_id);
+        neighborhoodNeuronIds.add(synapse.target_neuron_id);
       });
 
-      const neighborhoodCrystals = Array.from(neighborhoodCrystalIds)
-        .map((crystalId) => crystalsMap.get(crystalId))
-        .filter((crystal): crystal is Crystal => !!crystal);
+      const neighborhoodNeurons = Array.from(neighborhoodNeuronIds)
+        .map((currentNeuronId) => neuronsMap.get(currentNeuronId))
+        .filter((neuron): neuron is Neuron => !!neuron);
 
       result.set(id, {
-        crystals: neighborhoodCrystals,
-        edges: crystalEdges,
+        neurons: neighborhoodNeurons,
+        synapses: neuronSynapses,
       });
     });
 
@@ -181,21 +183,21 @@ export const crystalQueries = {
   },
 };
 
-export const edgeQueries = {
-  async create(client: TypedClient, data: EdgeInsert): Promise<CrystalEdge> {
-    const { data: edge, error } = await client
-      .from('crystal_edges')
+export const synapseQueries = {
+  async create(client: TypedClient, data: SynapseInsert): Promise<Synapse> {
+    const { data: synapse, error } = await client
+      .from('synapses')
       .insert(data)
       .select()
       .single();
 
     if (error) throw error;
-    return edge;
+    return synapse;
   },
 
-  async getByUserId(client: TypedClient, userId: string): Promise<CrystalEdge[]> {
+  async getByUserId(client: TypedClient, userId: string): Promise<Synapse[]> {
     const { data, error } = await client
-      .from('crystal_edges')
+      .from('synapses')
       .select('*')
       .eq('user_id', userId);
 
@@ -203,11 +205,11 @@ export const edgeQueries = {
     return data;
   },
 
-  async getByCrystalId(client: TypedClient, crystalId: string): Promise<CrystalEdge[]> {
+  async getByNeuronId(client: TypedClient, neuronId: string): Promise<Synapse[]> {
     const { data, error } = await client
-      .from('crystal_edges')
+      .from('synapses')
       .select('*')
-      .or(`source_crystal_id.eq.${crystalId},target_crystal_id.eq.${crystalId}`);
+      .or(`source_neuron_id.eq.${neuronId},target_neuron_id.eq.${neuronId}`);
 
     if (error) throw error;
     return data;
@@ -215,7 +217,7 @@ export const edgeQueries = {
 
   async delete(client: TypedClient, id: string): Promise<void> {
     const { error } = await client
-      .from('crystal_edges')
+      .from('synapses')
       .delete()
       .eq('id', id);
 

@@ -47,23 +47,23 @@ export async function createTestUserAndLogin(page: Page) {
   return { email, userId: user.user.id };
 }
 
-export async function makeCrystalDue(userId: string) {
+export async function makeNeuronDue(userId: string) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !serviceRoleKey) {
-    throw new Error('Missing env variables for makeCrystalDue');
+    throw new Error('Missing env variables for makeNeuronDue');
   }
 
   const supabase = createClient(supabaseUrl, serviceRoleKey);
 
   const { data, error } = await supabase
-    .from('crystals')
+    .from('neurons')
     .update({ next_review_due: '2020-01-01T00:00:00.000Z' })
     .eq('user_id', userId)
     .select();
 
   if (error) {
-    throw new Error(`Failed to update crystals: ${error.message}`);
+    throw new Error(`Failed to update neurons: ${error.message}`);
   }
 }

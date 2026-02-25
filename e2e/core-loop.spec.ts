@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
-import { createTestUserAndLogin, makeCrystalDue } from './utils';
+import { createTestUserAndLogin, makeNeuronDue } from './utils';
 
-test('Core Loop: Chat -> Crystallize -> Graph -> Review', async ({ page }) => {
+test('Core Loop: Chat -> Generate Neuron -> Graph -> Review', async ({ page }) => {
   test.setTimeout(40000);
 
   const { userId } = await createTestUserAndLogin(page);
@@ -27,15 +27,15 @@ test('Core Loop: Chat -> Crystallize -> Graph -> Review', async ({ page }) => {
   }
   
   await page.waitForTimeout(2000);
-  await chatInput.fill("That's great. Can you crystallize this concept of Spaced Repetition for me? Please create a node.");
+  await chatInput.fill("That's great. Can you generate a neuron for this concept of Spaced Repetition? Please create a node.");
   await page.keyboard.press('Enter');
 
-  const suggestionCard = page.locator('.crystallization-suggestion');
+  const suggestionCard = page.locator('.neurogenesis-suggestion');
   await expect(suggestionCard).toBeVisible({ timeout: 60000 });
   
   await expect(suggestionCard).toContainText('Spaced Repetition');
 
-  await suggestionCard.locator('button:has-text("Crystallize")').click();
+  await suggestionCard.locator('button:has-text("Generate Neuron")').click();
 
   const graphNode = page.locator('.react-flow__node').filter({ hasText: 'Spaced Repetition' });
   await expect(graphNode).toBeVisible({ timeout: 15000 });
@@ -45,12 +45,12 @@ test('Core Loop: Chat -> Crystallize -> Graph -> Review', async ({ page }) => {
   
   await expect(page.locator('.message-assistant').last()).toBeVisible();
   
-  await chatInput.fill("Crystallize 'Active Recall' as well.");
+  await chatInput.fill("Generate a neuron for 'Active Recall' as well.");
   await page.keyboard.press('Enter');
 
-  const suggestionCard2 = page.locator('.crystallization-suggestion').last();
+  const suggestionCard2 = page.locator('.neurogenesis-suggestion').last();
   await expect(suggestionCard2).toBeVisible({ timeout: 60000 });
-  await suggestionCard2.locator('button:has-text("Crystallize")').click();
+  await suggestionCard2.locator('button:has-text("Generate Neuron")').click();
 
   const graphNode2 = page.locator('.react-flow__node').filter({ hasText: 'Active Recall' });
   await expect(graphNode2).toBeVisible({ timeout: 15000 });
@@ -65,7 +65,7 @@ test('Core Loop: Chat -> Crystallize -> Graph -> Review', async ({ page }) => {
     expect(count).toBe(1);
   }).toPass({ timeout: 10000 });
 
-  await makeCrystalDue(userId);
+  await makeNeuronDue(userId);
 
   await page.goto('/app/review');
   

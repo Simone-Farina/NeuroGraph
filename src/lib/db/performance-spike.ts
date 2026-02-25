@@ -2,7 +2,7 @@ import { supabase } from './client';
 import type { BloomLevel } from '@/types/database';
 
 const SPIKE_USER_ID = '00000000-0000-0000-0000-000000000002';
-const NUM_CRYSTALS = 500;
+const NUM_NEURONS = 500;
 const NUM_EDGES = 1500;
 
 function generateMockEmbedding(): number[] {
@@ -15,7 +15,7 @@ function randomBloomLevel(): BloomLevel {
 }
 
 async function createPerformanceData() {
-  console.log(`🔧 Creating performance test data: ${NUM_CRYSTALS} crystals, ${NUM_EDGES} edges\n`);
+  console.log(`🔧 Creating performance test data: ${NUM_NEURONS} neurons, ${NUM_EDGES} synapses\n`);
 
   const conversationResult = await supabase
     .from('conversations')
@@ -41,15 +41,15 @@ async function createPerformanceData() {
   if (messageResult.error) throw messageResult.error;
 
   const batchSize = 100;
-  const crystalIds: string[] = [];
+  const neuronIds: string[] = [];
 
-  for (let i = 0; i < NUM_CRYSTALS; i += batchSize) {
-    const batch = Array.from({ length: Math.min(batchSize, NUM_CRYSTALS - i) }, (_, j) => {
+  for (let i = 0; i < NUM_NEURONS; i += batchSize) {
+    const batch = Array.from({ length: Math.min(batchSize, NUM_NEURONS - i) }, (_, j) => {
       const idx = i + j;
       return {
         user_id: SPIKE_USER_ID,
-        title: `Performance Crystal ${idx}`,
-        definition: `Test crystal for performance measurement number ${idx}`,
+        title: `Performance Neuron ${idx}`,
+        definition: `Test neuron for performance measurement number ${idx}`,
         core_insight: `Insight ${idx}`,
         bloom_level: randomBloomLevel(),
         source_conversation_id: conversationResult.data.id,
@@ -64,52 +64,52 @@ async function createPerformanceData() {
       };
     });
 
-    const result = await supabase.from('crystals').insert(batch).select('id');
+    const result = await supabase.from('neurons').insert(batch).select('id');
     if (result.error) throw result.error;
 
-    crystalIds.push(...result.data.map((c) => c.id));
-    console.log(`  Created crystals ${i}-${i + batch.length - 1}`);
+    neuronIds.push(...result.data.map((n) => n.id));
+    console.log(`  Created neurons ${i}-${i + batch.length - 1}`);
   }
 
-  console.log(`✅ Created ${crystalIds.length} crystals\n`);
+  console.log(`✅ Created ${neuronIds.length} neurons\n`);
 
   const edgeTypes = ['PREREQUISITE', 'RELATED', 'BUILDS_ON'] as const;
   const edgeBatchSize = 200;
 
   for (let i = 0; i < NUM_EDGES; i += edgeBatchSize) {
     const batch = Array.from({ length: Math.min(edgeBatchSize, NUM_EDGES - i) }, () => {
-      const sourceIdx = Math.floor(Math.random() * crystalIds.length);
-      let targetIdx = Math.floor(Math.random() * crystalIds.length);
+      const sourceIdx = Math.floor(Math.random() * neuronIds.length);
+      let targetIdx = Math.floor(Math.random() * neuronIds.length);
       
       while (targetIdx === sourceIdx) {
-        targetIdx = Math.floor(Math.random() * crystalIds.length);
+        targetIdx = Math.floor(Math.random() * neuronIds.length);
       }
 
       return {
         user_id: SPIKE_USER_ID,
-        source_crystal_id: crystalIds[sourceIdx],
-        target_crystal_id: crystalIds[targetIdx],
+        source_neuron_id: neuronIds[sourceIdx],
+        target_neuron_id: neuronIds[targetIdx],
         type: edgeTypes[Math.floor(Math.random() * edgeTypes.length)],
         weight: Math.random(),
         ai_suggested: Math.random() > 0.5,
       };
     });
 
-    const result = await supabase.from('crystal_edges').insert(batch).select('id');
+    const result = await supabase.from('synapses').insert(batch).select('id');
     if (result.error) throw result.error;
 
-    console.log(`  Created edges ${i}-${i + batch.length - 1}`);
+    console.log(`  Created synapses ${i}-${i + batch.length - 1}`);
   }
 
-  console.log(`✅ Created ${NUM_EDGES} edges\n`);
+  console.log(`✅ Created ${NUM_EDGES} synapses\n`);
 
-  return { crystalIds, conversationId: conversationResult.data.id };
+  return { neuronIds, conversationId: conversationResult.data.id };
 }
 
-async function testRecursiveCTEPerformance(crystalIds: string[]) {
+async function testRecursiveCTEPerformance(neuronIds: string[]) {
   console.log('⚡ Testing recursive CTE performance (2-hop neighborhood query)...\n');
 
-  const testCrystalId = crystalIds[Math.floor(crystalIds.length / 2)];
+  const testNeuronId = neuronIds[Math.floor(neuronIds.length / 2)];
 
   const iterations = 10;
   const timings: number[] = [];
@@ -117,8 +117,8 @@ async function testRecursiveCTEPerformance(crystalIds: string[]) {
   for (let i = 0; i < iterations; i++) {
     const startTime = performance.now();
 
-    const { data, error } = await supabase.rpc('get_crystal_neighborhood', {
-      root_crystal_id: testCrystalId,
+    const { data, error } = await supabase.rpc('get_neuron_neighborhood', {
+      root_neuron_id: testNeuronId,
       max_depth: 2,
     });
 
@@ -157,18 +157,18 @@ async function cleanup() {
   console.log('\n🧹 Cleaning up performance test data...');
 
   const deleteEdges = await supabase
-    .from('crystal_edges')
+    .from('synapses')
     .delete()
     .eq('user_id', SPIKE_USER_ID);
 
   if (deleteEdges.error) throw deleteEdges.error;
 
-  const deleteCrystals = await supabase
-    .from('crystals')
+  const deleteNeurons = await supabase
+    .from('neurons')
     .delete()
     .eq('user_id', SPIKE_USER_ID);
 
-  if (deleteCrystals.error) throw deleteCrystals.error;
+  if (deleteNeurons.error) throw deleteNeurons.error;
 
   const { data: conversationRows, error: conversationLookupError } = await supabase
     .from('conversations')
@@ -201,11 +201,11 @@ async function cleanup() {
 async function runPerformanceSpike() {
   try {
     console.log('🚀 NeuroGraph Performance Spike\n');
-    console.log(`Testing recursive CTE with ${NUM_CRYSTALS} nodes and ${NUM_EDGES} edges\n`);
+    console.log(`Testing recursive CTE with ${NUM_NEURONS} nodes and ${NUM_EDGES} synapses\n`);
 
-    const { crystalIds } = await createPerformanceData();
+    const { neuronIds } = await createPerformanceData();
 
-    const results = await testRecursiveCTEPerformance(crystalIds);
+    const results = await testRecursiveCTEPerformance(neuronIds);
 
     await cleanup();
 

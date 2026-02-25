@@ -1,15 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useGraphStore } from '@/stores/graphStore';
-import { Crystal } from '@/types/database';
 
-export function CrystalDetailPanel() {
+import { useGraphStore } from '@/stores/graphStore';
+import { Neuron } from '@/types/database';
+
+export function NeuronDetailPanel() {
   const selectedNodeId = useGraphStore((state) => state.selectedNodeId);
   const setSelectedNode = useGraphStore((state) => state.setSelectedNode);
   const updateNode = useGraphStore((state) => state.updateNode);
 
-  const [crystal, setCrystal] = useState<Crystal | null>(null);
+  const [neuron, setNeuron] = useState<Neuron | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,36 +26,39 @@ export function CrystalDetailPanel() {
 
   useEffect(() => {
     if (!selectedNodeId) {
-      setCrystal(null);
+      setNeuron(null);
       return;
     }
 
-    const fetchCrystal = async () => {
+    const fetchNeuron = async () => {
       setLoading(true);
       setError(null);
+
       try {
-        const response = await fetch(`/api/crystals/${selectedNodeId}`);
+        const response = await fetch(`/api/neurons/${selectedNodeId}`);
         if (!response.ok) {
-          throw new Error('Failed to fetch crystal details');
+          throw new Error('Failed to fetch neuron details');
         }
-        const data = await response.json();
-        setCrystal(data);
+
+        const payload = await response.json();
+        const entity = payload.neuron ?? payload;
+        setNeuron(entity);
         setFormData({
-          title: data.title || '',
-          definition: data.definition || '',
-          core_insight: data.core_insight || '',
-          content: data.content || '',
+          title: entity.title || '',
+          definition: entity.definition || '',
+          core_insight: entity.core_insight || '',
+          content: entity.content || '',
         });
         setIsDirty(false);
-      } catch (err) {
-        console.error(err);
-        setError('Could not load crystal details.');
+      } catch (error) {
+        console.error(error);
+        setError('Could not load neuron details.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCrystal();
+    fetchNeuron();
   }, [selectedNodeId]);
 
   const handleClose = () => {
@@ -62,7 +66,7 @@ export function CrystalDetailPanel() {
   };
 
   const handleChange = (field: keyof typeof formData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((previous) => ({ ...previous, [field]: value }));
     setIsDirty(true);
   };
 
@@ -71,7 +75,7 @@ export function CrystalDetailPanel() {
 
     setSaving(true);
     try {
-      const response = await fetch(`/api/crystals/${selectedNodeId}`, {
+      const response = await fetch(`/api/neurons/${selectedNodeId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -80,19 +84,19 @@ export function CrystalDetailPanel() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update crystal');
+        throw new Error('Failed to update neuron');
       }
 
-      const updatedCrystal = await response.json();
-      setCrystal(updatedCrystal);
+      const payload = await response.json();
+      const updatedNeuron = payload.neuron ?? payload;
+      setNeuron(updatedNeuron);
       setIsDirty(false);
-      
-      updateNode(selectedNodeId, {
-        title: updatedCrystal.title,
-      });
 
-    } catch (err) {
-      console.error(err);
+      updateNode(selectedNodeId, {
+        title: updatedNeuron.title,
+      });
+    } catch (error) {
+      console.error(error);
       setError('Failed to save changes.');
     } finally {
       setSaving(false);
@@ -106,15 +110,15 @@ export function CrystalDetailPanel() {
       <div className="flex items-center justify-between p-6 border-b border-white/10 bg-white/5">
         <h2 className="text-xl font-bold text-neural-light flex items-center gap-2">
           <span className="text-neural-cyan">✦</span>
-          Crystal Details
+          Neuron Details
         </h2>
         <button
           onClick={handleClose}
           className="p-2 rounded-full hover:bg-white/10 text-neural-light/60 hover:text-neural-light transition-colors"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
         </button>
       </div>
@@ -122,34 +126,28 @@ export function CrystalDetailPanel() {
       <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
         {loading ? (
           <div className="flex items-center justify-center h-40">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-neural-cyan"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-neural-cyan" />
           </div>
         ) : error ? (
-          <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
-            {error}
-          </div>
-        ) : crystal ? (
+          <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">{error}</div>
+        ) : neuron ? (
           <>
             <div className="space-y-2">
-              <label className="text-xs font-medium text-neural-light/40 uppercase tracking-wider">
-                Title
-              </label>
+              <label className="text-xs font-medium text-neural-light/40 uppercase tracking-wider">Title</label>
               <input
                 type="text"
                 value={formData.title}
-                onChange={(e) => handleChange('title', e.target.value)}
+                onChange={(event) => handleChange('title', event.target.value)}
                 className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-neural-light focus:outline-none focus:border-neural-cyan/50 focus:ring-1 focus:ring-neural-cyan/50 transition-all"
-                placeholder="Crystal Title"
+                placeholder="Neuron Title"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-medium text-neural-light/40 uppercase tracking-wider">
-                Definition
-              </label>
+              <label className="text-xs font-medium text-neural-light/40 uppercase tracking-wider">Definition</label>
               <textarea
                 value={formData.definition}
-                onChange={(e) => handleChange('definition', e.target.value)}
+                onChange={(event) => handleChange('definition', event.target.value)}
                 rows={3}
                 className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-neural-light focus:outline-none focus:border-neural-cyan/50 focus:ring-1 focus:ring-neural-cyan/50 transition-all resize-none"
                 placeholder="What is this concept?"
@@ -157,12 +155,10 @@ export function CrystalDetailPanel() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-medium text-neural-light/40 uppercase tracking-wider">
-                Core Insight
-              </label>
+              <label className="text-xs font-medium text-neural-light/40 uppercase tracking-wider">Core Insight</label>
               <textarea
                 value={formData.core_insight}
-                onChange={(e) => handleChange('core_insight', e.target.value)}
+                onChange={(event) => handleChange('core_insight', event.target.value)}
                 rows={3}
                 className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-neural-light focus:outline-none focus:border-neural-cyan/50 focus:ring-1 focus:ring-neural-cyan/50 transition-all resize-none"
                 placeholder="The key takeaway..."
@@ -170,12 +166,10 @@ export function CrystalDetailPanel() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-medium text-neural-light/40 uppercase tracking-wider">
-                Detailed Content
-              </label>
+              <label className="text-xs font-medium text-neural-light/40 uppercase tracking-wider">Detailed Content</label>
               <textarea
                 value={formData.content}
-                onChange={(e) => handleChange('content', e.target.value)}
+                onChange={(event) => handleChange('content', event.target.value)}
                 rows={10}
                 className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-neural-light/90 focus:outline-none focus:border-neural-cyan/50 focus:ring-1 focus:ring-neural-cyan/50 transition-all font-mono text-sm leading-relaxed"
                 placeholder="Detailed notes and explanations..."
@@ -185,11 +179,11 @@ export function CrystalDetailPanel() {
             <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/10">
               <div className="p-3 rounded-lg bg-white/5 border border-white/5">
                 <div className="text-xs text-neural-light/40 mb-1">Bloom Level</div>
-                <div className="text-sm font-medium text-neural-cyan">{crystal.bloom_level}</div>
+                <div className="text-sm font-medium text-neural-cyan">{neuron.bloom_level}</div>
               </div>
               <div className="p-3 rounded-lg bg-white/5 border border-white/5">
                 <div className="text-xs text-neural-light/40 mb-1">State</div>
-                <div className="text-sm font-medium text-neural-purple">{crystal.state}</div>
+                <div className="text-sm font-medium text-neural-purple">{neuron.state}</div>
               </div>
             </div>
           </>
@@ -207,12 +201,12 @@ export function CrystalDetailPanel() {
           }`}
         >
           {saving ? (
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
           ) : (
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-              <polyline points="17 21 17 13 7 13 7 21"></polyline>
-              <polyline points="7 3 7 8 15 8"></polyline>
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+              <polyline points="17 21 17 13 7 13 7 21" />
+              <polyline points="7 3 7 8 15 8" />
             </svg>
           )}
           {saving ? 'Saving...' : 'Save Changes'}

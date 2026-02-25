@@ -4,7 +4,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'NeuroGraph',
-  description: 'Organic Discovery → Crystallized Knowledge → Rigorous Retention',
+  description: 'Organic Discovery → Neuron Knowledge → Rigorous Retention',
 };
 
 export default function RootLayout({

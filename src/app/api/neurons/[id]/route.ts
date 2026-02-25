@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+
 import { createServerSupabaseClient } from '@/lib/auth/supabase';
-import { crystalQueries } from '@/lib/db/queries';
+import { neuronQueries } from '@/lib/db/queries';
 import { generateEmbedding } from '@/lib/ai/embeddings';
 
-const updateCrystalSchema = z.object({
+const updateNeuronSchema = z.object({
   title: z.string().min(3).max(120).optional(),
   definition: z.string().min(10).max(280).optional(),
   core_insight: z.string().min(10).max(500).optional(),
@@ -26,7 +27,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const parsed = updateCrystalSchema.safeParse(await request.json());
+    const parsed = updateNeuronSchema.safeParse(await request.json());
     if (!parsed.success) {
       return NextResponse.json(
         { error: 'Invalid payload', issues: parsed.error.issues },
@@ -35,39 +36,39 @@ export async function PATCH(
     }
 
     const updates = parsed.data;
-    
-    const existingCrystal = await crystalQueries.getById(supabase, id);
-    if (!existingCrystal) {
-      return NextResponse.json({ error: 'Crystal not found' }, { status: 404 });
+
+    const existingNeuron = await neuronQueries.getById(supabase, id);
+    if (!existingNeuron) {
+      return NextResponse.json({ error: 'Neuron not found' }, { status: 404 });
     }
 
-    if (existingCrystal.user_id !== user.id) {
+    if (existingNeuron.user_id !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const needsEmbeddingUpdate =
-      (updates.title && updates.title !== existingCrystal.title) ||
-      (updates.definition && updates.definition !== existingCrystal.definition) ||
-      (updates.core_insight && updates.core_insight !== existingCrystal.core_insight);
+      (updates.title && updates.title !== existingNeuron.title) ||
+      (updates.definition && updates.definition !== existingNeuron.definition) ||
+      (updates.core_insight && updates.core_insight !== existingNeuron.core_insight);
 
-    let embedding = existingCrystal.embedding;
+    let embedding = existingNeuron.embedding;
     if (needsEmbeddingUpdate) {
-      const title = updates.title ?? existingCrystal.title;
-      const definition = updates.definition ?? existingCrystal.definition;
-      const coreInsight = updates.core_insight ?? existingCrystal.core_insight;
-      
+      const title = updates.title ?? existingNeuron.title;
+      const definition = updates.definition ?? existingNeuron.definition;
+      const coreInsight = updates.core_insight ?? existingNeuron.core_insight;
+
       const embeddingInput = `${title} ${definition} ${coreInsight}`;
       embedding = await generateEmbedding(embeddingInput);
     }
 
-    const updatedCrystal = await crystalQueries.update(supabase, id, {
+    const updatedNeuron = await neuronQueries.update(supabase, id, {
       ...updates,
       embedding: needsEmbeddingUpdate ? embedding : undefined,
       user_modified: true,
       modified_at: new Date().toISOString(),
     });
 
-    return NextResponse.json({ crystal: updatedCrystal });
+    return NextResponse.json({ neuron: updatedNeuron });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unexpected error';
     return NextResponse.json({ error: message }, { status: 500 });
@@ -89,16 +90,16 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const crystal = await crystalQueries.getById(supabase, id);
-    if (!crystal) {
-      return NextResponse.json({ error: 'Crystal not found' }, { status: 404 });
+    const neuron = await neuronQueries.getById(supabase, id);
+    if (!neuron) {
+      return NextResponse.json({ error: 'Neuron not found' }, { status: 404 });
     }
 
-    if (crystal.user_id !== user.id) {
+    if (neuron.user_id !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    await crystalQueries.delete(supabase, id);
+    await neuronQueries.delete(supabase, id);
 
     return NextResponse.json({ success: true });
   } catch (error) {

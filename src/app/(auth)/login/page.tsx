@@ -164,7 +164,7 @@ export default function LoginPage() {
               NeuroGraph
             </h1>
             <p className="text-neural-light/60 text-sm font-medium tracking-wide">
-              Organic Discovery → Crystallized Knowledge
+              Organic Discovery → Structured Knowledge
             </p>
           </motion.div>
 

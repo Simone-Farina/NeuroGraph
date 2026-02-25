@@ -2,7 +2,7 @@
 
 import '@xyflow/react/dist/style.css';
 
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback } from 'react';
 import {
   Background,
   Edge,
@@ -17,28 +17,24 @@ import {
 } from '@xyflow/react';
 import dagre from '@dagrejs/dagre';
 
-import { CrystalEdge } from '@/components/graph/CrystalEdge';
-import { CrystalNode } from '@/components/graph/CrystalNode';
-import { CrystalDetailPanel } from '@/components/graph/CrystalDetailPanel';
+import { SynapseEdge } from '@/components/graph/SynapseEdge';
+import { NeuronNode } from '@/components/graph/NeuronNode';
+import { NeuronDetailPanel } from '@/components/graph/NeuronDetailPanel';
 import { useGraphStore } from '@/stores/graphStore';
 import { calculateRetrievability } from '@/lib/ai/fsrs';
-import { Crystal } from '@/types/database';
+import { Neuron } from '@/types/database';
 
 const nodeTypes = {
-  crystal: CrystalNode,
+  neuron: NeuronNode,
 };
 
 const edgeTypes = {
-  crystalEdge: CrystalEdge,
+  synapseEdge: SynapseEdge,
 };
 
 const nodeWidth = 200;
 const nodeHeight = 80;
 
-/**
- * Calculates the layout of the graph using Dagre.
- * Uses a Top-to-Bottom (TB) rank direction.
- */
 const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
   const dagreGraph = new dagre.graphlib.Graph();
   dagreGraph.setDefaultEdgeLabel(() => ({}));
@@ -82,97 +78,89 @@ function GraphCanvas() {
   const [flowEdges, setFlowEdges, onEdgesChange] = useEdgesState([]);
 
   const onLayout = useCallback(
-    (nodes: Node[], edges: Edge[]) => {
-      const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
-        nodes,
-        edges,
-      );
+    (nextNodes: Node[], nextEdges: Edge[]) => {
+      const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(nextNodes, nextEdges);
 
       setFlowNodes([...layoutedNodes]);
       setFlowEdges([...layoutedEdges]);
-      
+
       window.requestAnimationFrame(() => {
         fitView({ padding: 0.3, maxZoom: 0.7 });
       });
     },
-    [setFlowNodes, setFlowEdges, fitView],
+    [setFlowNodes, setFlowEdges, fitView]
   );
 
   useEffect(() => {
     onLayout(nodes, edges);
   }, [nodes, edges, onLayout]);
 
-  // Periodic retrievability update
   useEffect(() => {
     const updateRetrievability = () => {
       const now = new Date();
       const currentNodes = useGraphStore.getState().nodes;
-      
-      currentNodes.forEach(node => {
-        // We need to cast data to any to access the extra fields we stored
-        const data = node.data as any;
-        
-        if (data.stability !== undefined) {
-          // Construct a partial Crystal object for calculation
-          const crystalPartial = {
-            stability: data.stability,
-            last_review: data.last_review,
-            state: data.state || 'Review', // Default to Review if not present to ensure calculation runs
-          } as Crystal;
 
-          const newRetrievability = calculateRetrievability(crystalPartial, now);
-          
-          // Only update if there's a significant change (e.g., > 0.1%) to avoid thrashing
-          if (Math.abs(newRetrievability - (data.retrievability || 0)) > 0.001) {
+      currentNodes.forEach((node) => {
+        const data = node.data as Record<string, unknown>;
+
+        if (typeof data.stability === 'number') {
+          const neuronPartial = {
+            stability: data.stability,
+            last_review: typeof data.last_review === 'string' ? data.last_review : null,
+            state: typeof data.state === 'string' ? data.state : 'Review',
+          } as Neuron;
+
+          const previousRetrievability = typeof data.retrievability === 'number' ? data.retrievability : 0;
+          const newRetrievability = calculateRetrievability(neuronPartial, now);
+
+          if (Math.abs(newRetrievability - previousRetrievability) > 0.001) {
             updateNode(node.id, { retrievability: newRetrievability });
           }
         }
       });
     };
 
-    // Run immediately and then every minute
     updateRetrievability();
     const interval = setInterval(updateRetrievability, 60 * 1000);
-    
+
     return () => clearInterval(interval);
   }, [updateNode]);
 
   useEffect(() => {
     const loadGraph = async () => {
-      const response = await fetch('/api/crystals', { cache: 'no-store' });
+      const response = await fetch('/api/neurons', { cache: 'no-store' });
       if (!response.ok) return;
 
       const payload = await response.json();
-      const crystals = payload.crystals || [];
-      const crystalEdges = payload.edges || [];
+      const neurons = payload.neurons || [];
+      const synapses = payload.synapses || [];
 
-      const mappedNodes: Node[] = crystals.slice(0, 200).map((crystal: any) => ({
-        id: crystal.id,
-        type: 'crystal',
+      const mappedNodes: Node[] = neurons.slice(0, 200).map((neuron: any) => ({
+        id: neuron.id,
+        type: 'neuron',
         position: { x: 0, y: 0 },
         data: {
-          title: crystal.title,
-          retrievability: crystal.retrievability,
-          last_reviewed_at: crystal.last_reviewed_at,
-          // Store extra fields needed for local recalculation
-          stability: crystal.stability,
-          last_review: crystal.last_review,
-          state: crystal.state,
+          title: neuron.title,
+          retrievability: neuron.retrievability,
+          last_reviewed_at: neuron.last_reviewed_at,
+          stability: neuron.stability,
+          last_review: neuron.last_review,
+          state: neuron.state,
         },
       }));
 
-      const mappedEdges: Edge[] = crystalEdges.map((edge: any) => ({
-        id: edge.id,
-        source: edge.source_crystal_id,
-        target: edge.target_crystal_id,
-        type: 'crystalEdge',
-        data: { typeLabel: edge.type },
+      const mappedEdges: Edge[] = synapses.map((synapse: any) => ({
+        id: synapse.id,
+        source: synapse.source_neuron_id,
+        target: synapse.target_neuron_id,
+        type: 'synapseEdge',
+        data: { typeLabel: synapse.type },
         markerEnd:
-          edge.type === 'RELATED'
+          synapse.type === 'RELATED'
             ? undefined
             : {
                 type: MarkerType.ArrowClosed,
-                color: edge.type === 'PREREQUISITE' ? '#22d3ee' : '#f59e0b',
+                color: synapse.type === 'PREREQUISITE' ? '#22d3ee' : '#f59e0b',
               },
       }));
 
@@ -189,7 +177,7 @@ function GraphCanvas() {
     (_: React.MouseEvent, node: Node) => {
       setSelectedNode(node.id);
     },
-    [setSelectedNode],
+    [setSelectedNode]
   );
 
   if (!flowNodes.length) {
@@ -200,9 +188,9 @@ function GraphCanvas() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-neural-cyan/10 text-3xl text-neural-cyan animate-pulse-cyan">
             🕸️
           </div>
-          <h3 className="text-xl font-bold text-neural-light mb-2">Knowledge Graph Empty</h3>
+          <h3 className="text-xl font-bold text-neural-light mb-2">Neural Network Empty</h3>
           <p className="text-sm text-neural-light/60">
-            Start a conversation to generate crystalized knowledge nodes. Your graph will grow organically as you learn.
+            Start a conversation to generate neurons. Your network will grow organically as you learn.
           </p>
         </div>
       </div>
@@ -236,7 +224,7 @@ export function GraphPanel() {
       <ReactFlowProvider>
         <GraphCanvas />
       </ReactFlowProvider>
-      <CrystalDetailPanel />
+      <NeuronDetailPanel />
     </section>
   );
 }

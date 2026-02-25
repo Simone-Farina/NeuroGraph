@@ -18,8 +18,8 @@ export default function Home() {
         </h1>
         
         <p className="text-xl text-neural-light/70 font-medium tracking-wide mb-12 max-w-2xl mx-auto leading-relaxed">
-          Organic Discovery <span className="text-neural-cyan mx-2">→</span> 
-          Crystallized Knowledge <span className="text-neural-purple mx-2">→</span> 
+          Organic Discovery <span className="text-neural-cyan mx-2">→</span>
+          Structured Knowledge <span className="text-neural-purple mx-2">→</span>
           Rigorous Retention
         </p>
 
@@ -44,7 +44,7 @@ export default function Home() {
             <p className="text-sm text-neural-light/50">Explore topics naturally through conversation. No rigid curriculum.</p>
           </div>
           <div className="p-6 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-sm">
-            <h3 className="text-neural-purple font-bold mb-2">Crystallization</h3>
+            <h3 className="text-neural-purple font-bold mb-2">Neurogenesis</h3>
             <p className="text-sm text-neural-light/50">Turn insights into permanent knowledge nodes in your personal graph.</p>
           </div>
           <div className="p-6 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-sm">

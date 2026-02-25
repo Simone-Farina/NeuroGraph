@@ -14,7 +14,7 @@ async function verifySetup() {
   };
 
   try {
-      const { error } = await supabase.from('crystals').select('count').limit(0);
+      const { error } = await supabase.from('neurons').select('count').limit(0);
     if (!error) {
       checks.connection = true;
       console.log('✅ Database connection successful');
@@ -26,7 +26,7 @@ async function verifySetup() {
   }
 
   try {
-    const { error } = await supabase.rpc('find_similar_crystals', {
+    const { error } = await supabase.rpc('find_similar_neurons', {
       query_embedding: Array(1536).fill(0),
       match_user_id: '00000000-0000-0000-0000-000000000000',
       match_threshold: 0.5,
@@ -41,7 +41,7 @@ async function verifySetup() {
     } else {
       if (error.message.includes('vector')) {
         console.log('❌ pgvector extension not enabled');
-      } else if (error.message.includes('find_similar_crystals')) {
+      } else if (error.message.includes('find_similar_neurons')) {
         console.log('❌ Query functions not installed');
       } else {
         console.log('⚠️  Query function check inconclusive:', error.message);
@@ -51,7 +51,7 @@ async function verifySetup() {
     console.log('❌ Function verification failed:', error);
   }
 
-  const requiredTables: TableName[] = ['crystals', 'crystal_edges', 'conversations', 'messages'];
+  const requiredTables: TableName[] = ['neurons', 'synapses', 'conversations', 'messages'];
   let allTablesExist = true;
 
   for (const table of requiredTables) {

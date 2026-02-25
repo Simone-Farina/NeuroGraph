@@ -35,7 +35,7 @@ export const mockModel = new MockLanguageModelV3({
 
     const chunks: any[] = [];
 
-    if (userText.toLowerCase().includes('crystallize')) {
+    if (userText.toLowerCase().includes('neurogenesis')) {
       const toolCallId = `call_${Math.random().toString(36).slice(2)}`;
       
       let title = 'Spaced Repetition';
@@ -46,13 +46,13 @@ export const mockModel = new MockLanguageModelV3({
       chunks.push({
         type: 'tool-call',
         toolCallId,
-        toolName: 'suggest_crystallization',
+        toolName: 'suggest_neurogenesis',
         input: JSON.stringify({
           title,
           definition: 'A learning technique that reviews information at increasing intervals.',
           core_insight: 'Spaced repetition combats the forgetting curve by spacing out reviews.',
           bloom_level: 'Analyze',
-          related_crystals: []
+          related_neurons: []
         }),
       });
       

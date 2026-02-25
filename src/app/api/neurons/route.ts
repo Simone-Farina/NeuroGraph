@@ -5,21 +5,21 @@ import { createServerSupabaseClient } from '@/lib/auth/supabase';
 import { generateEmbedding } from '@/lib/ai/embeddings';
 import type { Database } from '@/types/database';
 
-type SimilarCrystalRow = {
+type SimilarNeuronRow = {
   id: string;
   title: string;
   similarity: number;
 };
 
-type EdgeType = Database['public']['Tables']['crystal_edges']['Row']['type'];
-type EdgeInsert = Database['public']['Tables']['crystal_edges']['Insert'];
-type EdgeRow = Database['public']['Tables']['crystal_edges']['Row'];
+type SynapseType = Database['public']['Tables']['synapses']['Row']['type'];
+type SynapseInsert = Database['public']['Tables']['synapses']['Insert'];
+type SynapseRow = Database['public']['Tables']['synapses']['Row'];
 
-type EdgeSuggestion = {
-  source_crystal_id: string;
-  target_crystal_id: string;
+type SynapseSuggestion = {
+  source_neuron_id: string;
+  target_neuron_id: string;
   target_title: string;
-  type: EdgeType;
+  type: SynapseType;
   weight: number;
   confidence: 'medium';
   source: 'vector' | 'ai';
@@ -33,24 +33,24 @@ function clampWeight(value: number) {
   return Math.max(0, Math.min(1, value));
 }
 
-function edgeKey(sourceCrystalId: string, targetCrystalId: string, type: EdgeType) {
-  return `${sourceCrystalId}:${targetCrystalId}:${type}`;
+function synapseKey(sourceNeuronId: string, targetNeuronId: string, type: SynapseType) {
+  return `${sourceNeuronId}:${targetNeuronId}:${type}`;
 }
 
-const relatedCrystalSchema = z.object({
+const relatedNeuronSchema = z.object({
   id: z.uuid(),
   title: z.string().min(1).max(120).optional(),
   relationship_type: z.enum(['PREREQUISITE', 'RELATED', 'BUILDS_ON']),
 });
 
-const createCrystalSchema = z.object({
+const createNeuronSchema = z.object({
   title: z.string().min(3).max(120),
   definition: z.string().min(10).max(280),
   core_insight: z.string().min(10).max(500),
   bloom_level: z.enum(['Remember', 'Understand', 'Apply', 'Analyze', 'Evaluate', 'Create']),
   source_conversation_id: z.uuid(),
   source_message_ids: z.array(z.string()).optional(),
-  related_crystals: z.array(relatedCrystalSchema).max(5).optional(),
+  related_neurons: z.array(relatedNeuronSchema).max(5).optional(),
 });
 
 export async function GET() {
@@ -64,25 +64,27 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const [{ data: crystals, error: crystalsError }, { data: edges, error: edgesError }] =
+    const [{ data: neurons, error: neuronsError }, { data: synapses, error: synapsesError }] =
       await Promise.all([
         supabase
-          .from('crystals')
-          .select('id, user_id, title, definition, core_insight, content, bloom_level, source_conversation_id, stability, difficulty, state, reps, lapses, elapsed_days, scheduled_days, retrievability, last_review, next_review_due, review_count, consecutive_correct, user_modified, modified_at, created_at, updated_at')
+          .from('neurons')
+          .select(
+            'id, user_id, title, definition, core_insight, content, bloom_level, source_conversation_id, stability, difficulty, state, reps, lapses, elapsed_days, scheduled_days, retrievability, last_review, next_review_due, review_count, consecutive_correct, user_modified, modified_at, created_at, updated_at'
+          )
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
           .limit(200),
-        supabase.from('crystal_edges').select('*').eq('user_id', user.id),
+        supabase.from('synapses').select('*').eq('user_id', user.id),
       ]);
 
-    if (crystalsError || edgesError) {
+    if (neuronsError || synapsesError) {
       return NextResponse.json(
-        { error: crystalsError?.message ?? edgesError?.message ?? 'Failed to load graph' },
+        { error: neuronsError?.message ?? synapsesError?.message ?? 'Failed to load graph' },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ crystals: crystals ?? [], edges: edges ?? [] });
+    return NextResponse.json({ neurons: neurons ?? [], synapses: synapses ?? [] });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unexpected error';
     return NextResponse.json({ error: message }, { status: 500 });
@@ -100,7 +102,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const parsed = createCrystalSchema.safeParse(await request.json());
+    const parsed = createNeuronSchema.safeParse(await request.json());
     if (!parsed.success) {
       return NextResponse.json(
         { error: 'Invalid payload', issues: parsed.error.issues },
@@ -109,18 +111,18 @@ export async function POST(request: NextRequest) {
     }
 
     const {
-      related_crystals: relatedCrystalsInput = [],
+      related_neurons: relatedNeuronsInput = [],
       source_message_ids: sourceMessageIds,
-      ...crystalInput
+      ...neuronInput
     } = parsed.data;
 
     const now = new Date();
     const nextReview = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
     const { data, error } = await supabase
-      .from('crystals')
+      .from('neurons')
       .insert({
-        ...crystalInput,
+        ...neuronInput,
         source_message_ids: sourceMessageIds ?? [],
         user_id: user.id,
         embedding: null,
@@ -147,8 +149,8 @@ export async function POST(request: NextRequest) {
     const embeddingInput = `${data.title} ${data.definition} ${data.core_insight}`;
     const embedding = await generateEmbedding(embeddingInput);
 
-    const { data: crystal, error: embeddingUpdateError } = await supabase
-      .from('crystals')
+    const { data: neuron, error: embeddingUpdateError } = await supabase
+      .from('neurons')
       .update({ embedding })
       .eq('id', data.id)
       .eq('user_id', user.id)
@@ -160,12 +162,12 @@ export async function POST(request: NextRequest) {
     }
 
     const { count } = await supabase
-      .from('crystals')
+      .from('neurons')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', user.id)
       .not('embedding', 'is', null);
 
-    const { data: similarCrystals, error: similarError } = await supabase.rpc('find_similar_crystals', {
+    const { data: similarNeurons, error: similarError } = await supabase.rpc('find_similar_neurons', {
       query_embedding: embedding,
       match_user_id: user.id,
       match_count: 5,
@@ -176,37 +178,37 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: similarError.message }, { status: 500 });
     }
 
-    const similarRows = ((similarCrystals ?? []) as SimilarCrystalRow[]).filter(
-      (row) => row.id !== crystal.id
+    const similarRows = ((similarNeurons ?? []) as SimilarNeuronRow[]).filter(
+      (row) => row.id !== neuron.id
     );
 
-    const highConfidenceEdgeInserts: EdgeInsert[] = [];
-    const autoEdgeKeys = new Set<string>();
-    const mediumSuggestionsByKey = new Map<string, EdgeSuggestion>();
+    const highConfidenceSynapseInserts: SynapseInsert[] = [];
+    const autoSynapseKeys = new Set<string>();
+    const mediumSuggestionsByKey = new Map<string, SynapseSuggestion>();
 
     similarRows.forEach((row) => {
       const distance = 1 - row.similarity;
-      const type: EdgeType = 'RELATED';
-      const key = edgeKey(crystal.id, row.id, type);
+      const type: SynapseType = 'RELATED';
+      const key = synapseKey(neuron.id, row.id, type);
       const weight = clampWeight(row.similarity);
 
       if (distance < HIGH_CONFIDENCE_DISTANCE_THRESHOLD) {
-        highConfidenceEdgeInserts.push({
+        highConfidenceSynapseInserts.push({
           user_id: user.id,
-          source_crystal_id: crystal.id,
-          target_crystal_id: row.id,
+          source_neuron_id: neuron.id,
+          target_neuron_id: row.id,
           type,
           weight,
           ai_suggested: true,
         });
-        autoEdgeKeys.add(key);
+        autoSynapseKeys.add(key);
         return;
       }
 
       if (distance >= HIGH_CONFIDENCE_DISTANCE_THRESHOLD && distance < MEDIUM_CONFIDENCE_DISTANCE_THRESHOLD) {
         mediumSuggestionsByKey.set(key, {
-          source_crystal_id: crystal.id,
-          target_crystal_id: row.id,
+          source_neuron_id: neuron.id,
+          target_neuron_id: row.id,
           target_title: row.title,
           type,
           weight,
@@ -216,16 +218,16 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    if (relatedCrystalsInput.length > 0) {
+    if (relatedNeuronsInput.length > 0) {
       const requestedTargetIds = Array.from(
-        new Set(relatedCrystalsInput.map((item) => item.id))
-      ).filter((id) => id !== crystal.id);
+        new Set(relatedNeuronsInput.map((item) => item.id))
+      ).filter((id) => id !== neuron.id);
 
       let validTargets = new Map<string, { id: string; title: string }>();
 
       if (requestedTargetIds.length > 0) {
         const { data: relatedTargets, error: relatedTargetsError } = await supabase
-          .from('crystals')
+          .from('neurons')
           .select('id, title')
           .eq('user_id', user.id)
           .in('id', requestedTargetIds);
@@ -237,16 +239,16 @@ export async function POST(request: NextRequest) {
         validTargets = new Map((relatedTargets ?? []).map((target) => [target.id, target]));
       }
 
-      relatedCrystalsInput.forEach((related) => {
+      relatedNeuronsInput.forEach((related) => {
         const target = validTargets.get(related.id);
         if (!target) return;
 
-        const key = edgeKey(crystal.id, target.id, related.relationship_type);
-        if (autoEdgeKeys.has(key)) return;
+        const key = synapseKey(neuron.id, target.id, related.relationship_type);
+        if (autoSynapseKeys.has(key)) return;
 
-        const nextSuggestion: EdgeSuggestion = {
-          source_crystal_id: crystal.id,
-          target_crystal_id: target.id,
+        const nextSuggestion: SynapseSuggestion = {
+          source_neuron_id: neuron.id,
+          target_neuron_id: target.id,
           target_title: target.title,
           type: related.relationship_type,
           weight: AI_SUGGESTION_WEIGHT,
@@ -261,58 +263,61 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    let createdEdges: EdgeRow[] = [];
+    let createdSynapses: SynapseRow[] = [];
 
-    if (highConfidenceEdgeInserts.length > 0) {
-      const { data: insertedEdges, error: edgesError } = await supabase
-        .from('crystal_edges')
-        .upsert(highConfidenceEdgeInserts, {
-          onConflict: 'source_crystal_id,target_crystal_id,type',
+    if (highConfidenceSynapseInserts.length > 0) {
+      const { data: insertedSynapses, error: synapsesError } = await supabase
+        .from('synapses')
+        .upsert(highConfidenceSynapseInserts, {
+          onConflict: 'source_neuron_id,target_neuron_id,type',
           ignoreDuplicates: true,
         })
         .select('*');
 
-      if (edgesError) {
-        return NextResponse.json({ error: edgesError.message }, { status: 500 });
+      if (synapsesError) {
+        return NextResponse.json({ error: synapsesError.message }, { status: 500 });
       }
 
-      createdEdges = insertedEdges ?? [];
+      createdSynapses = insertedSynapses ?? [];
     }
 
     const mediumSuggestions = Array.from(mediumSuggestionsByKey.values());
-    let edgeSuggestions = mediumSuggestions;
+    let synapseSuggestions = mediumSuggestions;
 
     if (mediumSuggestions.length > 0) {
       const targetIds = Array.from(
-        new Set(mediumSuggestions.map((suggestion) => suggestion.target_crystal_id))
+        new Set(mediumSuggestions.map((suggestion) => suggestion.target_neuron_id))
       );
 
-      const { data: existingEdges, error: existingEdgesError } = await supabase
-        .from('crystal_edges')
-        .select('source_crystal_id, target_crystal_id, type')
+      const { data: existingSynapses, error: existingSynapsesError } = await supabase
+        .from('synapses')
+        .select('source_neuron_id, target_neuron_id, type')
         .eq('user_id', user.id)
-        .eq('source_crystal_id', crystal.id)
-        .in('target_crystal_id', targetIds);
+        .eq('source_neuron_id', neuron.id)
+        .in('target_neuron_id', targetIds);
 
-      if (existingEdgesError) {
-        return NextResponse.json({ error: existingEdgesError.message }, { status: 500 });
+      if (existingSynapsesError) {
+        return NextResponse.json({ error: existingSynapsesError.message }, { status: 500 });
       }
 
-      const existingEdgeKeys = new Set(
-        (existingEdges ?? []).map((edge) =>
-          edgeKey(edge.source_crystal_id, edge.target_crystal_id, edge.type as EdgeType)
+      const existingSynapseKeys = new Set(
+        (existingSynapses ?? []).map((synapse) =>
+          synapseKey(synapse.source_neuron_id, synapse.target_neuron_id, synapse.type as SynapseType)
         )
       );
 
-      edgeSuggestions = mediumSuggestions.filter(
+      synapseSuggestions = mediumSuggestions.filter(
         (suggestion) =>
-          !existingEdgeKeys.has(
-            edgeKey(suggestion.source_crystal_id, suggestion.target_crystal_id, suggestion.type)
+          !existingSynapseKeys.has(
+            synapseKey(suggestion.source_neuron_id, suggestion.target_neuron_id, suggestion.type)
           )
       );
     }
 
-    return NextResponse.json({ crystal, edges: createdEdges, edge_suggestions: edgeSuggestions }, { status: 201 });
+    return NextResponse.json(
+      { neuron, synapses: createdSynapses, synapse_suggestions: synapseSuggestions },
+      { status: 201 }
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unexpected error';
     return NextResponse.json({ error: message }, { status: 500 });

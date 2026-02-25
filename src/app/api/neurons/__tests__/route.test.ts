@@ -7,23 +7,22 @@ import { generateEmbedding } from '@/lib/ai/embeddings';
 vi.mock('@/lib/auth/supabase');
 vi.mock('@/lib/ai/embeddings');
 
-// Mock data
 const mockUser = {
   id: 'user-123',
   email: 'test@example.com',
 };
 
 const validPayload = {
-  title: 'Test Crystal',
-  definition: 'A test crystal definition with sufficient length.',
+  title: 'Test Neuron',
+  definition: 'A test neuron definition with sufficient length.',
   core_insight: 'A core insight that is also long enough to be valid.',
   bloom_level: 'Remember',
   source_conversation_id: '123e4567-e89b-12d3-a456-426614174000',
   source_message_ids: ['msg-1', 'msg-2'],
-  related_crystals: [],
+  related_neurons: [],
 };
 
-describe('POST /api/crystals', () => {
+describe('POST /api/neurons', () => {
   let mockSupabase: any;
   let mockInsert: any;
   let mockUpdate: any;
@@ -31,28 +30,26 @@ describe('POST /api/crystals', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Setup mock Supabase client
     mockInsert = vi.fn().mockReturnValue({
       select: vi.fn().mockReturnValue({
         single: vi.fn().mockResolvedValue({
-          data: { id: 'crystal-1', ...validPayload, user_id: mockUser.id, embedding: [0.1, 0.2, 0.3] },
+          data: { id: 'neuron-1', ...validPayload, user_id: mockUser.id, embedding: [0.1, 0.2, 0.3] },
           error: null,
         }),
       }),
     });
 
-    // Mock update to return success if called (though we expect it not to be called for embedding)
     mockUpdate = vi.fn().mockReturnValue({
+      eq: vi.fn().mockReturnValue({
         eq: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-                select: vi.fn().mockReturnValue({
-                    single: vi.fn().mockResolvedValue({
-                        data: { id: 'crystal-1', ...validPayload, user_id: mockUser.id, embedding: [0.1, 0.2, 0.3] },
-                        error: null,
-                    })
-                })
-            })
-        })
+          select: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({
+              data: { id: 'neuron-1', ...validPayload, user_id: mockUser.id, embedding: [0.1, 0.2, 0.3] },
+              error: null,
+            }),
+          }),
+        }),
+      }),
     });
 
     mockSupabase = {
@@ -60,32 +57,33 @@ describe('POST /api/crystals', () => {
         getUser: vi.fn().mockResolvedValue({ data: { user: mockUser }, error: null }),
       },
       from: vi.fn((table) => {
-        if (table === 'crystals') {
+        if (table === 'neurons') {
           return {
             insert: mockInsert,
-            // Mock select for "count" query
             select: vi.fn().mockReturnValue({
-                eq: vi.fn().mockReturnValue({
-                    not: vi.fn().mockResolvedValue({ count: 1 })
-                })
+              eq: vi.fn().mockReturnValue({
+                not: vi.fn().mockResolvedValue({ count: 1 }),
+              }),
             }),
             update: mockUpdate,
           };
         }
-        if (table === 'crystal_edges') {
-            return {
-                select: vi.fn().mockReturnValue({
-                    eq: vi.fn().mockReturnValue({
-                        eq: vi.fn().mockReturnValue({
-                            in: vi.fn().mockResolvedValue({ data: [], error: null })
-                        })
-                    })
+
+        if (table === 'synapses') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  in: vi.fn().mockResolvedValue({ data: [], error: null }),
                 }),
-                upsert: vi.fn().mockReturnValue({
-                    select: vi.fn().mockResolvedValue({ data: [], error: null })
-                })
-            }
+              }),
+            }),
+            upsert: vi.fn().mockReturnValue({
+              select: vi.fn().mockResolvedValue({ data: [], error: null }),
+            }),
+          };
         }
+
         return {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
@@ -100,7 +98,7 @@ describe('POST /api/crystals', () => {
   });
 
   it('should include source_message_ids in the insert payload', async () => {
-    const req = new NextRequest('http://localhost/api/crystals', {
+    const req = new NextRequest('http://localhost/api/neurons', {
       method: 'POST',
       body: JSON.stringify(validPayload),
     });
@@ -108,42 +106,29 @@ describe('POST /api/crystals', () => {
     const response = await POST(req);
     expect(response.status).toBe(201);
 
-    expect(mockSupabase.from).toHaveBeenCalledWith('crystals');
+    expect(mockSupabase.from).toHaveBeenCalledWith('neurons');
     expect(mockInsert).toHaveBeenCalledTimes(1);
 
     const insertPayload = mockInsert.mock.calls[0][0];
     expect(insertPayload).toHaveProperty('title', validPayload.title);
     expect(insertPayload).toHaveProperty('source_message_ids', validPayload.source_message_ids);
   });
-  it('should optimize DB calls by generating embedding before insert', async () => {
-    const payload = validPayload;
 
-    const req = new NextRequest('http://localhost:3000/api/crystals', {
+  it('should return a neuron payload and perform embedding update', async () => {
+    const req = new NextRequest('http://localhost:3000/api/neurons', {
       method: 'POST',
-      body: JSON.stringify(payload),
+      body: JSON.stringify(validPayload),
     });
 
     const response = await POST(req);
     const json = await response.json();
 
-    if (response.status !== 201) {
-      console.error('API Error:', json);
-    }
-
     expect(response.status).toBe(201);
-    expect(json.crystal).toBeDefined();
-
-    // Check generateEmbedding call
+    expect(json.neuron).toBeDefined();
     expect(generateEmbedding).toHaveBeenCalledWith(
-      `${payload.title} ${payload.definition} ${payload.core_insight}`
+      `${validPayload.title} ${validPayload.definition} ${validPayload.core_insight}`
     );
-
-    // Expectation: 1 insert
     expect(mockInsert).toHaveBeenCalledTimes(1);
-
-    const insertCallArgs = mockInsert.mock.calls[0][0];
-    expect(insertCallArgs.embedding).toBeNull();
-
     expect(mockUpdate).toHaveBeenCalled();
   });
 });

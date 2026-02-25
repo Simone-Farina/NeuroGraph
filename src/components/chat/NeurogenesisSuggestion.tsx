@@ -1,13 +1,13 @@
 'use client';
 
-type CrystallizationSuggestionProps = {
+type NeurogenesisSuggestionProps = {
   toolCallId: string;
   input: {
     title?: string;
     definition?: string;
     core_insight?: string;
     bloom_level?: string;
-    related_crystals?: Array<{
+    related_neurons?: Array<{
       id: string;
       title?: string;
       relationship_type: 'PREREQUISITE' | 'RELATED' | 'BUILDS_ON';
@@ -15,26 +15,26 @@ type CrystallizationSuggestionProps = {
   };
   state: string;
   isProcessing?: boolean;
-  onCrystallize: () => void;
+  onNeurogenesis: () => void;
   onDismiss: () => void;
 };
 
-export function CrystallizationSuggestion({
+export function NeurogenesisSuggestion({
   input,
   state,
   isProcessing,
-  onCrystallize,
+  onNeurogenesis,
   onDismiss,
-}: CrystallizationSuggestionProps) {
+}: NeurogenesisSuggestionProps) {
   if (state === 'output-available') {
     return (
-      <div className="crystallization-suggestion my-4 rounded-xl border border-neural-purple/20 bg-neural-purple/5 p-4 flex items-center gap-3">
+      <div className="neurogenesis-suggestion my-4 rounded-xl border border-neural-purple/20 bg-neural-purple/5 p-4 flex items-center gap-3">
         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-neural-purple/20 text-neural-purple">
-          💎
+          🧠
         </span>
         <div>
-          <p className="text-sm font-medium text-neural-light">Insight Crystallized</p>
-          <p className="text-xs text-neural-light/50">This concept has been added to your graph.</p>
+          <p className="text-sm font-medium text-neural-light">Neuron Generated</p>
+          <p className="text-xs text-neural-light/50">This concept has been added to your neural network.</p>
         </div>
       </div>
     );
@@ -42,30 +42,30 @@ export function CrystallizationSuggestion({
 
   if (!input) {
     return (
-      <div className="crystallization-suggestion my-4 rounded-xl border border-neural-purple/20 bg-neural-purple/5 p-5 animate-pulse">
+      <div className="neurogenesis-suggestion my-4 rounded-xl border border-neural-purple/20 bg-neural-purple/5 p-5 animate-pulse">
         <div className="flex items-center gap-2">
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-neural-purple/20 text-neural-purple">
             ✨
           </span>
-          <p className="text-sm text-neural-light/50">Crystallizing insight...</p>
+          <p className="text-sm text-neural-light/50">Generating neuron...</p>
         </div>
       </div>
     );
   }
 
-  const title = input.title ?? 'New Insight';
+  const title = input.title ?? 'New Neuron';
   const definition = input.definition ?? '';
   const coreInsight = input.core_insight ?? '';
   const bloomLevel = input.bloom_level ?? 'Understand';
 
   return (
-    <div className="crystallization-suggestion my-4 rounded-xl border border-neural-purple/30 bg-neural-purple/5 p-5 backdrop-blur-md shadow-[0_0_20px_-5px_rgba(168,85,247,0.15)] hover:border-neural-purple/50 transition-colors">
+    <div className="neurogenesis-suggestion my-4 rounded-xl border border-neural-purple/30 bg-neural-purple/5 p-5 backdrop-blur-md shadow-[0_0_20px_-5px_rgba(168,85,247,0.15)] hover:border-neural-purple/50 transition-colors">
       <div className="mb-4 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-neural-purple/20 text-neural-purple">
             ✨
           </span>
-          <h3 className="text-sm font-bold tracking-wide text-neural-light/90">Potential Crystal</h3>
+          <h3 className="text-sm font-bold tracking-wide text-neural-light/90">Potential Neuron</h3>
         </div>
         <span className="rounded-full border border-neural-cyan/30 bg-neural-cyan/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-neural-cyan">
           {bloomLevel}
@@ -81,9 +81,7 @@ export function CrystallizationSuggestion({
         <div className="mt-4 rounded-lg border border-white/5 bg-white/5 px-4 py-3">
           <div className="flex gap-2">
             <span className="text-neural-yellow/80 shrink-0">💡</span>
-            <p className="text-xs italic text-neural-light/60 leading-relaxed">
-              {coreInsight}
-            </p>
+            <p className="text-xs italic text-neural-light/60 leading-relaxed">{coreInsight}</p>
           </div>
         </div>
       )}
@@ -91,17 +89,17 @@ export function CrystallizationSuggestion({
       <div className="mt-5 flex items-center gap-3">
         <button
           type="button"
-          onClick={onCrystallize}
+          onClick={onNeurogenesis}
           disabled={isProcessing}
           className="flex-1 rounded-lg bg-gradient-to-r from-neural-cyan to-neural-purple px-4 py-2 text-xs font-bold text-white shadow-lg shadow-neural-purple/20 transition-all hover:shadow-neural-purple/40 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
         >
           {isProcessing ? (
             <span className="flex items-center justify-center gap-2">
               <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-              Crystallizing...
+              Generating...
             </span>
           ) : (
-            'Crystallize Insight'
+            'Generate Neuron'
           )}
         </button>
         <button

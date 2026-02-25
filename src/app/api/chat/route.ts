@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { createServerSupabaseClient } from '@/lib/auth/supabase';
 import { CHAT_SYSTEM_PROMPT, MAX_CONTEXT_MESSAGES } from '@/lib/ai/prompts';
 import { getChatModel } from '@/lib/ai/providers';
-import { suggestCrystallizationTool } from '@/lib/ai/tools';
+import { suggestNeurogenesisTool } from '@/lib/ai/tools';
 
 import { getRelevantContext } from '@/lib/ai/rag';
 
@@ -184,7 +184,7 @@ export async function POST(request: NextRequest) {
 
     const { ragContext, ragCatalog } = await getRelevantContext(latestUserText, user.id, supabase);
 
-    const systemPrompt = `${CHAT_SYSTEM_PROMPT}${ragContext}\n\n## Existing Crystal Catalog\nUse this catalog to populate related_crystals when suggesting crystallization.\nOnly use ids from this list:\n${ragCatalog}`;
+    const systemPrompt = `${CHAT_SYSTEM_PROMPT}${ragContext}\n\n## Existing Neuron Catalog\nUse this catalog to populate related_neurons when suggesting neurogenesis.\nOnly use ids from this list:\n${ragCatalog}`;
 
     const model = getChatModel();
 
@@ -196,7 +196,7 @@ export async function POST(request: NextRequest) {
       system: systemPrompt,
       messages: modelMessages,
       tools: {
-        suggest_crystallization: suggestCrystallizationTool,
+        suggest_neurogenesis: suggestNeurogenesisTool,
       },
       onChunk(event) {
         if (event.chunk.type === 'text-delta') {

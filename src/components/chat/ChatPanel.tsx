@@ -9,14 +9,13 @@ import { ChatInput } from '@/components/chat/ChatInput';
 import { MessageList } from '@/components/chat/MessageList';
 import { extractFirstYouTubeUrl, isYouTubeUrl } from '@/lib/youtube';
 import { useGraphStore } from '@/stores/graphStore';
-import type { ConversationSummary } from '@/types/chat';
 
 type SuggestionInput = {
   title: string;
   definition: string;
   core_insight: string;
   bloom_level: string;
-  related_crystals?: Array<{
+  related_neurons?: Array<{
     id: string;
     title?: string;
     relationship_type: 'PREREQUISITE' | 'RELATED' | 'BUILDS_ON';
@@ -34,22 +33,22 @@ type SuggestionToolPart = {
   output?: unknown;
 };
 
-type CreatedCrystalResponse = {
-  crystal: {
+type CreatedNeuronResponse = {
+  neuron: {
     id: string;
     title: string;
     retrievability: number;
   };
-  edges?: Array<{
+  synapses?: Array<{
     id: string;
-    source_crystal_id: string;
-    target_crystal_id: string;
+    source_neuron_id: string;
+    target_neuron_id: string;
     type: RelationshipType;
     weight?: number;
   }>;
-  edge_suggestions?: Array<{
-    source_crystal_id: string;
-    target_crystal_id: string;
+  synapse_suggestions?: Array<{
+    source_neuron_id: string;
+    target_neuron_id: string;
     target_title: string;
     type: RelationshipType;
     weight: number;
@@ -58,11 +57,11 @@ type CreatedCrystalResponse = {
   }>;
 };
 
-type EdgeUpsertResponse = {
-  edge: {
+type SynapseUpsertResponse = {
+  synapse: {
     id: string;
-    source_crystal_id: string;
-    target_crystal_id: string;
+    source_neuron_id: string;
+    target_neuron_id: string;
     type: RelationshipType;
     weight: number;
   };
@@ -79,26 +78,26 @@ function markerForEdge(type: RelationshipType) {
 
 function toGraphEdge(edge: {
   id: string;
-  source_crystal_id: string;
-  target_crystal_id: string;
+  source_neuron_id: string;
+  target_neuron_id: string;
   type: RelationshipType;
 }): Edge {
   return {
     id: edge.id,
-    source: edge.source_crystal_id,
-    target: edge.target_crystal_id,
-    type: 'crystalEdge',
+    source: edge.source_neuron_id,
+    target: edge.target_neuron_id,
+    type: 'synapseEdge',
     data: { typeLabel: edge.type },
     markerEnd: markerForEdge(edge.type),
   };
 }
 
 function edgeSuggestionKey(suggestion: {
-  source_crystal_id: string;
-  target_crystal_id: string;
+  source_neuron_id: string;
+  target_neuron_id: string;
   type: RelationshipType;
 }) {
-  return `${suggestion.source_crystal_id}:${suggestion.target_crystal_id}:${suggestion.type}`;
+  return `${suggestion.source_neuron_id}:${suggestion.target_neuron_id}:${suggestion.type}`;
 }
 
 function isUuid(value: string) {
@@ -127,7 +126,7 @@ export function ChatPanel() {
   const [processingToolCalls, setProcessingToolCalls] = useState<Set<string>>(new Set());
   const processingToolCallsRef = useRef<Set<string>>(new Set());
   const [edgeSuggestions, setEdgeSuggestions] = useState<
-    NonNullable<CreatedCrystalResponse['edge_suggestions']>
+    NonNullable<CreatedNeuronResponse['synapse_suggestions']>
   >([]);
   const conversationIdRef = useRef(currentConversationId);
   const noticeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -163,15 +162,6 @@ export function ChatPanel() {
         'Content-Type': 'application/json',
       }),
     }),
-    // @ts-expect-error onResponse is available in recent versions but types might be outdated
-    onResponse: (response) => {
-      const id = response.headers.get('X-Conversation-Id');
-      if (id && id !== currentConversationId) {
-        setCurrentConversationId(id);
-        conversationIdRef.current = id;
-        refreshConversations();
-      }
-    },
     onFinish: async ({ message }) => {
       // Refresh conversation list in sidebar to show new/updated chat
       refreshConversations();
@@ -264,8 +254,8 @@ export function ChatPanel() {
   const upsertEdgeInStore = useCallback(
     (edgeInput: {
       id: string;
-      source_crystal_id: string;
-      target_crystal_id: string;
+      source_neuron_id: string;
+      target_neuron_id: string;
       type: RelationshipType;
     }) => {
       const { edges: currentEdges, addEdge } = useGraphStore.getState();
@@ -274,8 +264,8 @@ export function ChatPanel() {
         const data = existing.data as { typeLabel?: RelationshipType } | undefined;
         return (
           existing.id === edgeInput.id ||
-          (existing.source === edgeInput.source_crystal_id &&
-            existing.target === edgeInput.target_crystal_id &&
+          (existing.source === edgeInput.source_neuron_id &&
+            existing.target === edgeInput.target_neuron_id &&
             data?.typeLabel === edgeInput.type)
         );
       });
@@ -344,7 +334,7 @@ export function ChatPanel() {
     setInput('');
   }, [input, status, isFetchingTranscript, sendMessage, currentConversationId, setCurrentConversationId]);
 
-  const handleCrystallize = useCallback(
+  const handleNeurogenesis = useCallback(
     async (toolCallId: string) => {
       if (processingToolCallsRef.current.has(toolCallId)) return;
 
@@ -386,7 +376,7 @@ export function ChatPanel() {
 
       try {
         // 3. Call API
-        const response = await fetch('/api/crystals', {
+        const response = await fetch('/api/neurons', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -396,43 +386,44 @@ export function ChatPanel() {
             bloom_level: input.bloom_level,
             source_conversation_id: currentConversationId,
             source_message_ids: sourceMessageIds,
-            related_crystals: input.related_crystals ?? [],
+            related_neurons: input.related_neurons ?? [],
           }),
         });
 
         if (!response.ok) {
           const error = await response.json();
-          console.error('Failed to crystallize:', error);
-          alert('Failed to save crystal: ' + (error.error || 'Unknown error'));
+          console.error('Failed to generate neuron:', error);
+          alert('Failed to save neuron: ' + (error.error || 'Unknown error'));
           return;
         }
 
-        const { crystal, edges, edge_suggestions } = (await response.json()) as CreatedCrystalResponse;
+        const { neuron, synapses, synapse_suggestions } =
+          (await response.json()) as CreatedNeuronResponse;
 
         // 4. Update Graph Store Optimistically
         const { addNode } = useGraphStore.getState();
 
         // Position will be handled by GraphPanel layout
         addNode({
-          id: crystal.id,
-          type: 'crystal',
+          id: neuron.id,
+          type: 'neuron',
           // Position will be handled by GraphPanel's dagre layout
           position: { x: 0, y: 0 },
           data: {
-            title: crystal.title,
-            retrievability: crystal.retrievability,
+            title: neuron.title,
+            retrievability: neuron.retrievability,
           },
         });
 
-        if (edges && edges.length > 0) {
-          edges.forEach((edge) => {
-            upsertEdgeInStore(edge);
+        if (synapses && synapses.length > 0) {
+          synapses.forEach((synapse) => {
+            upsertEdgeInStore(synapse);
           });
         }
 
-        if (edge_suggestions && edge_suggestions.length > 0) {
+        if (synapse_suggestions && synapse_suggestions.length > 0) {
           setEdgeSuggestions((prev) => {
-            const merged = [...edge_suggestions, ...prev];
+            const merged = [...synapse_suggestions, ...prev];
             const deduped = new Map<string, (typeof merged)[number]>();
 
             merged.forEach((suggestion) => {
@@ -443,14 +434,13 @@ export function ChatPanel() {
           });
         }
 
-        const connectionCount = (edges?.length ?? 0) + (edge_suggestions?.length ?? 0);
+        const connectionCount = (synapses?.length ?? 0) + (synapse_suggestions?.length ?? 0);
         if (connectionCount > 0) {
           showConnectionsNotice(
             connectionCount === 1 ? 'Connections found: 1' : `Connections found: ${connectionCount}`
           );
         }
 
-        // 5. Update UI State (Hide card by marking as crystallized)
         setMessages((prev) =>
           prev.map((msg) => ({
             ...msg,
@@ -462,7 +452,7 @@ export function ChatPanel() {
                     providerExecuted: p.providerExecuted,
                     input: p.input,
                     state: 'output-available',
-                    output: { status: 'crystallized' },
+                    output: { status: 'generated' },
                   };
                }
                return p;
@@ -471,8 +461,8 @@ export function ChatPanel() {
         );
 
       } catch (error) {
-        console.error('Crystallization error:', error);
-        alert('An error occurred while crystallizing.');
+        console.error('Neurogenesis error:', error);
+        alert('An error occurred while generating the neuron.');
       } finally {
         processingToolCallsRef.current.delete(toolCallId);
         setProcessingToolCalls(new Set(processingToolCallsRef.current));
@@ -503,13 +493,13 @@ export function ChatPanel() {
   }, [setMessages]);
 
   const handleConfirmEdgeSuggestion = useCallback(
-    async (suggestion: NonNullable<CreatedCrystalResponse['edge_suggestions']>[number]) => {
+    async (suggestion: NonNullable<CreatedNeuronResponse['synapse_suggestions']>[number]) => {
       try {
-        const response = await fetch(`/api/crystals/${suggestion.source_crystal_id}/edges`, {
+        const response = await fetch(`/api/neurons/${suggestion.source_neuron_id}/synapses`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            target_id: suggestion.target_crystal_id,
+            target_id: suggestion.target_neuron_id,
             type: suggestion.type,
             weight: suggestion.weight,
             ai_suggested: true,
@@ -523,10 +513,10 @@ export function ChatPanel() {
           return;
         }
 
-        const payload = (await response.json()) as EdgeUpsertResponse;
+        const payload = (await response.json()) as SynapseUpsertResponse;
 
-        if (payload.edge) {
-          upsertEdgeInStore(payload.edge);
+        if (payload.synapse) {
+          upsertEdgeInStore(payload.synapse);
         }
 
         const suggestionId = edgeSuggestionKey(suggestion);
@@ -557,7 +547,7 @@ export function ChatPanel() {
           <MessageList
             messages={messages}
             processingToolCalls={processingToolCalls}
-            onCrystallize={handleCrystallize}
+            onNeurogenesis={handleNeurogenesis}
             onDismiss={handleDismiss}
           />
         </div>

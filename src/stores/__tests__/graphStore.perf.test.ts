@@ -8,7 +8,7 @@ const generateEdges = (count: number): Edge[] => {
     id: `edge-${i}`,
     source: `source-${i}`,
     target: `target-${i}`,
-    type: 'crystalEdge',
+    type: 'synapseEdge',
     data: { typeLabel: 'RELATED' },
   }));
 };
