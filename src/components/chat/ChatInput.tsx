@@ -31,6 +31,8 @@ export function ChatInput({
     }
   };
 
+  const isSending = disabled && value.trim().length > 0;
+
   return (
     <div className="border-t border-white/5 bg-neural-dark/80 backdrop-blur-xl p-4">
       <div className="relative flex items-end gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 transition-all hover:border-white/20 hover:bg-white/10 focus-within:border-neural-cyan/50 focus-within:bg-white/10 focus-within:shadow-[0_0_15px_-3px_rgba(6,182,212,0.1)]">
@@ -40,6 +42,7 @@ export function ChatInput({
           onKeyDown={handleKeyDown}
           rows={1}
           placeholder="Ask a question or explore an idea..."
+          aria-label="Message input"
           className="flex-1 resize-none bg-transparent text-sm text-neural-light outline-none placeholder:text-neural-light/30 min-h-[24px] max-h-[200px]"
           disabled={disabled}
           style={{ minHeight: '24px' }}
@@ -51,8 +54,9 @@ export function ChatInput({
             <button
               type="button"
               onClick={onStop}
-              className="rounded-lg border border-red-500/30 bg-red-500/10 p-2 text-red-400 transition-all hover:bg-red-500/20 hover:shadow-[0_0_15px_-3px_rgba(239,68,68,0.4)]"
+              className="rounded-lg border border-red-500/30 bg-red-500/10 p-2 text-red-400 transition-all hover:bg-red-500/20 hover:shadow-[0_0_15px_-3px_rgba(239,68,68,0.4)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/50"
               title="Stop Generating"
+              aria-label="Stop generating"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -68,7 +72,7 @@ export function ChatInput({
               type="button"
               onClick={onSubmit}
               disabled={disabled || !value.trim()}
-              className="rounded-lg bg-gradient-to-r from-neural-cyan to-neural-purple p-2 text-white transition-all hover:shadow-[0_0_15px_-3px_rgba(6,182,212,0.4)] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
+              className="rounded-lg bg-gradient-to-r from-neural-cyan to-neural-purple p-2 text-white transition-all hover:shadow-[0_0_15px_-3px_rgba(6,182,212,0.4)] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neural-cyan"
               title="Send Message"
               aria-label="Send message"
             >
@@ -78,7 +82,11 @@ export function ChatInput({
                 fill="currentColor"
                 className={`h-4 w-4 ${isSending ? 'animate-spin' : ''}`}
               >
-                <path d="M3.105 2.289a.75.75 0 00-.826.95l1.414 4.925A1.5 1.5 0 005.135 9.25h6.115a.75.75 0 010 1.5H5.135a1.5 1.5 0 00-1.442 1.086l-1.414 4.926a.75.75 0 00.826.95 28.896 28.896 0 0015.293-7.154.75.75 0 000-1.115A28.897 28.897 0 003.105 2.289z" />
+                {isSending ? (
+                  <path d="M10 3v2a5 5 0 0 1 5 5h2a7 7 0 0 0-7-7zm0 14v-2a5 5 0 0 1-5-5H3a7 7 0 0 0 7 7z" />
+                ) : (
+                  <path d="M3.105 2.289a.75.75 0 00-.826.95l1.414 4.925A1.5 1.5 0 005.135 9.25h6.115a.75.75 0 010 1.5H5.135a1.5 1.5 0 00-1.442 1.086l-1.414 4.926a.75.75 0 00.826.95 28.896 28.896 0 0015.293-7.154.75.75 0 000-1.115A28.897 28.897 0 003.105 2.289z" />
+                )}
               </svg>
             </button>
           )}
