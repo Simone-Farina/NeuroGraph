@@ -114,7 +114,8 @@ export function NeuronDetailPanel() {
         </h2>
         <button
           onClick={handleClose}
-          className="p-2 rounded-full hover:bg-white/10 text-neural-light/60 hover:text-neural-light transition-colors"
+          aria-label="Close details"
+          className="p-2 rounded-full hover:bg-white/10 text-neural-light/60 hover:text-neural-light transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neural-cyan"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="18" y1="6" x2="6" y2="18" />
@@ -133,8 +134,9 @@ export function NeuronDetailPanel() {
         ) : neuron ? (
           <>
             <div className="space-y-2">
-              <label className="text-xs font-medium text-neural-light/40 uppercase tracking-wider">Title</label>
+              <label htmlFor="title" className="text-xs font-medium text-neural-light/40 uppercase tracking-wider">Title</label>
               <input
+                id="title"
                 type="text"
                 value={formData.title}
                 onChange={(event) => handleChange('title', event.target.value)}
@@ -144,8 +146,9 @@ export function NeuronDetailPanel() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-medium text-neural-light/40 uppercase tracking-wider">Definition</label>
+              <label htmlFor="definition" className="text-xs font-medium text-neural-light/40 uppercase tracking-wider">Definition</label>
               <textarea
+                id="definition"
                 value={formData.definition}
                 onChange={(event) => handleChange('definition', event.target.value)}
                 rows={3}
@@ -155,8 +158,9 @@ export function NeuronDetailPanel() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-medium text-neural-light/40 uppercase tracking-wider">Core Insight</label>
+              <label htmlFor="core_insight" className="text-xs font-medium text-neural-light/40 uppercase tracking-wider">Core Insight</label>
               <textarea
+                id="core_insight"
                 value={formData.core_insight}
                 onChange={(event) => handleChange('core_insight', event.target.value)}
                 rows={3}
@@ -166,8 +170,9 @@ export function NeuronDetailPanel() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-medium text-neural-light/40 uppercase tracking-wider">Detailed Content</label>
+              <label htmlFor="content" className="text-xs font-medium text-neural-light/40 uppercase tracking-wider">Detailed Content</label>
               <textarea
+                id="content"
                 value={formData.content}
                 onChange={(event) => handleChange('content', event.target.value)}
                 rows={10}
