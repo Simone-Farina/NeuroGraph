@@ -4,7 +4,8 @@ import type { Edge, Node } from '@xyflow/react';
 type GraphStore = {
   nodes: Node[];
   edges: Edge[];
-  selectedNodeId: string | null;
+  leftPanelMode: 'chat' | 'neuron' | 'review';
+  activeNeuronId: string | null;
   setGraph: (nodes: Node[], edges: Edge[]) => void;
   addNode: (node: Node) => void;
   addEdge: (edge: Edge) => void;
@@ -12,13 +13,16 @@ type GraphStore = {
   removeNode: (nodeId: string) => void;
   removeEdge: (edgeId: string) => void;
   updateNode: (nodeId: string, data: Partial<Node['data']>) => void;
-  setSelectedNode: (nodeId: string | null) => void;
+  openNeuronDetail: (id: string) => void;
+  openChat: () => void;
+  openReview: () => void;
 };
 
 export const useGraphStore = create<GraphStore>((set) => ({
   nodes: [],
   edges: [],
-  selectedNodeId: null,
+  leftPanelMode: 'chat',
+  activeNeuronId: null,
   setGraph: (nodes, edges) => set({ nodes, edges }),
   addNode: (node) =>
     set((state) => ({
@@ -36,7 +40,7 @@ export const useGraphStore = create<GraphStore>((set) => ({
     set((state) => ({
       nodes: state.nodes.filter((n) => n.id !== nodeId),
       edges: state.edges.filter((e) => e.source !== nodeId && e.target !== nodeId),
-      selectedNodeId: state.selectedNodeId === nodeId ? null : state.selectedNodeId,
+      activeNeuronId: state.activeNeuronId === nodeId ? null : state.activeNeuronId,
     })),
   removeEdge: (edgeId) =>
     set((state) => ({
@@ -48,5 +52,7 @@ export const useGraphStore = create<GraphStore>((set) => ({
         node.id === nodeId ? { ...node, data: { ...node.data, ...data } } : node
       ),
     })),
-  setSelectedNode: (selectedNodeId) => set({ selectedNodeId }),
+  openNeuronDetail: (id) => set({ leftPanelMode: 'neuron', activeNeuronId: id }),
+  openChat: () => set({ leftPanelMode: 'chat', activeNeuronId: null }),
+  openReview: () => set({ leftPanelMode: 'review', activeNeuronId: null }),
 }));

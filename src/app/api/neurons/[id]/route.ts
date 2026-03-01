@@ -10,6 +10,7 @@ const updateNeuronSchema = z.object({
   definition: z.string().min(10).max(280).optional(),
   core_insight: z.string().min(10).max(500).optional(),
   content: z.string().optional(),
+  append_content: z.string().optional(),
 });
 
 export async function PATCH(
@@ -35,7 +36,7 @@ export async function PATCH(
       );
     }
 
-    const updates = parsed.data;
+    const { append_content, ...updates } = parsed.data;
 
     const existingNeuron = await neuronQueries.getById(supabase, id);
     if (!existingNeuron) {
@@ -44,6 +45,12 @@ export async function PATCH(
 
     if (existingNeuron.user_id !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // Handle append_content: append as blockquote to existing content
+    if (append_content) {
+      const currentContent = existingNeuron.content || '';
+      updates.content = currentContent + '\n\n> ' + append_content.replace(/\n/g, '\n> ');
     }
 
     const needsEmbeddingUpdate =

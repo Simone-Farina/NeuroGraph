@@ -46,11 +46,10 @@ export function MessageList({ messages, processingToolCalls, onNeurogenesis, onD
                   return (
                     <div
                       key={index}
-                      className={`rounded-2xl px-5 py-3.5 text-sm leading-7 shadow-sm backdrop-blur-sm ${
-                        isUser
+                      className={`rounded-2xl px-5 py-3.5 text-sm leading-7 shadow-sm backdrop-blur-sm ${isUser
                           ? 'bg-neural-cyan/10 border border-neural-cyan/20 text-neural-light rounded-tr-sm'
-                          : 'bg-white/5 border border-white/10 text-neural-light/90 rounded-tl-sm markdown-content'
-                      }`}
+                          : 'bg-white/5 border border-white/10 text-neural-light/90 rounded-tl-sm markdown-content message-content'
+                        }`}
                     >
                       {isUser ? (
                         part.text

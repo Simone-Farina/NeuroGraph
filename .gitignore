@@ -31,3 +31,4 @@ pnpm-debug.log*
 .sisyphus/*
 !.sisyphus/plans/
 !.sisyphus/plans/**/*.md
+.aider*

@@ -1,13 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeHighlight from 'rehype-highlight';
 
 import { useGraphStore } from '@/stores/graphStore';
 import { Neuron } from '@/types/database';
 
 export function NeuronDetailPanel() {
-  const selectedNodeId = useGraphStore((state) => state.selectedNodeId);
-  const setSelectedNode = useGraphStore((state) => state.setSelectedNode);
+  const activeNeuronId = useGraphStore((state) => state.activeNeuronId);
+  const openChat = useGraphStore((state) => state.openChat);
   const updateNode = useGraphStore((state) => state.updateNode);
 
   const [neuron, setNeuron] = useState<Neuron | null>(null);
@@ -23,9 +26,10 @@ export function NeuronDetailPanel() {
   });
 
   const [isDirty, setIsDirty] = useState(false);
+  const [contentMode, setContentMode] = useState<'edit' | 'preview'>('preview');
 
   useEffect(() => {
-    if (!selectedNodeId) {
+    if (!activeNeuronId) {
       setNeuron(null);
       return;
     }
@@ -35,7 +39,7 @@ export function NeuronDetailPanel() {
       setError(null);
 
       try {
-        const response = await fetch(`/api/neurons/${selectedNodeId}`);
+        const response = await fetch(`/api/neurons/${activeNeuronId}`);
         if (!response.ok) {
           throw new Error('Failed to fetch neuron details');
         }
@@ -59,10 +63,10 @@ export function NeuronDetailPanel() {
     };
 
     fetchNeuron();
-  }, [selectedNodeId]);
+  }, [activeNeuronId]);
 
   const handleClose = () => {
-    setSelectedNode(null);
+    openChat();
   };
 
   const handleChange = (field: keyof typeof formData, value: string) => {
@@ -71,11 +75,11 @@ export function NeuronDetailPanel() {
   };
 
   const handleSave = async () => {
-    if (!selectedNodeId) return;
+    if (!activeNeuronId) return;
 
     setSaving(true);
     try {
-      const response = await fetch(`/api/neurons/${selectedNodeId}`, {
+      const response = await fetch(`/api/neurons/${activeNeuronId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -92,7 +96,7 @@ export function NeuronDetailPanel() {
       setNeuron(updatedNeuron);
       setIsDirty(false);
 
-      updateNode(selectedNodeId, {
+      updateNode(activeNeuronId, {
         title: updatedNeuron.title,
       });
     } catch (error) {
@@ -103,23 +107,20 @@ export function NeuronDetailPanel() {
     }
   };
 
-  if (!selectedNodeId) return null;
+  if (!activeNeuronId) return null;
 
   return (
-    <div className="fixed inset-y-0 right-0 w-full max-w-md bg-neural-gray-900/95 backdrop-blur-xl border-l border-white/10 shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col">
-      <div className="flex items-center justify-between p-6 border-b border-white/10 bg-white/5">
-        <h2 className="text-xl font-bold text-neural-light flex items-center gap-2">
-          <span className="text-neural-cyan">✦</span>
-          Neuron Details
-        </h2>
+    <div className="absolute inset-0 w-full h-full bg-neural-gray-900/95 backdrop-blur-xl shadow-2xl z-50 flex flex-col pointer-events-auto">
+      <div className="flex items-center justify-between p-4 border-b border-white/10 bg-white/5">
         <button
           onClick={handleClose}
-          className="p-2 rounded-full hover:bg-white/10 text-neural-light/60 hover:text-neural-light transition-colors"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-neural-light/60 hover:text-neural-cyan hover:bg-white/5 transition-colors"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12" />
+            <polyline points="12 19 5 12 12 5" />
           </svg>
+          Torna alla Chat
         </button>
       </div>
 
@@ -166,14 +167,51 @@ export function NeuronDetailPanel() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-medium text-neural-light/40 uppercase tracking-wider">Detailed Content</label>
-              <textarea
-                value={formData.content}
-                onChange={(event) => handleChange('content', event.target.value)}
-                rows={10}
-                className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-neural-light/90 focus:outline-none focus:border-neural-cyan/50 focus:ring-1 focus:ring-neural-cyan/50 transition-all font-mono text-sm leading-relaxed"
-                placeholder="Detailed notes and explanations..."
-              />
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-medium text-neural-light/40 uppercase tracking-wider">Detailed Content</label>
+                <div className="flex rounded-lg border border-white/10 overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setContentMode('edit')}
+                    className={`px-3 py-1 text-xs font-medium transition-colors ${contentMode === 'edit'
+                        ? 'bg-neural-cyan/15 text-neural-cyan'
+                        : 'text-neural-light/40 hover:text-neural-light/60 hover:bg-white/5'
+                      }`}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setContentMode('preview')}
+                    className={`px-3 py-1 text-xs font-medium transition-colors border-l border-white/10 ${contentMode === 'preview'
+                        ? 'bg-neural-cyan/15 text-neural-cyan'
+                        : 'text-neural-light/40 hover:text-neural-light/60 hover:bg-white/5'
+                      }`}
+                  >
+                    Preview
+                  </button>
+                </div>
+              </div>
+
+              {contentMode === 'edit' ? (
+                <textarea
+                  value={formData.content}
+                  onChange={(event) => handleChange('content', event.target.value)}
+                  rows={12}
+                  className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-neural-light/90 focus:outline-none focus:border-neural-cyan/50 focus:ring-1 focus:ring-neural-cyan/50 transition-all font-mono text-sm leading-relaxed resize-y min-h-[200px]"
+                  placeholder="Write Markdown here..."
+                />
+              ) : (
+                <div className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 min-h-[200px] overflow-y-auto markdown-content">
+                  {formData.content ? (
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
+                      {formData.content}
+                    </ReactMarkdown>
+                  ) : (
+                    <p className="text-neural-light/30 text-sm italic">No content yet. Switch to Edit to add Markdown.</p>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/10">
@@ -194,11 +232,10 @@ export function NeuronDetailPanel() {
         <button
           onClick={handleSave}
           disabled={!isDirty || saving}
-          className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all ${
-            isDirty
-              ? 'bg-neural-cyan text-black hover:bg-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.3)]'
-              : 'bg-white/5 text-white/30 cursor-not-allowed'
-          }`}
+          className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all ${isDirty
+            ? 'bg-neural-cyan text-black hover:bg-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.3)]'
+            : 'bg-white/5 text-white/30 cursor-not-allowed'
+            }`}
         >
           {saving ? (
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />

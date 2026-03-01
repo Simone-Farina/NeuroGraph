@@ -6,9 +6,13 @@ import { ReviewBadge } from '@/components/ReviewBadge';
 import { OnboardingProvider } from '@/components/onboarding/OnboardingTour';
 import { AppSidebar } from '@/components/layout/AppSidebar';
 import { ConversationProvider } from '@/lib/contexts/ConversationContext';
+import { GraphPanel } from '@/components/graph/GraphPanel';
+import { NeuronDetailPanel } from '@/components/graph/NeuronDetailPanel';
+import { useGraphStore } from '@/stores/graphStore';
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
+  const leftPanelMode = useGraphStore((state) => state.leftPanelMode);
 
   if (loading) {
     return (
@@ -22,29 +26,39 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-neural-dark selection:bg-neural-cyan/30 selection:text-neural-light">
-      <AppSidebar />
-      <div className="flex flex-col flex-1 min-w-0">
-        <header className="sticky top-0 z-50 border-b border-white/5 bg-neural-dark/80 backdrop-blur-xl supports-[backdrop-filter]:bg-neural-dark/60">
-          <div className="max-w-[1920px] mx-auto px-6 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <h1 className="text-lg font-bold tracking-tight bg-gradient-to-r from-neural-cyan via-white to-neural-purple bg-clip-text text-transparent">
-                NeuroGraph
-              </h1>
-              <span className="hidden sm:inline-block px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-neural-cyan/10 text-neural-cyan border border-neural-cyan/20">
-                Beta
-              </span>
-            </div>
+    <div className="flex h-screen w-full overflow-hidden bg-neural-dark selection:bg-neural-cyan/30 selection:text-neural-light">
+      {/* Area Operativa Sinistra (40vw) */}
+      <div className="flex w-[40vw] flex-shrink-0 border-r border-white/5 relative bg-neural-dark">
+        <AppSidebar />
 
-            <div className="flex-1 flex justify-center">
-              <ReviewBadge />
+        {/* Area di Contesto Attivo */}
+        <div className="flex-1 flex flex-col min-w-0 relative">
+          <header className="sticky top-0 z-50 border-b border-white/5 bg-neural-dark/80 backdrop-blur-xl supports-[backdrop-filter]:bg-neural-dark/60">
+            <div className="px-6 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <h1 className="text-lg font-bold tracking-tight bg-gradient-to-r from-neural-cyan via-white to-neural-purple bg-clip-text text-transparent">
+                  NeuroGraph
+                </h1>
+                <span className="hidden sm:inline-block px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-neural-cyan/10 text-neural-cyan border border-neural-cyan/20">
+                  Beta
+                </span>
+              </div>
+
+              <div className="flex-1 flex justify-end">
+                <ReviewBadge />
+              </div>
             </div>
-            
-            <div className="flex items-center gap-4">
-            </div>
-          </div>
-        </header>
-        <main className="flex-1 overflow-hidden max-w-[1920px] mx-auto w-full">{children}</main>
+          </header>
+
+          <main className="flex-1 overflow-y-auto relative p-0 m-0 w-full h-full">
+            {leftPanelMode === 'neuron' ? <NeuronDetailPanel /> : children}
+          </main>
+        </div>
+      </div>
+
+      {/* Area Rete Neurale Destra (60vw) */}
+      <div className="w-[60vw] flex-grow relative overflow-hidden bg-neural-dark">
+        <GraphPanel />
       </div>
     </div>
   );

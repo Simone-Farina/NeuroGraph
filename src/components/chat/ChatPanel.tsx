@@ -7,6 +7,7 @@ import { Edge, MarkerType } from '@xyflow/react';
 
 import { ChatInput } from '@/components/chat/ChatInput';
 import { MessageList } from '@/components/chat/MessageList';
+import { SelectionToolbar } from '@/components/chat/SelectionToolbar';
 import { extractFirstYouTubeUrl, isYouTubeUrl } from '@/lib/youtube';
 import { useGraphStore } from '@/stores/graphStore';
 
@@ -196,15 +197,15 @@ export function ChatPanel() {
           if (msg.content) {
             parts.push({ type: 'text', text: msg.content });
           }
-          
+
           if (msg.metadata?.tool_calls) {
             msg.metadata.tool_calls.forEach((tc) => {
               parts.push({
                 type: `tool-${tc.function.name}`,
                 toolCallId: tc.id,
                 state: 'call',
-                input: typeof tc.function.arguments === 'string' 
-                  ? JSON.parse(tc.function.arguments) 
+                input: typeof tc.function.arguments === 'string'
+                  ? JSON.parse(tc.function.arguments)
                   : tc.function.arguments,
               });
             });
@@ -346,30 +347,30 @@ export function ChatPanel() {
         m.parts.some((part) => isToolPartWithId(part, toolCallId))
       );
 
-        if (!message) {
-          console.error('Message not found for tool call');
-          processingToolCallsRef.current.delete(toolCallId);
-          setProcessingToolCalls(new Set(processingToolCallsRef.current));
-          return;
-        }
+      if (!message) {
+        console.error('Message not found for tool call');
+        processingToolCallsRef.current.delete(toolCallId);
+        setProcessingToolCalls(new Set(processingToolCallsRef.current));
+        return;
+      }
 
-        const part = message.parts.find((messagePart) => isToolPartWithId(messagePart, toolCallId));
+      const part = message.parts.find((messagePart) => isToolPartWithId(messagePart, toolCallId));
 
-        if (!part?.input) {
-          console.error('Tool part or input not found');
-          processingToolCallsRef.current.delete(toolCallId);
-          setProcessingToolCalls(new Set(processingToolCallsRef.current));
-          return;
-        }
+      if (!part?.input) {
+        console.error('Tool part or input not found');
+        processingToolCallsRef.current.delete(toolCallId);
+        setProcessingToolCalls(new Set(processingToolCallsRef.current));
+        return;
+      }
 
-        // 2. Validate message ID (must be UUID from DB, not temporary)
-        // Syncing in onFinish usually ensures this, but if the user clicks VERY fast there might be a race.
-        if (!currentConversationId) {
-          console.error('No conversation ID');
-          processingToolCallsRef.current.delete(toolCallId);
-          setProcessingToolCalls(new Set(processingToolCallsRef.current));
-          return;
-        }
+      // 2. Validate message ID (must be UUID from DB, not temporary)
+      // Syncing in onFinish usually ensures this, but if the user clicks VERY fast there might be a race.
+      if (!currentConversationId) {
+        console.error('No conversation ID');
+        processingToolCallsRef.current.delete(toolCallId);
+        setProcessingToolCalls(new Set(processingToolCallsRef.current));
+        return;
+      }
 
       const input = part.input;
       const sourceMessageIds = isUuid(message.id) ? [message.id] : undefined;
@@ -445,17 +446,17 @@ export function ChatPanel() {
           prev.map((msg) => ({
             ...msg,
             parts: msg.parts.map((p) => {
-                if (isToolPartWithId(p, toolCallId)) {
-                  return {
-                    type: p.type,
-                    toolCallId: p.toolCallId,
-                    providerExecuted: p.providerExecuted,
-                    input: p.input,
-                    state: 'output-available',
-                    output: { status: 'generated' },
-                  };
-               }
-               return p;
+              if (isToolPartWithId(p, toolCallId)) {
+                return {
+                  type: p.type,
+                  toolCallId: p.toolCallId,
+                  providerExecuted: p.providerExecuted,
+                  input: p.input,
+                  state: 'output-available',
+                  output: { status: 'generated' },
+                };
+              }
+              return p;
             }),
           }))
         );
@@ -540,9 +541,10 @@ export function ChatPanel() {
 
   return (
     <section className="chat-panel flex h-full overflow-hidden border-r border-neural-gray-700 bg-neural-gray-900/30">
+      <SelectionToolbar />
       <div className="flex min-w-0 flex-1 flex-col relative">
         <div className="absolute inset-0 bg-gradient-to-b from-neural-dark/0 via-neural-dark/0 to-neural-dark/20 pointer-events-none" />
-        
+
         <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto scroll-smooth">
           <MessageList
             messages={messages}

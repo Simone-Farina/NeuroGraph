@@ -71,8 +71,9 @@ function GraphCanvas() {
   const edges = useGraphStore((state) => state.edges);
   const setGraph = useGraphStore((state) => state.setGraph);
   const updateNode = useGraphStore((state) => state.updateNode);
-  const setSelectedNode = useGraphStore((state) => state.setSelectedNode);
-  const { fitView } = useReactFlow();
+  const openNeuronDetail = useGraphStore((state) => state.openNeuronDetail);
+  const activeNeuronId = useGraphStore((state) => state.activeNeuronId);
+  const { fitView, setCenter, getNode } = useReactFlow();
 
   const [flowNodes, setFlowNodes, onNodesChange] = useNodesState([]);
   const [flowEdges, setFlowEdges, onEdgesChange] = useEdgesState([]);
@@ -159,9 +160,9 @@ function GraphCanvas() {
           synapse.type === 'RELATED'
             ? undefined
             : {
-                type: MarkerType.ArrowClosed,
-                color: synapse.type === 'PREREQUISITE' ? '#22d3ee' : '#f59e0b',
-              },
+              type: MarkerType.ArrowClosed,
+              color: synapse.type === 'PREREQUISITE' ? '#22d3ee' : '#f59e0b',
+            },
       }));
 
       setGraph(mappedNodes, mappedEdges);
@@ -173,11 +174,23 @@ function GraphCanvas() {
     return () => clearInterval(interval);
   }, [setGraph]);
 
+  useEffect(() => {
+    if (activeNeuronId) {
+      const node = getNode(activeNeuronId);
+      if (node && node.position) {
+        setCenter(node.position.x + nodeWidth / 2, node.position.y + nodeHeight / 2, {
+          zoom: 1.5,
+          duration: 800,
+        });
+      }
+    }
+  }, [activeNeuronId, getNode, setCenter]);
+
   const onNodeClick = useCallback(
     (_: React.MouseEvent, node: Node) => {
-      setSelectedNode(node.id);
+      openNeuronDetail(node.id);
     },
-    [setSelectedNode]
+    [openNeuronDetail]
   );
 
   if (!flowNodes.length) {
@@ -224,7 +237,6 @@ export function GraphPanel() {
       <ReactFlowProvider>
         <GraphCanvas />
       </ReactFlowProvider>
-      <NeuronDetailPanel />
     </section>
   );
 }
