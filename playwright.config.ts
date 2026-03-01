@@ -1,4 +1,6 @@
+// @ts-ignore
 import { defineConfig, devices } from '@playwright/test';
+// @ts-ignore
 import { loadEnvConfig } from '@next/env';
 
 loadEnvConfig(process.cwd());

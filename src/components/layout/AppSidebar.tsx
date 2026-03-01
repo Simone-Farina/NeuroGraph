@@ -76,8 +76,9 @@ export function AppSidebar() {
         )}
         <button
           onClick={toggleCollapse}
-          className="p-1.5 rounded-md text-neural-light/40 hover:text-neural-light hover:bg-white/5 transition-colors"
+          className="p-1.5 rounded-md text-neural-light/40 hover:text-neural-light hover:bg-white/5 transition-colors focus-visible:ring-2 focus-visible:ring-neural-cyan focus:outline-none"
           title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+          aria-label={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
         >
           {isCollapsed ? (
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
@@ -184,15 +185,17 @@ export function AppSidebar() {
           )}
           <button
             onClick={startTour}
-            className="p-2 rounded-md text-neural-light/40 hover:text-neural-cyan hover:bg-white/5 transition-colors"
+            className="p-2 rounded-md text-neural-light/40 hover:text-neural-cyan hover:bg-white/5 transition-colors focus-visible:ring-2 focus-visible:ring-neural-cyan focus:outline-none"
             title="Start Tour"
+            aria-label="Start Tour"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
           </button>
           <button
             onClick={signOut}
-            className="p-2 rounded-md text-neural-light/40 hover:text-neural-light hover:bg-white/5 transition-colors"
+            className="p-2 rounded-md text-neural-light/40 hover:text-neural-light hover:bg-white/5 transition-colors focus-visible:ring-2 focus-visible:ring-neural-cyan focus:outline-none"
             title="Sign Out"
+            aria-label="Sign Out"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           </button>
