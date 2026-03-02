@@ -120,7 +120,7 @@ function isToolPartWithId(part: unknown, toolCallId: string): part is Suggestion
 import { useConversationContext } from '@/lib/contexts/ConversationContext';
 
 export function ChatPanel() {
-  const { currentConversationId, setCurrentConversationId, refreshConversations } = useConversationContext();
+  const { currentConversationId, setCurrentConversationId, refreshConversations, conversations } = useConversationContext();
   const [input, setInput] = useState('');
   const [isFetchingTranscript, setIsFetchingTranscript] = useState(false);
   const [connectionNotice, setConnectionNotice] = useState<string | null>(null);
@@ -163,20 +163,11 @@ export function ChatPanel() {
         'Content-Type': 'application/json',
       }),
     }),
-    onFinish: async ({ message }) => {
-      // Refresh conversation list in sidebar to show new/updated chat
-      refreshConversations();
-
-      const hasPendingToolCalls = message.parts.some(
-        (part) =>
-          typeof part.type === 'string' &&
-          part.type.startsWith('tool-') &&
-          (!('state' in part) || part.state !== 'output-available')
-      );
-
-      if (!hasPendingToolCalls && conversationIdRef.current) {
-        await loadMessages(conversationIdRef.current);
-      }
+    onFinish: async () => {
+      // Refresh conversation list in sidebar. This also causes the useEffect above
+      // to re-evaluate: once the new conversation appears in the list, loadMessages
+      // fires automatically with the DB-confirmed data.
+      await refreshConversations();
     },
     onError: (error) => {
       console.error('Chat error:', error);
@@ -192,32 +183,12 @@ export function ChatPanel() {
 
       const payload = await response.json();
       const loadedMessages = (payload.messages || []).map(
-        (msg: { id: string; role: string; content: string; metadata?: { tool_calls?: any[] } }) => {
-          const parts: any[] = [];
-          if (msg.content) {
-            parts.push({ type: 'text', text: msg.content });
-          }
-
-          if (msg.metadata?.tool_calls) {
-            msg.metadata.tool_calls.forEach((tc) => {
-              parts.push({
-                type: `tool-${tc.function.name}`,
-                toolCallId: tc.id,
-                state: 'call',
-                input: typeof tc.function.arguments === 'string'
-                  ? JSON.parse(tc.function.arguments)
-                  : tc.function.arguments,
-              });
-            });
-          }
-
-          return {
-            id: msg.id,
-            role: msg.role as 'user' | 'assistant',
-            parts,
-            content: msg.content,
-          };
-        }
+        (msg: { id: string; role: string; content: string }) => ({
+          id: msg.id,
+          role: msg.role as 'user' | 'assistant',
+          content: msg.content,
+          parts: msg.content ? [{ type: 'text' as const, text: msg.content }] : [],
+        })
       );
 
       setMessages(loadedMessages);
@@ -228,16 +199,22 @@ export function ChatPanel() {
     }
   }, [setMessages]);
 
-  // Load messages when currentConversationId changes
+  // Load messages only when the conversation is confirmed in the DB (present in the
+  // sidebar list). This prevents wiping optimistic streaming state for a freshly-created
+  // conversation whose ID was set before the API call completed.
   useEffect(() => {
-    if (currentConversationId) {
-      loadMessages(currentConversationId);
-    } else {
+    if (!currentConversationId) {
       setMessages([]);
       setEdgeSuggestions([]);
       setConnectionNotice(null);
+      return;
     }
-  }, [currentConversationId, loadMessages, setMessages]);
+
+    const isConfirmed = conversations.some((c) => c.id === currentConversationId);
+    if (isConfirmed) {
+      loadMessages(currentConversationId);
+    }
+  }, [currentConversationId, conversations, loadMessages, setMessages]);
 
   // Extract conversation ID from the first response (if new chat)
   useEffect(() => {

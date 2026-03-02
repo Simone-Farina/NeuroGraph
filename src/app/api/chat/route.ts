@@ -190,7 +190,6 @@ export async function POST(request: NextRequest) {
 
     const modelMessages = await convertToModelMessages(trimmedMessages);
 
-    let assistantText = '';
     const response = streamText({
       model,
       system: systemPrompt,
@@ -198,27 +197,25 @@ export async function POST(request: NextRequest) {
       tools: {
         suggest_neurogenesis: suggestNeurogenesisTool,
       },
-      onChunk(event) {
-        if (event.chunk.type === 'text-delta') {
-          assistantText += event.chunk.text;
-        }
-      },
       onFinish: async (event) => {
-        if ((!assistantText.trim() && !event.toolCalls?.length) || !conversationId) return;
+        // event.text is the SDK's own accumulation — reliable regardless of chunk field names.
+        // Pure tool-call responses (no text) are ephemeral; skip persisting empty content.
+        const assistantText = event.text.trim();
+        if (!assistantText || !conversationId) return;
 
         try {
           const { error } = await supabase.from('messages').insert({
             conversation_id: conversationId,
             role: 'assistant',
             content: assistantText,
-            metadata: event.toolCalls?.length ? { tool_calls: event.toolCalls } : null,
+            metadata: null,
           });
 
           if (error) {
-            console.error('Failed to persist assistant message:', error.message);
+            console.error('DB SAVE ERROR (assistant message):', error.message);
           }
         } catch (err) {
-          console.error('Failed to persist assistant message:', err);
+          console.error('DB SAVE ERROR (assistant message):', err);
         }
       },
     });
