@@ -4,7 +4,7 @@ import { generateText } from 'ai';
 
 import { createServerSupabaseClient } from '@/lib/auth/supabase';
 import { neuronQueries } from '@/lib/db/queries';
-import { getSynthesisModel } from '@/lib/ai/providers';
+import { getModelForRole } from '@/lib/ai/providers';
 
 const synthesizeSchema = z.object({
   newText: z.string().min(1).max(5000),
@@ -53,7 +53,7 @@ export async function POST(
     const userPrompt = `## Documento attuale\n\n${currentContent || '*(vuoto)*'}\n\n## Nuova Informazione\n\n${newText}`;
 
     const { text } = await generateText({
-      model: getSynthesisModel(),
+      model: getModelForRole('synthesis_fast'),
       system: SYSTEM_PROMPT,
       prompt: userPrompt,
     });

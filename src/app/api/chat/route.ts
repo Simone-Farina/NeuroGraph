@@ -4,7 +4,7 @@ import { z } from 'zod';
 
 import { createServerSupabaseClient } from '@/lib/auth/supabase';
 import { CHAT_SYSTEM_PROMPT, MAX_CONTEXT_MESSAGES } from '@/lib/ai/prompts';
-import { getChatModel } from '@/lib/ai/providers';
+import { getModelForRole } from '@/lib/ai/providers';
 import { suggestNeurogenesisTool } from '@/lib/ai/tools';
 
 import { getRelevantContext } from '@/lib/ai/rag';
@@ -186,7 +186,7 @@ export async function POST(request: NextRequest) {
 
     const systemPrompt = `${CHAT_SYSTEM_PROMPT}${ragContext}\n\n## Existing Neuron Catalog\nUse this catalog to populate related_neurons when suggesting neurogenesis.\nOnly use ids from this list:\n${ragCatalog}`;
 
-    const model = getChatModel();
+    const model = getModelForRole('chat');
 
     const modelMessages = await convertToModelMessages(trimmedMessages);
 

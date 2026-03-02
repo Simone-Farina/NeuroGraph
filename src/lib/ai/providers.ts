@@ -3,58 +3,79 @@ import { google } from '@ai-sdk/google';
 import { openai } from '@ai-sdk/openai';
 import { mockModel, mockEmbeddingModel } from '@/lib/ai/mock-provider';
 
-type ProviderName = 'openai' | 'anthropic' | 'google' | 'mock';
+// ─── Role registry ────────────────────────────────────────────────────────────
 
-const DEFAULT_PROVIDER: ProviderName = 'openai';
+export type ModelRole = 'chat' | 'synthesis_fast' | 'neurogenesis_heavy' | 'evaluator';
 
-function getProviderName(): ProviderName {
-  const value = process.env.AI_PROVIDER?.toLowerCase();
+/** Maps each role to its corresponding environment variable name. */
+const ROLE_ENV: Record<ModelRole, string> = {
+  chat:               'AI_MODEL_CHAT',
+  synthesis_fast:     'AI_MODEL_SYNTHESIS_FAST',
+  neurogenesis_heavy: 'AI_MODEL_NEUROGENESIS_HEAVY',
+  evaluator:          'AI_MODEL_EVALUATOR',
+};
 
-  if (value === 'anthropic' || value === 'google' || value === 'openai' || value === 'mock') {
-    return value as ProviderName;
+/** Safe defaults used when the env var is absent or malformed. */
+const ROLE_DEFAULT: Record<ModelRole, string> = {
+  chat:               'openai:gpt-4o',
+  synthesis_fast:     'openai:gpt-4o-mini',
+  neurogenesis_heavy: 'openai:gpt-4o',
+  evaluator:          'openai:gpt-4o-mini',
+};
+
+// ─── Core resolver ────────────────────────────────────────────────────────────
+
+function resolveFromString(raw: string, role: ModelRole) {
+  const sep = raw.indexOf(':');
+
+  if (sep <= 0 || sep === raw.length - 1) {
+    console.warn(
+      `[providers] Malformed model string "${raw}" for role "${role}" — falling back to gpt-4o-mini`
+    );
+    return openai('gpt-4o-mini');
   }
 
-  return DEFAULT_PROVIDER;
-}
-
-export function getChatModel() {
-  const provider = getProviderName();
+  const provider = raw.slice(0, sep).toLowerCase();
+  const modelName = raw.slice(sep + 1);
 
   switch (provider) {
-    case 'mock':
-      return mockModel;
     case 'anthropic':
-      return anthropic('claude-3-5-sonnet-latest');
+      return anthropic(modelName);
     case 'google':
-      return google('gemini-1.5-pro-latest');
+      return google(modelName);
     case 'openai':
+      return openai(modelName);
     default:
-      return openai('gpt-4o');
-  }
-}
-
-export function getSynthesisModel() {
-  const provider = getProviderName();
-
-  switch (provider) {
-    case 'mock':
-      return mockModel;
-    case 'anthropic':
-      return anthropic('claude-haiku-4-5-20251001');
-    case 'google':
-      return google('gemini-2.0-flash');
-    case 'openai':
-    default:
+      console.warn(
+        `[providers] Unknown provider "${provider}" in "${raw}" for role "${role}" — falling back to gpt-4o-mini`
+      );
       return openai('gpt-4o-mini');
   }
 }
 
+// ─── Public API ───────────────────────────────────────────────────────────────
+
+/**
+ * Returns the language model configured for the given role.
+ *
+ * Resolution order:
+ *   1. If AI_PROVIDER=mock → returns the shared mock model (test/CI mode)
+ *   2. Reads AI_MODEL_<ROLE> env var (format "provider:model-name")
+ *   3. Falls back to ROLE_DEFAULT if the var is absent or malformed
+ */
+export function getModelForRole(role: ModelRole) {
+  if (process.env.AI_PROVIDER === 'mock') {
+    return mockModel;
+  }
+
+  const raw = process.env[ROLE_ENV[role]] || ROLE_DEFAULT[role];
+  return resolveFromString(raw, role);
+}
+
+/** Embeddings always use OpenAI (text-embedding-3-small). */
 export function getEmbeddingModel() {
-  const provider = getProviderName();
-  
-  if (provider === 'mock') {
+  if (process.env.AI_PROVIDER === 'mock') {
     return mockEmbeddingModel;
   }
-  
   return openai.embedding('text-embedding-3-small');
 }

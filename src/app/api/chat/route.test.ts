@@ -8,7 +8,7 @@ vi.mock('@/lib/auth/supabase', () => ({
   createServerSupabaseClient: vi.fn(),
 }));
 vi.mock('@/lib/ai/providers', () => ({
-  getChatModel: vi.fn(),
+  getModelForRole: vi.fn(),
 }));
 vi.mock('ai', () => ({
   streamText: vi.fn().mockReturnValue({
