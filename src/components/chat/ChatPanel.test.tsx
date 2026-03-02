@@ -18,14 +18,19 @@ vi.mock('@ai-sdk/react', () => ({
 }));
 
 vi.mock('@/stores/graphStore', () => ({
-  useGraphStore: {
-    getState: () => ({
+  useGraphStore: vi.fn((selector) => {
+    // Basic mock for what selector might ask for
+    const state = {
+      nodes: [],
       edges: [],
       addEdge: vi.fn(),
       addNode: vi.fn(),
-    }),
-  },
+    };
+    if (selector) return selector(state);
+    return state;
+  }),
 }));
+
 
 vi.mock('@/components/chat/ConversationList', () => ({
   ConversationList: () => <div data-testid="conversation-list">Conversation List</div>,
