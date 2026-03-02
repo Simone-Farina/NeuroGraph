@@ -143,6 +143,12 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
+      if (error.code === '23505') {
+        return NextResponse.json(
+          { error: 'A neuron with this title already exists' },
+          { status: 409 }
+        );
+      }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 

@@ -29,7 +29,9 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    return NextResponse.json({ neuron });
+    const backlinks = await neuronQueries.getBacklinksByTitle(supabase, user.id, neuron.title);
+
+    return NextResponse.json({ neuron, backlinks });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unexpected error';
     return NextResponse.json({ error: message }, { status: 500 });
@@ -99,12 +101,28 @@ export async function PATCH(
       embedding = await generateEmbedding(embeddingInput);
     }
 
-    const updatedNeuron = await neuronQueries.update(supabase, id, {
-      ...updates,
-      embedding: needsEmbeddingUpdate ? embedding : undefined,
-      user_modified: true,
-      modified_at: new Date().toISOString(),
-    });
+    let updatedNeuron;
+    try {
+      updatedNeuron = await neuronQueries.update(supabase, id, {
+        ...updates,
+        embedding: needsEmbeddingUpdate ? embedding : undefined,
+        user_modified: true,
+        modified_at: new Date().toISOString(),
+      });
+    } catch (updateError: unknown) {
+      if (
+        updateError &&
+        typeof updateError === 'object' &&
+        'code' in updateError &&
+        updateError.code === '23505'
+      ) {
+        return NextResponse.json(
+          { error: 'A neuron with this title already exists' },
+          { status: 409 }
+        );
+      }
+      throw updateError;
+    }
 
     return NextResponse.json({ neuron: updatedNeuron });
   } catch (error) {

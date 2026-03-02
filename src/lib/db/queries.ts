@@ -97,6 +97,21 @@ export const neuronQueries = {
     return data || [];
   },
 
+  async getBacklinksByTitle(
+    client: TypedClient,
+    userId: string,
+    title: string
+  ): Promise<Pick<Neuron, 'id' | 'title'>[]> {
+    const { data, error } = await client
+      .from('neurons')
+      .select('id, title')
+      .eq('user_id', userId)
+      .ilike('content', `%[[${title}]]%`);
+
+    if (error) throw error;
+    return data ?? [];
+  },
+
   async getNeighborhood(
     client: TypedClient,
     neuronId: string,

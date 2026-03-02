@@ -1,16 +1,25 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import ReactMarkdown from 'react-markdown';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import ReactMarkdown, { Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 
 import { useGraphStore } from '@/stores/graphStore';
 import { Neuron } from '@/types/database';
 
+function processWikiLinks(markdown: string): string {
+  return markdown.replace(
+    /\[\[([^\]]+)\]\]/g,
+    (_, title) => `[${title}](#wiki-${encodeURIComponent(title)})`
+  );
+}
+
 export function NeuronDetailPanel() {
   const activeNeuronId = useGraphStore((state) => state.activeNeuronId);
+  const nodes = useGraphStore((state) => state.nodes);
   const openChat = useGraphStore((state) => state.openChat);
+  const openNeuronDetail = useGraphStore((state) => state.openNeuronDetail);
   const updateNode = useGraphStore((state) => state.updateNode);
 
   const [neuron, setNeuron] = useState<Neuron | null>(null);
@@ -25,6 +34,8 @@ export function NeuronDetailPanel() {
     content: '',
   });
 
+  const [backlinks, setBacklinks] = useState<Pick<Neuron, 'id' | 'title'>[]>([]);
+  const [wikiToast, setWikiToast] = useState<string | null>(null);
   const [isDirty, setIsDirty] = useState(false);
   const [contentMode, setContentMode] = useState<'edit' | 'preview'>('preview');
 
@@ -47,6 +58,7 @@ export function NeuronDetailPanel() {
         const payload = await response.json();
         const entity = payload.neuron ?? payload;
         setNeuron(entity);
+        setBacklinks(payload.backlinks ?? []);
         setFormData({
           title: entity.title || '',
           definition: entity.definition || '',
@@ -87,6 +99,11 @@ export function NeuronDetailPanel() {
         body: JSON.stringify(formData),
       });
 
+      if (response.status === 409) {
+        const body = await response.json();
+        setError(body.error ?? 'A neuron with this title already exists');
+        return;
+      }
       if (!response.ok) {
         throw new Error('Failed to update neuron');
       }
@@ -106,6 +123,59 @@ export function NeuronDetailPanel() {
       setSaving(false);
     }
   };
+
+  const titleToId = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const node of nodes) {
+      const title = node.data?.title;
+      if (typeof title === 'string') {
+        map.set(title.toLowerCase(), node.id);
+      }
+    }
+    return map;
+  }, [nodes]);
+
+  const handleWikiClick = useCallback(
+    (title: string) => {
+      const nodeId = titleToId.get(title.toLowerCase());
+      if (nodeId) {
+        openNeuronDetail(nodeId);
+      } else {
+        setWikiToast('Neurone non ancora creato');
+        setTimeout(() => setWikiToast(null), 2000);
+      }
+    },
+    [titleToId, openNeuronDetail]
+  );
+
+  const markdownComponents = useMemo<Components>(
+    () => ({
+      a: ({ href, children, ...props }) => {
+        if (href?.startsWith('#wiki-')) {
+          const title = decodeURIComponent(href.slice('#wiki-'.length));
+          return (
+            <a
+              href={href}
+              onClick={(e) => {
+                e.preventDefault();
+                handleWikiClick(title);
+              }}
+              className="text-neural-cyan hover:text-cyan-300 underline decoration-neural-cyan/40 hover:decoration-cyan-300 cursor-pointer transition-colors"
+              {...props}
+            >
+              {children}
+            </a>
+          );
+        }
+        return (
+          <a href={href} target="_blank" rel="noopener noreferrer" {...props}>
+            {children}
+          </a>
+        );
+      },
+    }),
+    [handleWikiClick]
+  );
 
   if (!activeNeuronId) return null;
 
@@ -204,8 +274,12 @@ export function NeuronDetailPanel() {
               ) : (
                 <div className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 min-h-[200px] overflow-y-auto markdown-content prose prose-invert max-w-none">
                   {formData.content ? (
-                    <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
-                      {formData.content}
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      rehypePlugins={[rehypeHighlight]}
+                      components={markdownComponents}
+                    >
+                      {processWikiLinks(formData.content)}
                     </ReactMarkdown>
                   ) : (
                     <p className="text-neural-light/30 text-sm italic">No content yet. Switch to Edit to add Markdown.</p>
@@ -224,6 +298,31 @@ export function NeuronDetailPanel() {
                 <div className="text-sm font-medium text-neural-purple">{neuron.state}</div>
               </div>
             </div>
+
+            <div className="space-y-2 pt-4 border-t border-white/10">
+              <label className="text-xs font-medium text-neural-light/40 uppercase tracking-wider">Backlinks</label>
+              {backlinks.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {backlinks.map((bl) => (
+                    <button
+                      key={bl.id}
+                      onClick={() => openNeuronDetail(bl.id)}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium bg-neural-purple/10 border border-neural-purple/20 text-neural-purple hover:bg-neural-purple/20 hover:border-neural-purple/40 transition-colors"
+                    >
+                      {bl.title}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-neural-light/30 text-xs italic">Nessun backlink</p>
+              )}
+            </div>
+
+            {wikiToast && (
+              <div className="rounded-lg bg-amber-500/15 border border-amber-500/25 px-4 py-2 text-sm text-amber-400 font-medium animate-in fade-in">
+                {wikiToast}
+              </div>
+            )}
           </>
         ) : null}
       </div>
