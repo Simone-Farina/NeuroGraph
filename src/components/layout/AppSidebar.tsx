@@ -76,8 +76,9 @@ export function AppSidebar() {
         )}
         <button
           onClick={toggleCollapse}
-          className="p-1.5 rounded-md text-neural-light/40 hover:text-neural-light hover:bg-white/5 transition-colors"
+          className="p-1.5 rounded-md text-neural-light/40 hover:text-neural-light hover:bg-white/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neural-cyan"
           title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+          aria-label={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
         >
           {isCollapsed ? (
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
@@ -120,10 +121,11 @@ export function AppSidebar() {
             onClick={() => {
               handleNewConversation();
             }}
-            className={`flex items-center justify-center rounded-md border border-white/10 bg-white/5 text-xs font-medium text-neural-light/80 transition hover:bg-white/10 hover:text-neural-cyan hover:border-neural-cyan/30 ${
+            className={`flex items-center justify-center rounded-md border border-white/10 bg-white/5 text-xs font-medium text-neural-light/80 transition hover:bg-white/10 hover:text-neural-cyan hover:border-neural-cyan/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neural-cyan ${
               isCollapsed ? 'w-8 h-8 p-0' : 'px-2.5 py-1.5'
             }`}
             title="New Chat"
+            aria-label="New Chat"
           >
             {isCollapsed ? (
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -163,8 +165,9 @@ export function AppSidebar() {
                 <button
                   type="button"
                   onClick={(e) => handleDeleteConversation(e, conversation.id)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1.5 text-neural-light/30 hover:text-red-400 transition-all"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 focus:opacity-100 p-1.5 text-neural-light/30 hover:text-red-400 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 rounded-md"
                   title="Delete conversation"
+                  aria-label="Delete conversation"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
                 </button>
@@ -184,15 +187,17 @@ export function AppSidebar() {
           )}
           <button
             onClick={startTour}
-            className="p-2 rounded-md text-neural-light/40 hover:text-neural-cyan hover:bg-white/5 transition-colors"
+            className="p-2 rounded-md text-neural-light/40 hover:text-neural-cyan hover:bg-white/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neural-cyan"
             title="Start Tour"
+            aria-label="Start Tour"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
           </button>
           <button
             onClick={signOut}
-            className="p-2 rounded-md text-neural-light/40 hover:text-neural-light hover:bg-white/5 transition-colors"
+            className="p-2 rounded-md text-neural-light/40 hover:text-neural-light hover:bg-white/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neural-cyan"
             title="Sign Out"
+            aria-label="Sign Out"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           </button>
