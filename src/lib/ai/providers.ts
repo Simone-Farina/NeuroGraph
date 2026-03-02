@@ -33,6 +33,22 @@ export function getChatModel() {
   }
 }
 
+export function getSynthesisModel() {
+  const provider = getProviderName();
+
+  switch (provider) {
+    case 'mock':
+      return mockModel;
+    case 'anthropic':
+      return anthropic('claude-haiku-4-5-20251001');
+    case 'google':
+      return google('gemini-2.0-flash');
+    case 'openai':
+    default:
+      return openai('gpt-4o-mini');
+  }
+}
+
 export function getEmbeddingModel() {
   const provider = getProviderName();
   
