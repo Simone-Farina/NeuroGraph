@@ -202,7 +202,7 @@ export function NeuronDetailPanel() {
                   placeholder="Write Markdown here..."
                 />
               ) : (
-                <div className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 min-h-[200px] overflow-y-auto markdown-content">
+                <div className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 min-h-[200px] overflow-y-auto markdown-content prose prose-invert max-w-none">
                   {formData.content ? (
                     <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
                       {formData.content}
