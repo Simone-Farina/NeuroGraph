@@ -199,16 +199,26 @@ export async function POST(request: NextRequest) {
       },
       onFinish: async (event) => {
         // event.text is the SDK's own accumulation — reliable regardless of chunk field names.
-        // Pure tool-call responses (no text) are ephemeral; skip persisting empty content.
         const assistantText = event.text.trim();
-        if (!assistantText || !conversationId) return;
+
+        // Serialise tool calls from this step (toolCallId, toolName, args only — safe for JSON).
+        // StaticToolCall has `args`; DynamicToolCall does not — guard with `in` to satisfy TS.
+        const toolInvocations = event.toolCalls.map((tc) => ({
+          toolCallId: tc.toolCallId,
+          toolName: tc.toolName,
+          args: 'args' in tc ? tc.args : undefined,
+        }));
+
+        // Nothing to persist if there's neither text nor tool calls.
+        if (!assistantText && toolInvocations.length === 0) return;
+        if (!conversationId) return;
 
         try {
           const { error } = await supabase.from('messages').insert({
             conversation_id: conversationId,
             role: 'assistant',
             content: assistantText,
-            metadata: null,
+            metadata: toolInvocations.length > 0 ? { tool_invocations: toolInvocations } : null,
           });
 
           if (error) {

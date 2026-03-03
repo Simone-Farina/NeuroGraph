@@ -183,12 +183,47 @@ export function ChatPanel() {
 
       const payload = await response.json();
       const loadedMessages = (payload.messages || []).map(
-        (msg: { id: string; role: string; content: string }) => ({
-          id: msg.id,
-          role: msg.role as 'user' | 'assistant',
-          content: msg.content,
-          parts: msg.content ? [{ type: 'text' as const, text: msg.content }] : [],
-        })
+        (msg: { id: string; role: string; content: string; metadata: unknown }) => {
+          try {
+            const textParts: Array<{ type: 'text'; text: string }> = msg.content
+              ? [{ type: 'text' as const, text: msg.content }]
+              : [];
+
+            const toolParts: SuggestionToolPart[] = [];
+            const meta = msg.metadata as {
+              tool_invocations?: Array<{ toolCallId: string; toolName: string; args: unknown }>;
+            } | null;
+
+            if (Array.isArray(meta?.tool_invocations)) {
+              for (const inv of meta.tool_invocations) {
+                if (typeof inv.toolCallId === 'string' && typeof inv.toolName === 'string') {
+                  toolParts.push({
+                    type: `tool-${inv.toolName}` as `tool-${string}`,
+                    toolCallId: inv.toolCallId,
+                    state: 'call',
+                    input: inv.args as SuggestionInput,
+                    providerExecuted: false,
+                  });
+                }
+              }
+            }
+
+            return {
+              id: msg.id,
+              role: msg.role as 'user' | 'assistant',
+              content: msg.content,
+              parts: [...textParts, ...toolParts],
+            };
+          } catch {
+            // Corrupted metadata: fall back to text-only rendering.
+            return {
+              id: msg.id,
+              role: msg.role as 'user' | 'assistant',
+              content: msg.content,
+              parts: msg.content ? [{ type: 'text' as const, text: msg.content }] : [],
+            };
+          }
+        }
       );
 
       setMessages(loadedMessages);
