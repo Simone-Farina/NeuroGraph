@@ -175,11 +175,15 @@ export function ChatPanel() {
   });
 
   const loadMessages = useCallback(async (id: string) => {
+    console.log('[loadMessages] fetching messages for conversation:', id);
     try {
       const response = await fetch(`/api/chat?mode=messages&conversationId=${id}`, {
         cache: 'no-store',
       });
-      if (!response.ok) return;
+      if (!response.ok) {
+        console.warn('[loadMessages] fetch failed with status:', response.status);
+        return;
+      }
 
       const payload = await response.json();
       const loadedMessages = (payload.messages || []).map(
@@ -197,11 +201,17 @@ export function ChatPanel() {
             if (Array.isArray(meta?.tool_invocations)) {
               for (const inv of meta.tool_invocations) {
                 if (typeof inv.toolCallId === 'string' && typeof inv.toolName === 'string') {
+                  console.log('[loadMessages] rehydrating tool invocation:', inv.toolName, inv.toolCallId, 'args present:', !!inv.args);
+                  // Use state: 'result' (not 'call') so useChat does NOT treat this as a pending
+                  // tool execution. 'call' tells the SDK the tool is still awaiting execution,
+                  // which causes auto-re-submission of the conversation (→ duplicate user msg,
+                  // auto-generating state, and an infinite hang).
                   toolParts.push({
                     type: `tool-${inv.toolName}` as `tool-${string}`,
                     toolCallId: inv.toolCallId,
-                    state: 'call',
+                    state: 'result',
                     input: inv.args as SuggestionInput,
+                    output: { status: 'completed' },
                     providerExecuted: false,
                   });
                 }
@@ -216,6 +226,7 @@ export function ChatPanel() {
             };
           } catch {
             // Corrupted metadata: fall back to text-only rendering.
+            console.warn('[loadMessages] failed to parse metadata for msg:', msg.id, '— falling back to text-only');
             return {
               id: msg.id,
               role: msg.role as 'user' | 'assistant',
@@ -226,11 +237,12 @@ export function ChatPanel() {
         }
       );
 
+      console.log('[loadMessages] loaded', loadedMessages.length, 'messages, replacing useChat state');
       setMessages(loadedMessages);
       setEdgeSuggestions([]);
       setConnectionNotice(null);
     } catch (error) {
-      console.error('Failed to load conversation', error);
+      console.error('[loadMessages] failed to load conversation:', error);
     }
   }, [setMessages]);
 
@@ -349,7 +361,12 @@ export function ChatPanel() {
 
   const handleNeurogenesis = useCallback(
     async (toolCallId: string) => {
-      if (processingToolCallsRef.current.has(toolCallId)) return;
+      console.log('[handleNeurogenesis] invoked for toolCallId:', toolCallId);
+
+      if (processingToolCallsRef.current.has(toolCallId)) {
+        console.log('[handleNeurogenesis] already processing, skipping');
+        return;
+      }
 
       processingToolCallsRef.current.add(toolCallId);
       setProcessingToolCalls(new Set(processingToolCallsRef.current));
@@ -360,7 +377,7 @@ export function ChatPanel() {
       );
 
       if (!message) {
-        console.error('Message not found for tool call');
+        console.error('[handleNeurogenesis] message not found for toolCallId:', toolCallId);
         processingToolCallsRef.current.delete(toolCallId);
         setProcessingToolCalls(new Set(processingToolCallsRef.current));
         return;
@@ -369,16 +386,14 @@ export function ChatPanel() {
       const part = message.parts.find((messagePart) => isToolPartWithId(messagePart, toolCallId));
 
       if (!part?.input) {
-        console.error('Tool part or input not found');
+        console.error('[handleNeurogenesis] tool part or input not found for toolCallId:', toolCallId, 'part:', part);
         processingToolCallsRef.current.delete(toolCallId);
         setProcessingToolCalls(new Set(processingToolCallsRef.current));
         return;
       }
 
-      // 2. Validate message ID (must be UUID from DB, not temporary)
-      // Syncing in onFinish usually ensures this, but if the user clicks VERY fast there might be a race.
       if (!currentConversationId) {
-        console.error('No conversation ID');
+        console.error('[handleNeurogenesis] no currentConversationId — cannot create neuron');
         processingToolCallsRef.current.delete(toolCallId);
         setProcessingToolCalls(new Set(processingToolCallsRef.current));
         return;
@@ -386,9 +401,10 @@ export function ChatPanel() {
 
       const input = part.input;
       const sourceMessageIds = isUuid(message.id) ? [message.id] : undefined;
+      console.log('[handleNeurogenesis] POSTing to /api/neurons — title:', input.title, 'conversationId:', currentConversationId);
 
       try {
-        // 3. Call API
+        // 2. Call API
         const response = await fetch('/api/neurons', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -403,10 +419,11 @@ export function ChatPanel() {
           }),
         });
 
+        console.log('[handleNeurogenesis] /api/neurons response status:', response.status);
+
         if (!response.ok) {
-          const error = await response.json();
-          console.error('Failed to generate neuron:', error);
-          alert('Failed to save neuron: ' + (error.error || 'Unknown error'));
+          const errorBody = await response.json();
+          console.error('[handleNeurogenesis] API error:', response.status, errorBody);
           return;
         }
 
@@ -474,9 +491,9 @@ export function ChatPanel() {
         );
 
       } catch (error) {
-        console.error('Neurogenesis error:', error);
-        alert('An error occurred while generating the neuron.');
+        console.error('[handleNeurogenesis] unexpected error creating neuron:', error);
       } finally {
+        console.log('[handleNeurogenesis] finally: clearing processing state for', toolCallId);
         processingToolCallsRef.current.delete(toolCallId);
         setProcessingToolCalls(new Set(processingToolCallsRef.current));
       }

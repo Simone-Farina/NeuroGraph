@@ -208,6 +208,7 @@ export async function POST(request: NextRequest) {
           toolName: tc.toolName,
           args: 'args' in tc ? tc.args : undefined,
         }));
+        console.log('[onFinish] text length:', assistantText.length, '| toolCalls:', toolInvocations.length, toolInvocations.map(t => t.toolName));
 
         // Nothing to persist if there's neither text nor tool calls.
         if (!assistantText && toolInvocations.length === 0) return;
