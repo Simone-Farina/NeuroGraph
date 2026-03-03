@@ -223,7 +223,9 @@ export async function POST(request: NextRequest) {
           });
 
           if (error) {
-            console.error('DB SAVE ERROR (assistant message):', error.message);
+            console.error('[onFinish] DB SAVE ERROR (assistant message):', error.message);
+          } else {
+            console.log('[onFinish] assistant message saved OK (metadata:', toolInvocations.length > 0 ? `${toolInvocations.length} tool_invocations` : 'null', ')');
           }
         } catch (err) {
           console.error('DB SAVE ERROR (assistant message):', err);

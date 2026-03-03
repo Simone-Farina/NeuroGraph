@@ -120,7 +120,7 @@ function isToolPartWithId(part: unknown, toolCallId: string): part is Suggestion
 import { useConversationContext } from '@/lib/contexts/ConversationContext';
 
 export function ChatPanel() {
-  const { currentConversationId, setCurrentConversationId, refreshConversations, conversations } = useConversationContext();
+  const { currentConversationId, setCurrentConversationId, refreshConversations } = useConversationContext();
   const [input, setInput] = useState('');
   const [isFetchingTranscript, setIsFetchingTranscript] = useState(false);
   const [connectionNotice, setConnectionNotice] = useState<string | null>(null);
@@ -132,6 +132,9 @@ export function ChatPanel() {
   const conversationIdRef = useRef(currentConversationId);
   const noticeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  // When true, the next useEffect trigger is skipped so loadMessages doesn't
+  // race with the server-side onFinish DB write and wipe streaming tool parts.
+  const skipNextLoadRef = useRef(false);
 
   // Keep the ref in sync
   conversationIdRef.current = currentConversationId;
@@ -164,9 +167,9 @@ export function ChatPanel() {
       }),
     }),
     onFinish: async () => {
-      // Refresh conversation list in sidebar. This also causes the useEffect above
-      // to re-evaluate: once the new conversation appears in the list, loadMessages
-      // fires automatically with the DB-confirmed data.
+      // Refresh conversation list in sidebar so the new conversation appears.
+      // This intentionally does NOT trigger loadMessages (conversations is not
+      // in the useEffect deps) — the SDK already has the correct streamed state.
       await refreshConversations();
     },
     onError: (error) => {
@@ -202,16 +205,13 @@ export function ChatPanel() {
               for (const inv of meta.tool_invocations) {
                 if (typeof inv.toolCallId === 'string' && typeof inv.toolName === 'string') {
                   console.log('[loadMessages] rehydrating tool invocation:', inv.toolName, inv.toolCallId, 'args present:', !!inv.args);
-                  // Use state: 'result' (not 'call') so useChat does NOT treat this as a pending
-                  // tool execution. 'call' tells the SDK the tool is still awaiting execution,
-                  // which causes auto-re-submission of the conversation (→ duplicate user msg,
-                  // auto-generating state, and an infinite hang).
+                  // Use 'input-available' (the real SDK state for "input complete, awaiting
+                  // user action"). Previously we used the non-existent 'call'/'result' states.
                   toolParts.push({
                     type: `tool-${inv.toolName}` as `tool-${string}`,
                     toolCallId: inv.toolCallId,
-                    state: 'result',
+                    state: 'input-available',
                     input: inv.args as SuggestionInput,
-                    output: { status: 'completed' },
                     providerExecuted: false,
                   });
                 }
@@ -246,9 +246,10 @@ export function ChatPanel() {
     }
   }, [setMessages]);
 
-  // Load messages only when the conversation is confirmed in the DB (present in the
-  // sidebar list). This prevents wiping optimistic streaming state for a freshly-created
-  // conversation whose ID was set before the API call completed.
+  // Load messages from DB when the user navigates to a different conversation
+  // (currentConversationId changes). We intentionally do NOT depend on `conversations`
+  // because refreshConversations() in onFinish would trigger loadMessages before the
+  // server-side onFinish DB write completes — wiping the streamed tool parts.
   useEffect(() => {
     if (!currentConversationId) {
       setMessages([]);
@@ -257,11 +258,16 @@ export function ChatPanel() {
       return;
     }
 
-    const isConfirmed = conversations.some((c) => c.id === currentConversationId);
-    if (isConfirmed) {
-      loadMessages(currentConversationId);
+    // Skip for newly-created conversations: the SDK already has the
+    // correct state from streaming. loadMessages would race with
+    // the server-side onFinish DB write and potentially wipe tool parts.
+    if (skipNextLoadRef.current) {
+      skipNextLoadRef.current = false;
+      return;
     }
-  }, [currentConversationId, conversations, loadMessages, setMessages]);
+
+    loadMessages(currentConversationId);
+  }, [currentConversationId, loadMessages, setMessages]);
 
   // Extract conversation ID from the first response (if new chat)
   useEffect(() => {
@@ -349,10 +355,12 @@ export function ChatPanel() {
     // Optimistically generate conversation ID if this is the first message
     if (!currentConversationId) {
       const newId = crypto.randomUUID();
+      // Flag so the useEffect does NOT call loadMessages for this new ID.
+      // The SDK already has the correct state from streaming; reloading from
+      // DB would race with the server-side onFinish write.
+      skipNextLoadRef.current = true;
       setCurrentConversationId(newId);
       conversationIdRef.current = newId;
-      // We don't need to refresh conversations yet as it's not in the DB, 
-      // but setting the ID ensures the API receives it.
     }
 
     sendMessage({ text: finalText });
