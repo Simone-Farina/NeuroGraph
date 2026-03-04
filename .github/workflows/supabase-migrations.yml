@@ -12,6 +12,7 @@ jobs:
     name: Apply DB migrations
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    environment: Production
 
     steps:
       - uses: actions/checkout@v4
