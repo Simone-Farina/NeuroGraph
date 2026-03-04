@@ -183,7 +183,7 @@ export function ChatPanel() {
   const handleAddToolOutput = useCallback(
     (toolCallId: string, toolName: string, result: string) => {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line
         void (addToolOutput as (opts: { tool: string; toolCallId: string; output: unknown }) => Promise<void>)({
           tool: toolName,
           toolCallId,

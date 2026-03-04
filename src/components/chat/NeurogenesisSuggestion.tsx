@@ -63,7 +63,7 @@ export function NeurogenesisSuggestion({
         <div>
           <p className="text-sm font-semibold text-emerald-400">
             Neuron{' '}
-            <span className="text-emerald-300">"{title}"</span>{' '}
+            <span className="text-emerald-300">&quot;{title}&quot;</span>{' '}
             aggiunto alla Rete Neurale
           </p>
           <p className="text-xs text-neural-light/40 mt-0.5">
