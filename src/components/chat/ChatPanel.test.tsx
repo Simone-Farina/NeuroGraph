@@ -17,15 +17,27 @@ vi.mock('@ai-sdk/react', () => ({
   }),
 }));
 
-vi.mock('@/stores/graphStore', () => ({
-  useGraphStore: {
-    getState: () => ({
+vi.mock('@/stores/graphStore', () => {
+  const mockStore = Object.assign(
+    vi.fn((selector) => selector({
       edges: [],
+      nodes: [],
       addEdge: vi.fn(),
       addNode: vi.fn(),
-    }),
-  },
-}));
+    })),
+    {
+      getState: () => ({
+        edges: [],
+        nodes: [],
+        addEdge: vi.fn(),
+        addNode: vi.fn(),
+      }),
+    }
+  );
+  return {
+    useGraphStore: mockStore,
+  };
+});
 
 vi.mock('@/components/chat/ConversationList', () => ({
   ConversationList: () => <div data-testid="conversation-list">Conversation List</div>,

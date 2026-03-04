@@ -204,8 +204,9 @@ export function NeuronDetailPanel() {
         ) : neuron ? (
           <>
             <div className="space-y-2">
-              <label className="text-xs font-medium text-neural-light/40 uppercase tracking-wider">Title</label>
+              <label htmlFor="neuron-title" className="text-xs font-medium text-neural-light/40 uppercase tracking-wider">Title</label>
               <input
+                id="neuron-title"
                 type="text"
                 value={formData.title}
                 onChange={(event) => handleChange('title', event.target.value)}
@@ -215,8 +216,9 @@ export function NeuronDetailPanel() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-medium text-neural-light/40 uppercase tracking-wider">Definition</label>
+              <label htmlFor="neuron-definition" className="text-xs font-medium text-neural-light/40 uppercase tracking-wider">Definition</label>
               <textarea
+                id="neuron-definition"
                 value={formData.definition}
                 onChange={(event) => handleChange('definition', event.target.value)}
                 rows={3}
@@ -226,8 +228,9 @@ export function NeuronDetailPanel() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-medium text-neural-light/40 uppercase tracking-wider">Core Insight</label>
+              <label htmlFor="neuron-core-insight" className="text-xs font-medium text-neural-light/40 uppercase tracking-wider">Core Insight</label>
               <textarea
+                id="neuron-core-insight"
                 value={formData.core_insight}
                 onChange={(event) => handleChange('core_insight', event.target.value)}
                 rows={3}
@@ -238,7 +241,7 @@ export function NeuronDetailPanel() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-medium text-neural-light/40 uppercase tracking-wider">Detailed Content</label>
+                <label htmlFor="neuron-content" className="text-xs font-medium text-neural-light/40 uppercase tracking-wider">Detailed Content</label>
                 <div className="flex rounded-lg border border-white/10 overflow-hidden">
                   <button
                     type="button"
@@ -265,6 +268,7 @@ export function NeuronDetailPanel() {
 
               {contentMode === 'edit' ? (
                 <textarea
+                  id="neuron-content"
                   value={formData.content}
                   onChange={(event) => handleChange('content', event.target.value)}
                   rows={12}
