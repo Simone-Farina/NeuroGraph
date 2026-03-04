@@ -156,6 +156,7 @@ export function ChatPanel() {
     setMessages,
     status,
     stop,
+    addToolOutput,
   } = useChat({
     transport: new DefaultChatTransport({
       api: '/api/chat',
@@ -176,6 +177,24 @@ export function ChatPanel() {
       console.error('Chat error:', error);
     },
   });
+
+  // Wrapper tipizzato in modo semplice per evitare la complessità generica di addToolOutput.
+  // Sblocca l'AI SDK dopo la neurogenesi e triggera una risposta di conferma dell'assistente.
+  const handleAddToolOutput = useCallback(
+    (toolCallId: string, toolName: string, result: string) => {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        void (addToolOutput as (opts: { tool: string; toolCallId: string; output: unknown }) => Promise<void>)({
+          tool: toolName,
+          toolCallId,
+          output: result,
+        });
+      } catch {
+        // addToolOutput potrebbe non funzionare se lo stream è già terminato — non è bloccante
+      }
+    },
+    [addToolOutput]
+  );
 
   const loadMessages = useCallback(async (id: string) => {
     console.log('[loadMessages] fetching messages for conversation:', id);
@@ -588,6 +607,8 @@ export function ChatPanel() {
             processingToolCalls={processingToolCalls}
             onNeurogenesis={handleNeurogenesis}
             onDismiss={handleDismiss}
+            isLoading={isLoading}
+            addToolResult={handleAddToolOutput}
           />
         </div>
 

@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+
 type NeurogenesisSuggestionProps = {
   toolCallId: string;
   input: {
@@ -14,27 +16,59 @@ type NeurogenesisSuggestionProps = {
     }>;
   };
   state: string;
+  /** 'call' = in attesa di conferma utente; 'result' = già eseguito (caricato dal DB) */
+  toolState: 'call' | 'result';
   isProcessing?: boolean;
-  onNeurogenesis: () => void;
+  onNeurogenesis: () => Promise<void>;
   onDismiss: () => void;
+  /** Invia il risultato all'AI SDK per sbloccare la risposta di conferma dell'assistente */
+  addResult: (result: string) => void;
 };
 
 export function NeurogenesisSuggestion({
   input,
   state,
+  toolState,
   isProcessing,
   onNeurogenesis,
   onDismiss,
+  addResult,
 }: NeurogenesisSuggestionProps) {
-  if (state === 'output-available') {
+  // Se il DB riporta toolState 'result', la card parte già in stato di successo.
+  const [isSuccess, setIsSuccess] = useState(toolState === 'result');
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const handleGenerate = async () => {
+    if (isGenerating || isProcessing) return;
+    setIsGenerating(true);
+    try {
+      await onNeurogenesis();
+      setIsSuccess(true);
+      addResult('Neuron successfully generated.');
+    } catch {
+      // In caso di errore l'UI rimane invariata (bottone visibile)
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // Stato di successo: generazione avvenuta (locale o proveniente dal DB)
+  if (isSuccess || state === 'output-available') {
+    const title = input?.title ?? 'Neuron';
     return (
-      <div className="neurogenesis-suggestion my-4 rounded-xl border border-neural-purple/20 bg-neural-purple/5 p-4 flex items-center gap-3">
-        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-neural-purple/20 text-neural-purple">
-          🧠
+      <div className="neurogenesis-suggestion my-4 rounded-xl border border-emerald-500/40 bg-emerald-500/5 p-4 flex items-center gap-3 shadow-[0_0_24px_-6px_rgba(16,185,129,0.25)]">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-lg">
+          ✅
         </span>
         <div>
-          <p className="text-sm font-medium text-neural-light">Neuron Generated</p>
-          <p className="text-xs text-neural-light/50">This concept has been added to your neural network.</p>
+          <p className="text-sm font-semibold text-emerald-400">
+            Neuron{' '}
+            <span className="text-emerald-300">"{title}"</span>{' '}
+            aggiunto alla Rete Neurale
+          </p>
+          <p className="text-xs text-neural-light/40 mt-0.5">
+            Il concetto è stato cristallizzato con successo.
+          </p>
         </div>
       </div>
     );
@@ -57,6 +91,7 @@ export function NeurogenesisSuggestion({
   const definition = input.definition ?? '';
   const coreInsight = input.core_insight ?? '';
   const bloomLevel = input.bloom_level ?? 'Understand';
+  const isDisabled = isGenerating || isProcessing;
 
   return (
     <div className="neurogenesis-suggestion my-4 rounded-xl border border-neural-purple/30 bg-neural-purple/5 p-5 backdrop-blur-md shadow-[0_0_20px_-5px_rgba(168,85,247,0.15)] hover:border-neural-purple/50 transition-colors">
@@ -89,11 +124,11 @@ export function NeurogenesisSuggestion({
       <div className="mt-5 flex items-center gap-3">
         <button
           type="button"
-          onClick={onNeurogenesis}
-          disabled={isProcessing}
+          onClick={() => void handleGenerate()}
+          disabled={isDisabled}
           className="flex-1 rounded-lg bg-gradient-to-r from-neural-cyan to-neural-purple px-4 py-2 text-xs font-bold text-white shadow-lg shadow-neural-purple/20 transition-all hover:shadow-neural-purple/40 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
         >
-          {isProcessing ? (
+          {isDisabled ? (
             <span className="flex items-center justify-center gap-2">
               <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/30 border-t-white" />
               Generating...
@@ -105,7 +140,7 @@ export function NeurogenesisSuggestion({
         <button
           type="button"
           onClick={onDismiss}
-          disabled={isProcessing}
+          disabled={isDisabled}
           className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-neural-light/60 transition-all hover:bg-white/10 hover:text-neural-light disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Dismiss

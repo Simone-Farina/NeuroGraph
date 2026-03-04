@@ -10,11 +10,35 @@ import { NeurogenesisSuggestion } from '@/components/chat/NeurogenesisSuggestion
 type MessageListProps = {
   messages: UIMessage[];
   processingToolCalls?: Set<string>;
-  onNeurogenesis?: (toolCallId: string) => void;
+  onNeurogenesis?: (toolCallId: string) => Promise<void>;
   onDismiss?: (toolCallId: string) => void;
+  isLoading?: boolean;
+  addToolResult?: (toolCallId: string, toolName: string, result: string) => void;
 };
 
-export function MessageList({ messages, processingToolCalls, onNeurogenesis, onDismiss }: MessageListProps) {
+function ThinkingIndicator() {
+  return (
+    <div className="flex justify-start px-5 pb-2">
+      <div className="mr-12 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-5 py-3.5 backdrop-blur-sm">
+        <div className="flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full bg-neural-purple/70 animate-bounce [animation-delay:-0.3s]" />
+          <span className="h-2 w-2 rounded-full bg-neural-purple/70 animate-bounce [animation-delay:-0.15s]" />
+          <span className="h-2 w-2 rounded-full bg-neural-purple/70 animate-bounce" />
+        </div>
+        <span className="text-xs text-neural-light/40">NeuroGraph sta pensando...</span>
+      </div>
+    </div>
+  );
+}
+
+export function MessageList({
+  messages,
+  processingToolCalls,
+  onNeurogenesis,
+  onDismiss,
+  isLoading,
+  addToolResult,
+}: MessageListProps) {
   if (!messages.length) {
     return (
       <div className="flex h-full items-center justify-center px-8 text-center text-sm text-neural-light/50">
@@ -22,6 +46,10 @@ export function MessageList({ messages, processingToolCalls, onNeurogenesis, onD
       </div>
     );
   }
+
+  // Mostra l'indicatore solo se l'SDK sta ancora elaborando
+  // e l'ultimo messaggio visibile è dell'utente (l'AI non ha ancora risposto).
+  const showThinking = isLoading && messages.at(-1)?.role === 'user';
 
   return (
     <div className="space-y-6 px-5 py-6">
@@ -75,6 +103,9 @@ export function MessageList({ messages, processingToolCalls, onNeurogenesis, onD
                       input: Record<string, unknown>;
                     };
 
+                    const toolState: 'call' | 'result' =
+                      toolPart.state === 'output-available' ? 'result' : 'call';
+
                     return (
                       <NeurogenesisSuggestion
                         key={toolPart.toolCallId}
@@ -91,9 +122,15 @@ export function MessageList({ messages, processingToolCalls, onNeurogenesis, onD
                           }>;
                         }}
                         state={toolPart.state}
+                        toolState={toolState}
                         isProcessing={processingToolCalls?.has(toolPart.toolCallId)}
-                        onNeurogenesis={() => onNeurogenesis?.(toolPart.toolCallId)}
+                        onNeurogenesis={() =>
+                          onNeurogenesis?.(toolPart.toolCallId) ?? Promise.resolve()
+                        }
                         onDismiss={() => onDismiss?.(toolPart.toolCallId)}
+                        addResult={(result) =>
+                          addToolResult?.(toolPart.toolCallId, toolName, result)
+                        }
                       />
                     );
                   }
@@ -105,6 +142,8 @@ export function MessageList({ messages, processingToolCalls, onNeurogenesis, onD
           </div>
         );
       })}
+
+      {showThinking && <ThinkingIndicator />}
     </div>
   );
 }
