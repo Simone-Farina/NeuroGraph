@@ -120,9 +120,22 @@ describe('ChatInput', () => {
       />
     );
 
-    // These will fail currently
     expect(screen.getByLabelText('Message input')).toBeInTheDocument();
     expect(screen.getByLabelText('Send message')).toBeInTheDocument();
+  });
+
+  it('has accessible label for stop button', () => {
+    render(
+      <ChatInput
+        value=""
+        onChange={mockOnChange}
+        onSubmit={mockOnSubmit}
+        disabled={false}
+        isStreaming={true}
+      />
+    );
+
+    expect(screen.getByLabelText('Stop generating')).toBeInTheDocument();
   });
 
   it('shows loading spinner when sending', () => {
