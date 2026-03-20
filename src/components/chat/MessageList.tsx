@@ -10,7 +10,7 @@ import { NeurogenesisSuggestion } from '@/components/chat/NeurogenesisSuggestion
 type MessageListProps = {
   messages: UIMessage[];
   processingToolCalls?: Set<string>;
-  onNeurogenesis?: (toolCallId: string) => Promise<void>;
+  onNeurogenesis?: (toolCallId: string, force?: boolean) => Promise<void>;
   onDismiss?: (toolCallId: string) => void;
   isLoading?: boolean;
   addToolResult?: (toolCallId: string, toolName: string, result: string) => void;
@@ -124,8 +124,8 @@ export function MessageList({
                         state={toolPart.state}
                         toolState={toolState}
                         isProcessing={processingToolCalls?.has(toolPart.toolCallId)}
-                        onNeurogenesis={() =>
-                          onNeurogenesis?.(toolPart.toolCallId) ?? Promise.resolve()
+                        onNeurogenesis={(force?: boolean) =>
+                          onNeurogenesis?.(toolPart.toolCallId, force) ?? Promise.resolve()
                         }
                         onDismiss={() => onDismiss?.(toolPart.toolCallId)}
                         addResult={(result) =>

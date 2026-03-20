@@ -387,8 +387,8 @@ export function ChatPanel() {
   }, [input, status, isFetchingTranscript, sendMessage, currentConversationId, setCurrentConversationId]);
 
   const handleNeurogenesis = useCallback(
-    async (toolCallId: string) => {
-      console.log('[handleNeurogenesis] invoked for toolCallId:', toolCallId);
+    async (toolCallId: string, force = false) => {
+      console.log('[handleNeurogenesis] invoked for toolCallId:', toolCallId, 'force:', force);
 
       if (processingToolCallsRef.current.has(toolCallId)) {
         console.log('[handleNeurogenesis] already processing, skipping');
@@ -432,7 +432,7 @@ export function ChatPanel() {
 
       try {
         // 2. Call API
-        const response = await fetch('/api/neurons', {
+        const response = await fetch(`/api/neurons${force ? '?force=true' : ''}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -451,6 +451,9 @@ export function ChatPanel() {
         if (!response.ok) {
           const errorBody = await response.json();
           console.error('[handleNeurogenesis] API error:', response.status, errorBody);
+          if (response.status === 409 && errorBody.type === 'collision') {
+            throw errorBody; // Throw to be caught by NeurogenesisSuggestion
+          }
           return;
         }
 

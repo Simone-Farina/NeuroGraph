@@ -116,6 +116,25 @@ export async function POST(request: NextRequest) {
       ...neuronInput
     } = parsed.data;
 
+    const forceNew = request.nextUrl.searchParams.get('force') === 'true';
+
+    const embeddingInput = `${neuronInput.title} ${neuronInput.definition} ${neuronInput.core_insight}`;
+    const embedding = await generateEmbedding(embeddingInput);
+
+    if (!forceNew) {
+      const { checkNeuronCollision } = await import('@/lib/ai/bouncer');
+      const collision = await checkNeuronCollision(embedding, 0.85);
+      
+      if (collision) {
+        return NextResponse.json({
+          type: 'collision',
+          matchId: collision.id,
+          matchTitle: collision.title,
+          insightText: neuronInput.core_insight,
+        }, { status: 409 });
+      }
+    }
+
     const now = new Date();
     const nextReview = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
@@ -125,7 +144,7 @@ export async function POST(request: NextRequest) {
         ...neuronInput,
         source_message_ids: sourceMessageIds ?? [],
         user_id: user.id,
-        embedding: null,
+        embedding: embedding,
         stability: 1.0,
         difficulty: 5.0,
         state: 'New',
@@ -152,20 +171,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    const embeddingInput = `${data.title} ${data.definition} ${data.core_insight}`;
-    const embedding = await generateEmbedding(embeddingInput);
-
-    const { data: neuron, error: embeddingUpdateError } = await supabase
-      .from('neurons')
-      .update({ embedding })
-      .eq('id', data.id)
-      .eq('user_id', user.id)
-      .select('*')
-      .single();
-
-    if (embeddingUpdateError) {
-      return NextResponse.json({ error: embeddingUpdateError.message }, { status: 500 });
-    }
+    const neuron = data;
 
     const { count } = await supabase
       .from('neurons')

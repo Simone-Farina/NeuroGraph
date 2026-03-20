@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { BouncerCard } from '@/components/chat/BouncerCard';
 
 type NeurogenesisSuggestionProps = {
   toolCallId: string;
@@ -19,7 +20,7 @@ type NeurogenesisSuggestionProps = {
   /** 'call' = in attesa di conferma utente; 'result' = già eseguito (caricato dal DB) */
   toolState: 'call' | 'result';
   isProcessing?: boolean;
-  onNeurogenesis: () => Promise<void>;
+  onNeurogenesis: (force?: boolean) => Promise<void>;
   onDismiss: () => void;
   /** Invia il risultato all'AI SDK per sbloccare la risposta di conferma dell'assistente */
   addResult: (result: string) => void;
@@ -37,20 +38,41 @@ export function NeurogenesisSuggestion({
   // Se il DB riporta toolState 'result', la card parte già in stato di successo.
   const [isSuccess, setIsSuccess] = useState(toolState === 'result');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [collisionData, setCollisionData] = useState<{ matchId: string; matchTitle: string; insightText: string } | null>(null);
 
-  const handleGenerate = async () => {
+  const handleGenerate = async (force = false) => {
     if (isGenerating || isProcessing) return;
     setIsGenerating(true);
+    setCollisionData(null);
     try {
-      await onNeurogenesis();
+      await onNeurogenesis(force);
       setIsSuccess(true);
       addResult('Neuron successfully generated.');
-    } catch {
-      // In caso di errore l'UI rimane invariata (bottone visibile)
+    } catch (err: any) {
+      if (err && err.type === 'collision') {
+        setCollisionData(err);
+      }
     } finally {
       setIsGenerating(false);
     }
   };
+
+  if (collisionData) {
+    return (
+      <BouncerCard
+        matchId={collisionData.matchId}
+        matchTitle={collisionData.matchTitle}
+        insightText={collisionData.insightText}
+        onAppendSuccess={() => {
+          setIsSuccess(true);
+          setCollisionData(null);
+          addResult('Appended to existing neuron.');
+        }}
+        onForceNew={() => handleGenerate(true)}
+        onDismiss={onDismiss}
+      />
+    );
+  }
 
   // Stato di successo: generazione avvenuta (locale o proveniente dal DB)
   if (isSuccess || state === 'output-available') {
