@@ -22,8 +22,8 @@ The system enforces "Active Extraction" and rigorous retention over passive read
 ### Active
 
 - [ ] Socratic Chat Engine (Tabula Rasa start, AI guides user to insights)
-- [ ] Ephemeral Discovery Engine (Chats have a strict 14-day Time-To-Live to force knowledge extraction)
-- [ ] AI Bouncer Mechanism (Background vector search prevents duplicate Neurons, suggests appending)
+- [x] Ephemeral Discovery Engine (Chats have a strict 14-day Time-To-Live to force knowledge extraction)
+- [x] AI Bouncer Mechanism (Background vector search prevents duplicate Neurons, suggests appending)
 - [ ] Neurogenesis Flow (High-friction conversion of deep insights into new Neurons)
 - [ ] Strict Prerequisite DAG Enforcer (Knowledge is built on dependency trees)
 - [ ] Horizon Layer & Ghost Nodes (Target-driven learning paths with a "Fog of War" UI)
