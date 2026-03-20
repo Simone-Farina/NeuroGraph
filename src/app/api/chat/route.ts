@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
 
     const { data, error } = await supabase
       .from('conversations')
-      .select('id, title, updated_at')
+      .select('id, title, updated_at, created_at')
       .eq('user_id', user.id)
       .order('updated_at', { ascending: false })
       .limit(20);

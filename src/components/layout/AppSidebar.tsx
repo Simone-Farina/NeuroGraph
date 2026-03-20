@@ -134,43 +134,67 @@ export function AppSidebar() {
         </div>
 
         <div className="flex-1 overflow-y-auto px-2 space-y-1 scrollbar-hide">
-          {conversations.map((conversation) => (
-            <div key={conversation.id} className="group relative">
-              <button
-                type="button"
-                onClick={() => {
-                  handleSelectConversation(conversation.id);
-                }}
-                className={`w-full rounded-lg border px-3 py-2.5 text-left text-sm transition-all ${
-                  currentConversationId === conversation.id && pathname === '/app'
-                    ? 'border-neural-cyan/30 bg-neural-cyan/5 text-neural-cyan shadow-[0_0_15px_-3px_rgba(6,182,212,0.1)]'
-                    : 'border-transparent text-neural-light/60 hover:bg-white/5 hover:text-neural-light'
-                } ${isCollapsed ? 'justify-center px-2' : ''}`}
-                title={isCollapsed ? conversation.title : undefined}
-              >
-                {isCollapsed ? (
-                  <div className="w-2 h-2 rounded-full bg-current mx-auto" />
-                ) : (
-                  <>
-                    <p className="truncate font-medium pr-6">{conversation.title}</p>
-                    <p className="truncate text-[10px] text-neural-light/30 mt-0.5 group-hover:text-neural-light/50 transition-colors">
-                      {new Date(conversation.updated_at).toLocaleDateString()}
-                    </p>
-                  </>
-                )}
-              </button>
-              {!isCollapsed && (
+          {conversations.map((conversation) => {
+            const createdAt = new Date(conversation.created_at || conversation.updated_at);
+            const expiresAt = new Date(createdAt.getTime() + 14 * 24 * 60 * 60 * 1000);
+            const now = new Date();
+            const timeRemainingMs = expiresAt.getTime() - now.getTime();
+            const daysRemaining = Math.max(0, Math.ceil(timeRemainingMs / (1000 * 60 * 60 * 24)));
+            const hoursRemaining = Math.max(0, Math.ceil(timeRemainingMs / (1000 * 60 * 60)));
+            const isUrgent = timeRemainingMs > 0 && hoursRemaining <= 24;
+            
+            let ttlText = '';
+            if (timeRemainingMs <= 0) {
+              ttlText = 'Expired';
+            } else if (isUrgent) {
+              ttlText = `Expires in ${hoursRemaining}h`;
+            } else {
+              ttlText = `${daysRemaining}d left`;
+            }
+
+            return (
+              <div key={conversation.id} className="group relative">
                 <button
                   type="button"
-                  onClick={(e) => handleDeleteConversation(e, conversation.id)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1.5 text-neural-light/30 hover:text-red-400 transition-all"
-                  title="Delete conversation"
+                  onClick={() => {
+                    handleSelectConversation(conversation.id);
+                  }}
+                  className={`w-full rounded-lg border px-3 py-2.5 text-left text-sm transition-all ${
+                    currentConversationId === conversation.id && pathname === '/app'
+                      ? 'border-neural-cyan/30 bg-neural-cyan/5 text-neural-cyan shadow-[0_0_15px_-3px_rgba(6,182,212,0.1)]'
+                      : 'border-transparent text-neural-light/60 hover:bg-white/5 hover:text-neural-light'
+                  } ${isCollapsed ? 'justify-center px-2' : ''}`}
+                  title={isCollapsed ? conversation.title : undefined}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                  {isCollapsed ? (
+                    <div className="w-2 h-2 rounded-full bg-current mx-auto" />
+                  ) : (
+                    <>
+                      <p className="truncate font-medium pr-6">{conversation.title}</p>
+                      <div className="flex justify-between items-center mt-0.5">
+                        <p className="truncate text-[10px] text-neural-light/30 group-hover:text-neural-light/50 transition-colors">
+                          {new Date(conversation.updated_at).toLocaleDateString()}
+                        </p>
+                        <p className={`text-[10px] font-medium tracking-wide ${isUrgent ? 'text-red-500' : 'text-neural-light/40 group-hover:text-neural-light/60'} transition-colors`}>
+                          {ttlText}
+                        </p>
+                      </div>
+                    </>
+                  )}
                 </button>
-              )}
-            </div>
-          ))}
+                {!isCollapsed && (
+                  <button
+                    type="button"
+                    onClick={(e) => handleDeleteConversation(e, conversation.id)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1.5 text-neural-light/30 hover:text-red-400 transition-all"
+                    title="Delete conversation"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 

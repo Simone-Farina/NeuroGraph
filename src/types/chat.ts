@@ -2,6 +2,7 @@ export type ConversationSummary = {
   id: string;
   title: string;
   updated_at: string;
+  created_at: string;
 };
 
 export type RelationshipType = 'PREREQUISITE' | 'RELATED' | 'BUILDS_ON';
