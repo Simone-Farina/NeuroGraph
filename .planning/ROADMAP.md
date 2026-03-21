@@ -6,7 +6,7 @@ Upgrading the live conversational graph prototype into a strict, active-extracti
 
 ## Phases
 
-- [ ] **Phase 1: Knowledge Quality & Ephemerality** - AI Bouncer and 14-day chat TTL.
+- [x] **Phase 1: Knowledge Quality & Ephemerality** - AI Bouncer and 14-day chat TTL. (completed 2026-03-21)
 - [ ] **Phase 2: Graph Pedagogy** - Strict DAG layouts and target-driven Ghost Nodes.
 - [ ] **Phase 3: Rigorous Retention** - `ts-fsrs` engine and Soft-FIRe decay visuals.
 - [x] **Phase 4: Advanced AI Markdown Editor** - Live WYSIWYG block editor with AI Bouncer integration. (completed 2026-03-21)
@@ -22,7 +22,7 @@ Upgrading the live conversational graph prototype into a strict, active-extracti
 **Success Criteria** (what must be TRUE):
   1. The DB cron or API successfully deletes chat messages older than 14 days to force extraction.
   2. The Neurogenesis tool evaluates similarity > 85% via pgvector and uses LLM to refuse creation of duplicate nodes, returning an "append suggestion" instead.
-**Plans**: TBD
+**Plans**: 2 (01-01 TTL Engine, 01-02 AI Bouncer)
 
 ### Phase 2: Graph Pedagogy
 **Goal**: Restructure the visual memory network to enforce strict prerequisite mastery.
@@ -57,7 +57,7 @@ Upgrading the live conversational graph prototype into a strict, active-extracti
   1. The editor correctly live-renders markdown syntax using the Newsreader serif font.
   2. Slash commands and text-highlight interactions spawn the AI Bouncer.
   3. The core fields (Definition, Insight) are extracted in the background without rigid UI fields.
-**Plans**: TBD
+**Plans**: 1 (PLAN.md — Editor Core, Liquid Document, Slash Commands, Bouncer, Visual Polish)
 
 ## Progress
 
@@ -66,7 +66,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Knowledge Quality & Ephemerality | 0/0 | Not started | - |
+| 1. Knowledge Quality & Ephemerality | 2/2 | Complete | 2026-03-21 |
 | 2. Graph Pedagogy | 0/0 | Not started | - |
 | 3. Rigorous Retention | 0/0 | Not started | - |
 | 4. Advanced AI Markdown Editor | 1/1 | Complete   | 2026-03-21 |
