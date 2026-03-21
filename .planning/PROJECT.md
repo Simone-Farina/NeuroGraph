@@ -8,16 +8,16 @@ NeuroGraph 2.0 is a MicroSaaS platform for Active Generative Mastery. It is a co
 
 The system enforces "Active Extraction" and rigorous retention over passive reading; users only create nodes when they reach a "Deep Insight," and the AI acts as a bouncer to prevent hallucinated or disconnected knowledge graphs.
 
-## Current Milestone: v1.2 Agent Intelligence
+## Current Milestone: v1.1 Staging Area
 
-**Goal:** Establish enterprise-grade, test-driven system prompts for the core NeuroGraph agents using promptfoo to ensure rigorous evaluation and reliability.
+**Goal:** Introduce a cognitive funnel that catches chaotic real-world inputs (URLs, ideas, articles) in a Staging Area before they earn entry into the sacred Knowledge Graph.
 
 **Target features:**
-- Setup promptfoo testing infrastructure for LLM evaluations
-- Define and test the DAG Manager Agent (Prerequisite evaluation and structure enforcement)
-- Wire the Architect into an ephemeral Horizon UI with ghost nodes and target-setting flow
-- Define and test the Chat Analyzer / Bouncer Agent (Duplicate prevention and insight extraction)
-- Define and test the Socratic Chat Engine (Guiding user to insights)
+- Knowledge Queue data model (Inbox → Resource / Passive Debt → Mastered Neuron)
+- Personal API key auth + mobile capture endpoint (iOS Shortcuts)
+- Staging Area UI in Left Panel (editorial list, auto-detect state transitions, manual triage)
+- Crystallize flow: auto-fetch URL content, summarize, open Socratic chat session
+- AI isolation: queue invisible to chat AI unless explicitly Crystallized
 
 ## Requirements
 
@@ -29,25 +29,25 @@ The system enforces "Active Extraction" and rigorous retention over passive read
 - ✓ AI Orchestration System (`getModelForRole` routing structure) — existing
 - ✓ Dual-action text extraction tooling (`useTextSelection.ts`) — existing
 - ✓ Global state foundation (`graphStore.ts` with `chat|neuron|review` modes) — existing
-- ✓ Ephemeral Discovery Engine (14-day TTL) — Validated in v1.0
-- ✓ AI Bouncer Mechanism (pgvector duplicate prevention) — Validated in v1.0
-- ✓ Advanced AI Markdown Editor (TipTap WYSIWYG, slash commands, Bouncer bubble menu) — Validated in v1.0
-- ✓ Knowledge Queue data model & API — Validated in v1.1
-- ✓ Personal API key auth + mobile capture endpoint — Validated in v1.1
-- ✓ Staging Area UI and triage flows — Validated in v1.1
-- ✓ Crystallize flow (URL extraction to seeded chat) — Validated in v1.1
-- ✓ UI Polish & Editorial Design System — Validated in v1.1
+
+<!-- Shipped in v1.0 MVP -->
+- ✓ Socratic Chat Engine (Tabula Rasa start, AI guides user to insights) — v1.0
+- ✓ Ephemeral Discovery Engine (Chats have a strict 14-day Time-To-Live to force knowledge extraction) — v1.0
+- ✓ AI Bouncer Mechanism (Background vector search prevents duplicate Neurons, suggests appending) — v1.0
+- ✓ Neurogenesis Flow (High-friction conversion of deep insights into new Neurons) — v1.0
+- ✓ Strict Prerequisite DAG Enforcer (Knowledge is built on dependency trees) — v1.0
+- ✓ Horizon Layer & Ghost Nodes (Target-driven learning paths with a "Fog of War" UI) — v1.0
+- ✓ Rigorous Retention Engine (FSRS-6 spaced repetition applied to Neurons) — v1.0
+- ✓ Soft-FIRe Visual Feedback (Visual flagging/rusting of dependent concepts when foundational Neurons decay) — v1.0
+- ✓ Bidirectional UI Sync (Clicking map opens markdown and pans camera; selecting text injects into existing Neurons) — v1.0
+- ✓ Advanced AI Markdown Editor (TipTap WYSIWYG, slash commands, Bouncer bubble menu, liquid document extraction) — v1.0
 
 ### Active
 
-- [ ] Test-Driven Prompt Engineering (Promptfoo evaluation pipeline)
-- [ ] Socratic Chat Engine (Tabula Rasa start, AI guides user to insights)
-- [ ] Neurogenesis Flow (High-friction conversion of deep insights into new Neurons)
-- [ ] Strict Prerequisite DAG Enforcer (Knowledge is built on dependency trees)
-- [ ] Horizon Layer & Ghost Nodes (Target-driven learning paths with a "Fog of War" UI)
-- [ ] Rigorous Retention Engine (FSRS-6 spaced repetition applied to Neurons)
-- [ ] Soft-FIRe Visual Feedback (Visual flagging/rusting of dependent concepts when foundational Neurons decay)
-- [ ] Bidirectional UI Sync (Clicking map opens markdown and pans camera; selecting text injects into existing Neurons)
+<!-- Scope for v1.1 or v2.0 -->
+- [ ] Implement Canvas Mode for freeform dragging and media organization
+- [ ] Implement Downward FIRe cascading logic
+- [ ] Connect robust AI auto-healing recommendations for FSRS decay
 
 ### Out of Scope
 
@@ -71,12 +71,13 @@ The system enforces "Active Extraction" and rigorous retention over passive read
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| AI as a Bouncer | Prevents graph bloat and passive junk generation; ensures knowledge mapping is highly deliberate. | — Pending |
-| Ghost Nodes & Fog of War | Prevents cognitive overload when outlining complex learning roadmaps (e.g., AI Engineer). | — Pending |
-| Fractional Implicit Repetition (Soft-FIRe) | If a foundational concept rusts, advanced concepts built on it must flag decay to reinforce the DAG dependency tree. | — Pending |
+| AI as a Bouncer | Prevents graph bloat and passive junk generation; ensures knowledge mapping is highly deliberate. | ✓ Good |
+| Ghost Nodes & Fog of War | Prevents cognitive overload when outlining complex learning roadmaps (e.g., AI Engineer). | ✓ Good |
+| Fractional Implicit Repetition (Soft-FIRe) | If a foundational concept rusts, advanced concepts built on it must flag decay to reinforce the DAG dependency tree. | ✓ Good |
 | Cognitive Funnel (4-state) | Raw inputs must pass through Inbox → Passive Debt → Crystallize before earning Neuron status. Prevents graph from becoming a bookmark graveyard. | — Pending |
 | Personal API Key auth | Stateless bearer token for mobile capture. Scoped to user. Simple for iOS Shortcuts. | — Pending |
 | AI Isolation from Queue | Queue items invisible to chat AI. Only surfaced on explicit Crystallize. Keeps Socratic process intentional. | — Pending |
+| TipTap Editor Integration | Replace disjointed input fields with fluid writing space that extracts metadata organically behind the scenes. | ✓ Good |
 
 ---
-*Last updated: 2026-03-23 — Phase 11 complete, with Phase 11.5 inserted to wire the Architect into the product before the Bouncer phase*
+*Last updated: 2026-03-22 — Milestone v1.1 Staging Area started*
