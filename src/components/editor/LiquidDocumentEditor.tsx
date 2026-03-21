@@ -5,7 +5,7 @@ import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import Typography from '@tiptap/extension-typography';
 import Link from '@tiptap/extension-link';
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 
 import { BouncerBubbleMenu } from '@/components/editor/BouncerBubbleMenu';
 import {
@@ -105,8 +105,11 @@ export function LiquidDocumentEditor({
     [title]
   );
 
-  const slashCommands = createSlashCommands(handleAiAction);
-  const slashExtension = createSlashCommandExtension(slashCommands, setSlashMenu);
+  const slashCommands = useMemo(() => createSlashCommands(handleAiAction), [handleAiAction]);
+  const slashExtension = useMemo(
+    () => createSlashCommandExtension(slashCommands, setSlashMenu),
+    [slashCommands]
+  );
 
   const editor = useEditor({
     extensions: [

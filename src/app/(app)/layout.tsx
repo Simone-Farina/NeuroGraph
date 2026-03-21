@@ -1,7 +1,6 @@
 'use client';
 
 import { AuthProvider, useAuth } from '@/lib/auth/AuthContext';
-import { motion } from 'framer-motion';
 import { ReviewBadge } from '@/components/ReviewBadge';
 import { OnboardingProvider } from '@/components/onboarding/OnboardingTour';
 import { AppSidebar } from '@/components/layout/AppSidebar';
@@ -18,7 +17,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     return (
       <div className="min-h-screen bg-neural-dark flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-neural-cyan/30 border-t-neural-cyan" />
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/10 border-t-white/60" />
           <div className="text-neural-light/40 text-sm font-medium tracking-wide animate-pulse">Initializing Interface...</div>
         </div>
       </div>
@@ -26,7 +25,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-neural-dark selection:bg-neural-cyan/30 selection:text-neural-light">
+    <div className="flex h-screen w-full overflow-hidden bg-neural-dark selection:bg-white/20 selection:text-neural-light">
       {/* Area Operativa Sinistra (40vw) */}
       <div className="flex w-[40vw] flex-shrink-0 border-r border-white/5 relative bg-neural-dark">
         <AppSidebar />
@@ -35,11 +34,11 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
         <div className="flex-1 flex flex-col min-w-0 relative">
           <header className="sticky top-0 z-50 border-b border-white/5 bg-neural-dark/80 backdrop-blur-xl supports-[backdrop-filter]:bg-neural-dark/60">
             <div className="px-6 py-3 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <h1 className="text-lg font-bold tracking-tight bg-gradient-to-r from-neural-cyan via-white to-neural-purple bg-clip-text text-transparent">
+              <div className="flex items-center gap-2.5">
+                <h1 className="text-[15px] font-serif font-semibold tracking-tight text-white/90">
                   NeuroGraph
                 </h1>
-                <span className="hidden sm:inline-block px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-neural-cyan/10 text-neural-cyan border border-neural-cyan/20">
+                <span className="hidden sm:inline-block px-1.5 py-0.5 rounded text-[9px] font-medium uppercase tracking-widest bg-white/[0.04] text-white/30 border border-white/[0.06]">
                   Beta
                 </span>
               </div>

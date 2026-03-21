@@ -33,7 +33,7 @@ export function ChatInput({
 
   return (
     <div className="border-t border-white/5 bg-neural-dark/80 backdrop-blur-xl p-4">
-      <div className="relative flex items-end gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 transition-all hover:border-white/20 hover:bg-white/10 focus-within:border-neural-cyan/50 focus-within:bg-white/10 focus-within:shadow-[0_0_15px_-3px_rgba(6,182,212,0.1)]">
+      <div className="relative flex items-end gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 transition-all hover:border-white/20 hover:bg-white/10 focus-within:border-white/20 focus-within:bg-white/[0.06]">
         <textarea
           value={value}
           onChange={(event) => onChange(event.target.value)}
@@ -68,7 +68,7 @@ export function ChatInput({
               type="button"
               onClick={onSubmit}
               disabled={disabled || !value.trim()}
-              className="rounded-lg bg-gradient-to-r from-neural-cyan to-neural-purple p-2 text-white transition-all hover:shadow-[0_0_15px_-3px_rgba(6,182,212,0.4)] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
+              className="rounded-lg bg-white/90 p-2 text-neural-dark transition-all hover:bg-white disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/20"
               title="Send Message"
               aria-label="Send message"
             >
@@ -87,7 +87,7 @@ export function ChatInput({
       
       {hasYouTubeUrl && (
         <div className="mt-2 flex items-center gap-2">
-            <span className="flex items-center gap-1.5 rounded-full border border-neural-cyan/30 bg-neural-cyan/10 px-3 py-1.5 text-[11px] font-medium text-neural-cyan uppercase tracking-wider">
+            <span className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] font-medium text-white/60 uppercase tracking-wider">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
                 <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
             </svg>

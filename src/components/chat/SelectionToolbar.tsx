@@ -117,7 +117,7 @@ export function SelectionToolbar() {
                 /* Dual-action buttons after neuron selection */
                 <div className="rounded-xl bg-neural-gray-900/95 border border-white/10 backdrop-blur-xl shadow-2xl overflow-hidden">
                     <div className="px-3 py-2 border-b border-white/5 flex items-center gap-2">
-                        <span className="text-neural-cyan text-xs">✦</span>
+                        <span className="text-white/50 text-xs">✦</span>
                         <span className="text-xs text-neural-light/70 truncate max-w-[180px]">{selectedNeuron.title}</span>
                         <button
                             type="button"
@@ -140,7 +140,7 @@ export function SelectionToolbar() {
                             type="button"
                             onClick={handleSynthesize}
                             disabled={isBusy}
-                            className="flex-1 rounded-lg bg-neural-purple/15 hover:bg-neural-purple/25 border border-neural-purple/20 px-3 py-2 text-xs font-medium text-neural-purple hover:text-purple-300 transition-colors disabled:opacity-50"
+                            className="flex-1 rounded-lg bg-white/[0.06] hover:bg-white/10 border border-white/[0.08] px-3 py-2 text-xs font-medium text-white/70 hover:text-white/90 transition-colors disabled:opacity-50"
                         >
                             {isBusy ? '...' : '✦ Sintetizza'}
                         </button>
@@ -156,7 +156,7 @@ export function SelectionToolbar() {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Cerca Neurone..."
-                            className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm text-neural-light placeholder:text-neural-light/30 focus:outline-none focus:border-neural-cyan/40"
+                            className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm text-neural-light placeholder:text-neural-light/30 focus:outline-none focus:border-white/20"
                         />
                     </div>
                     <div className="max-h-48 overflow-y-auto">
@@ -172,9 +172,9 @@ export function SelectionToolbar() {
                                         key={node.id}
                                         type="button"
                                         onClick={() => setSelectedNeuron({ id: node.id, title })}
-                                        className="w-full text-left px-3 py-2.5 text-sm text-neural-light/80 hover:bg-white/5 hover:text-neural-cyan transition-colors flex items-center gap-2 border-b border-white/5 last:border-0"
+                                        className="w-full text-left px-3 py-2.5 text-sm text-neural-light/80 hover:bg-white/5 hover:text-white/90 transition-colors flex items-center gap-2 border-b border-white/5 last:border-0"
                                     >
-                                        <span className="text-neural-cyan text-xs">✦</span>
+                                        <span className="text-white/50 text-xs">✦</span>
                                         <span className="truncate">{title}</span>
                                     </button>
                                 );
@@ -187,7 +187,7 @@ export function SelectionToolbar() {
                 <button
                     type="button"
                     onClick={() => setIsExpanded(true)}
-                    className="rounded-lg bg-neural-cyan/90 hover:bg-neural-cyan text-black px-4 py-2 text-xs font-bold shadow-xl shadow-neural-cyan/20 transition-all hover:shadow-neural-cyan/30 flex items-center gap-1.5"
+                    className="rounded-lg bg-white/90 hover:bg-white text-neural-dark px-4 py-2 text-xs font-bold shadow-xl transition-all flex items-center gap-1.5"
                 >
                     <span className="text-sm">+</span>
                     Aggiungi a Neurone

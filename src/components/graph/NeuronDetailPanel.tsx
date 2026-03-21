@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useGraphStore } from '@/stores/graphStore';
 import { Neuron } from '@/types/database';

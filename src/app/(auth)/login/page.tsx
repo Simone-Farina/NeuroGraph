@@ -135,8 +135,8 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-neural-dark flex items-center justify-center p-4 relative overflow-hidden">
       <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-neural-cyan/20 rounded-full blur-[100px] animate-pulse-cyan" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-neural-purple/20 rounded-full blur-[100px] animate-pulse-cyan" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-[100px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-white/[0.03] rounded-full blur-[100px]" />
       </div>
 
       <motion.div
@@ -152,7 +152,7 @@ export default function LoginPage() {
             transition={{ delay: 0.2 }}
             className="text-center mb-8"
           >
-            <h1 className="text-5xl font-bold mb-3 tracking-tight bg-gradient-to-br from-neural-cyan via-white to-neural-purple bg-clip-text text-transparent">
+            <h1 className="text-5xl font-serif font-bold mb-3 tracking-tight text-white/95">
               NeuroGraph
             </h1>
             <p className="text-neural-light/60 text-sm font-medium tracking-wide">
@@ -164,9 +164,9 @@ export default function LoginPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="mb-6 p-4 bg-neural-purple/10 border border-neural-purple/30 rounded-lg backdrop-blur-sm"
+              className="mb-6 p-4 bg-white/[0.04] border border-white/10 rounded-lg backdrop-blur-sm"
             >
-              <p className="text-neural-purple text-sm text-center font-medium">
+              <p className="text-white/60 text-sm text-center font-medium">
                 ⚠️ Best experienced on desktop (1024px+)
               </p>
             </motion.div>
@@ -241,7 +241,7 @@ export default function LoginPage() {
               disabled={loading}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full py-3 px-4 bg-gradient-to-r from-neural-cyan to-neural-purple text-white font-bold tracking-wide rounded-lg shadow-lg shadow-neural-cyan/20 hover:shadow-neural-cyan/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none mt-2"
+              className="w-full py-3 px-4 bg-white/90 text-neural-dark font-bold tracking-wide rounded-lg transition-all hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed mt-2"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -262,7 +262,7 @@ export default function LoginPage() {
               animate={{ opacity: 1, y: 0 }}
               className={`mt-6 p-4 rounded-lg backdrop-blur-md border ${
                 message.type === 'success'
-                  ? 'bg-neural-cyan/10 border-neural-cyan/30 text-neural-cyan'
+                  ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
                   : 'bg-red-500/10 border-red-500/30 text-red-400'
               }`}
             >
@@ -279,9 +279,9 @@ export default function LoginPage() {
             <p className="text-neural-light/50 text-xs">
               {authMode === 'password' ? (
                 isSignUp ? (
-                  <span>Already have an account? <button type="button" onClick={() => setIsSignUp(false)} className="text-neural-cyan hover:underline font-medium">Sign in</button></span>
+                  <span>Already have an account? <button type="button" onClick={() => setIsSignUp(false)} className="text-white/70 hover:underline font-medium">Sign in</button></span>
                 ) : (
-                  <span>Need an account? <button type="button" onClick={() => setIsSignUp(true)} className="text-neural-cyan hover:underline font-medium">Sign up</button></span>
+                  <span>Need an account? <button type="button" onClick={() => setIsSignUp(true)} className="text-white/70 hover:underline font-medium">Sign up</button></span>
                 )
               ) : (
                 'First time? Your account will be created automatically.'
