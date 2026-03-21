@@ -14,6 +14,7 @@ type NeuronNodeData = {
   is_ghost?: boolean;
   ghost_depth?: number | null;
   ghost_target_title?: string | null;
+  foundation_unstable?: boolean;
 };
 
 type NeuronFlowNode = Node<NeuronNodeData, 'neuron'>;
@@ -145,6 +146,7 @@ export function NeuronNode({ id, data, selected }: NodeProps<NeuronFlowNode>) {
   const isGhost = data.is_ghost ?? false;
   const ghostDepth = data.ghost_depth;
   const retrievability = typeof data.retrievability === 'number' ? data.retrievability : 1.0;
+  const isUnstableFoundation = data.foundation_unstable && retrievability >= 0.85;
   const removeNode = useGraphStore((state) => state.removeNode);
 
   // ─── Ghost Node Rendering ──────────────────────────────────────────
@@ -192,6 +194,12 @@ export function NeuronNode({ id, data, selected }: NodeProps<NeuronFlowNode>) {
 
   // ─── Standard Neuron Rendering ─────────────────────────────────────
   const styles = getNodeStyles(retrievability);
+  const containerClasses = [
+    'group relative w-52 rounded-2xl border px-5 py-4 transition-all duration-300 hover:z-50',
+    styles.container,
+    selected ? 'border-white/60 bg-white/[0.05] z-50' : '',
+    isUnstableFoundation ? 'border-dashed border-[#c4785a]/50 hover:border-[#c4785a]/70' : 'hover:border-white/30',
+  ].filter(Boolean).join(' ');
 
   const handleDelete = async (event: React.MouseEvent) => {
     event.stopPropagation();
@@ -217,9 +225,7 @@ export function NeuronNode({ id, data, selected }: NodeProps<NeuronFlowNode>) {
   const lastReviewDate = data.last_review || data.last_reviewed_at;
 
   return (
-    <div
-      className={`group relative w-52 rounded-2xl border px-5 py-4 transition-all duration-300 hover:border-white/30 hover:z-50 ${styles.container} ${selected ? 'border-white/60 bg-white/[0.05] z-50' : ''}`}
-    >
+    <div className={containerClasses}>
       <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-max max-w-[220px] rounded-xl bg-neural-gray-900/95 border border-white/10 p-3 text-xs text-neural-light opacity-0 transition-all duration-200 group-hover:opacity-100 group-hover:-top-24 pointer-events-none z-50 shadow-2xl">
         <div className="flex items-center gap-2 mb-2 border-b border-white/5 pb-2">
           <span className="text-lg">{styles.icon}</span>
@@ -259,7 +265,12 @@ export function NeuronNode({ id, data, selected }: NodeProps<NeuronFlowNode>) {
       />
 
       <div className="flex items-center justify-between mb-3">
-        <p className="text-[10px] font-medium uppercase tracking-wider text-white/30">Neuron</p>
+        <div className="flex items-center gap-1.5">
+          <p className="text-[10px] font-medium uppercase tracking-wider text-white/30">Neuron</p>
+          {isUnstableFoundation && (
+            <span className="text-[10px] text-[#c4785a] font-bold" title="Crumbling foundation">⚠</span>
+          )}
+        </div>
         <span className="text-xs text-white/40 font-serif">{styles.icon}</span>
       </div>
 

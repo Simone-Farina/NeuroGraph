@@ -1,4 +1,5 @@
 import { fsrs, FSRS, Card, Rating, State } from 'ts-fsrs';
+export { Rating };
 
 import { Neuron } from '@/types/database';
 

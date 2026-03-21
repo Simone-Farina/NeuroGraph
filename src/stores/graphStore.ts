@@ -47,7 +47,7 @@ type GraphStore = {
   setShellPreset: (preset: ShellPreset) => void;
   openNeuronDetail: (id: string) => void;
   openChat: () => void;
-  openReview: () => void;
+  openReview: (id?: string) => void;
 };
 
 function createGhostNodes(target: string, draft: ArchitectResponse) {
@@ -233,10 +233,10 @@ export const useGraphStore = create<GraphStore>((set) => ({
       activeGhostNodeId: null,
       shellPreset: 'standard',
     }),
-  openReview: () =>
+  openReview: (id) =>
     set({
       leftPanelMode: 'review',
-      activeNeuronId: null,
+      activeNeuronId: id || null,
       activeGhostNodeId: null,
       shellPreset: 'deep_read',
     }),
