@@ -50,18 +50,10 @@ export default function LoginPage() {
     return () => window.removeEventListener('resize', checkViewport);
   }, []);
 
+  const [isSignUp, setIsSignUp] = useState(false);
+
   const handlePasswordAuth = async () => {
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (!signInError) {
-      window.location.href = '/app';
-      return;
-    }
-
-    if (signInError.message.includes('Invalid login credentials')) {
+    if (isSignUp) {
       const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
@@ -72,22 +64,22 @@ export default function LoginPage() {
 
       if (signUpError) {
         setMessage({ type: 'error', text: signUpError.message });
-        return;
-      }
-
-      const { error: retryError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (retryError) {
+      } else {
         setMessage({
           type: 'success',
           text: 'Account created! Check your email to confirm, then sign in.',
         });
-        return;
+        setIsSignUp(false);
       }
+      return;
+    }
 
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (!signInError) {
       window.location.href = '/app';
       return;
     }
@@ -254,10 +246,10 @@ export default function LoginPage() {
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                  {authMode === 'password' ? 'Signing in...' : 'Sending...'}
+                  {authMode === 'password' ? (isSignUp ? 'Signing up...' : 'Signing in...') : 'Sending...'}
                 </span>
               ) : authMode === 'password' ? (
-                'Sign In'
+                isSignUp ? 'Create Account' : 'Sign In'
               ) : (
                 'Send Magic Link'
               )}
@@ -284,9 +276,13 @@ export default function LoginPage() {
             transition={{ delay: 0.4 }}
             className="mt-8 text-center"
           >
-            <p className="text-neural-light/30 text-xs">
+            <p className="text-neural-light/50 text-xs">
               {authMode === 'password' ? (
-                'New account? Just enter your email and password — we will create it for you.'
+                isSignUp ? (
+                  <span>Already have an account? <button type="button" onClick={() => setIsSignUp(false)} className="text-neural-cyan hover:underline font-medium">Sign in</button></span>
+                ) : (
+                  <span>Need an account? <button type="button" onClick={() => setIsSignUp(true)} className="text-neural-cyan hover:underline font-medium">Sign up</button></span>
+                )
               ) : (
                 'First time? Your account will be created automatically.'
               )}
