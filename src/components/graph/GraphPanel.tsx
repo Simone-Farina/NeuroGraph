@@ -190,6 +190,39 @@ function GraphCanvas() {
             },
       }));
 
+      // Soft-FIRe Downward Propagation (Compute Unstable Foundations)
+      const unstableMap = new Set<string>();
+      const adjacencyList = new Map<string, string[]>();
+      
+      mappedEdges.forEach((edge) => {
+        if (edge.data?.typeLabel === 'PREREQUISITE') {
+          if (!adjacencyList.has(edge.source)) adjacencyList.set(edge.source, []);
+          adjacencyList.get(edge.source)!.push(edge.target);
+        }
+      });
+
+      // Find all rusted/decaying roots
+      const decayingRoots = mappedNodes
+        .filter((n) => typeof n.data.retrievability === 'number' && n.data.retrievability < 0.85)
+        .map((n) => n.id);
+
+      // Traversal downwards
+      const queue = [...decayingRoots];
+      while (queue.length > 0) {
+        const current = queue.shift()!;
+        const targets = adjacencyList.get(current) || [];
+        for (const target of targets) {
+          if (!unstableMap.has(target)) {
+            unstableMap.add(target);
+            queue.push(target);
+          }
+        }
+      }
+
+      mappedNodes.forEach((node) => {
+        node.data.foundation_unstable = unstableMap.has(node.id);
+      });
+
       setGraph(mappedNodes, mappedEdges);
     };
 
@@ -221,7 +254,14 @@ function GraphCanvas() {
         return;
       }
 
-      openNeuronDetail(node.id);
+      const retrievability = typeof node.data.retrievability === 'number' ? node.data.retrievability : 1.0;
+      if (retrievability < 0.85) {
+        // Organic Gardener Flow: jumping directly to review
+        const openReview = useGraphStore.getState().openReview;
+        openReview(node.id);
+      } else {
+        openNeuronDetail(node.id);
+      }
     },
     [openGhostBriefing, openNeuronDetail, pathname, router]
   );
