@@ -7,6 +7,8 @@ import {
   advanceQueueItemToMastered,
   resolveCrystallizeQueueItemId,
 } from '@/lib/crystallize/provenance';
+import { inferPrerequisites, createPrerequisiteSynapses } from '@/lib/ai/inferPrerequisites';
+import { projectGhostNodes } from '@/lib/ai/projectGhostNodes';
 import type { Database } from '@/types/database';
 
 type SimilarNeuronRow = {
@@ -73,7 +75,7 @@ export async function GET() {
         supabase
           .from('neurons')
           .select(
-            'id, user_id, title, definition, core_insight, content, bloom_level, source_conversation_id, stability, difficulty, state, reps, lapses, elapsed_days, scheduled_days, retrievability, last_review, next_review_due, review_count, consecutive_correct, user_modified, modified_at, created_at, updated_at'
+            'id, user_id, title, definition, core_insight, content, bloom_level, source_conversation_id, stability, difficulty, state, reps, lapses, elapsed_days, scheduled_days, retrievability, last_review, next_review_due, review_count, consecutive_correct, user_modified, modified_at, created_at, updated_at, is_ghost, ghost_depth, ghost_target_title'
           )
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
@@ -344,12 +346,51 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // ─── Phase 2: AI Prerequisite Inference & Ghost Node Projection ───
+    let prerequisiteLinks: string[] = [];
+    let projectedGhosts: { id: string; title: string }[] = [];
+
+    try {
+      // Fetch full data for similar neurons to feed the AI
+      const candidateIds = similarRows.map(r => r.id);
+      if (candidateIds.length > 0) {
+        const { data: candidateNeurons } = await supabase
+          .from('neurons')
+          .select('id, title, definition')
+          .in('id', candidateIds);
+
+        if (candidateNeurons && candidateNeurons.length > 0) {
+          const inferenceResult = await inferPrerequisites(
+            { title: neuron.title, definition: parsed.data.definition, core_insight: parsed.data.core_insight },
+            candidateNeurons
+          );
+
+          // Create PREREQUISITE synapses
+          prerequisiteLinks = await createPrerequisiteSynapses(
+            user.id, neuron.id, inferenceResult.prerequisites
+          );
+
+          // Project organic ghost nodes
+          if (inferenceResult.suggested_next && inferenceResult.suggested_next.length > 0) {
+            projectedGhosts = await projectGhostNodes(
+              user.id, neuron.id, inferenceResult.suggested_next, parsed.data.source_conversation_id
+            );
+          }
+        }
+      }
+    } catch (aiError) {
+      // Non-fatal: prerequisite inference is best-effort
+      console.warn('[neurons/POST] Prerequisite inference failed:', aiError);
+    }
+
     return NextResponse.json(
       {
         neuron,
         synapses: createdSynapses,
         synapse_suggestions: synapseSuggestions,
         mastered_queue_item_id: masteredQueueItemId,
+        prerequisite_links: prerequisiteLinks,
+        projected_ghosts: projectedGhosts,
       },
       { status: 201 }
     );

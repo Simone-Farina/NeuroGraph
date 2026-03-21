@@ -38,6 +38,10 @@ export type Neuron = {
   modified_at: string | null;
   created_at: string;
   updated_at: string;
+  // Ghost node fields (Phase 2: Graph Pedagogy)
+  is_ghost: boolean;
+  ghost_depth: number | null;
+  ghost_target_title: string | null;
 };
 
 export type Synapse = {
@@ -127,6 +131,10 @@ export type Database = {
           modified_at?: string | null;
           created_at?: string;
           updated_at?: string;
+          // Ghost node fields
+          is_ghost?: boolean;
+          ghost_depth?: number | null;
+          ghost_target_title?: string | null;
         };
         Update: Partial<Neuron>;
         Relationships: [];

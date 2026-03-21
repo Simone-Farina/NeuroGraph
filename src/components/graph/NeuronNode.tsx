@@ -11,11 +11,19 @@ type NeuronNodeData = {
   stability?: number;
   last_review?: string | null;
   last_reviewed_at?: string;
+  is_ghost?: boolean;
+  ghost_depth?: number | null;
+  ghost_target_title?: string | null;
 };
 
 type NeuronFlowNode = Node<NeuronNodeData, 'neuron'>;
 
+// ─── Retrievability-based style tiers ───────────────────────────────────────
+
 function getNodeStyles(retrievability: number) {
+  // Soft-FIRe: terracotta decay when retrievability drops below 85%
+  const isDecaying = retrievability < 0.85 && retrievability > 0;
+
   if (retrievability > 0.9) {
     return {
       container:
@@ -26,64 +34,164 @@ function getNodeStyles(retrievability: number) {
       icon: '○',
       state: 'Fresh',
       progress: 'bg-white/60',
+      isDecaying: false,
     };
   }
 
   if (retrievability > 0.7) {
     return {
       container:
-        'border-white/10 bg-white/[0.02] shadow-xl backdrop-blur-lg group-hover:border-white/30',
-      text: 'text-white/80',
+        `border-white/10 bg-white/[0.02] shadow-xl backdrop-blur-lg group-hover:border-white/30 ${isDecaying ? 'border-[#c4785a]/30' : ''}`,
+      text: `${isDecaying ? 'text-[#c4785a]/90' : 'text-white/80'}`,
       label: 'text-white/20',
       handle: '!bg-white/30 !border-white/5',
       icon: '◎',
-      state: 'Stable',
-      progress: 'bg-white/40',
+      state: isDecaying ? 'Rusting' : 'Stable',
+      progress: isDecaying ? 'bg-[#c4785a]/60' : 'bg-white/40',
+      isDecaying,
     };
   }
 
   if (retrievability > 0.5) {
     return {
       container:
-        'border-white/5 bg-white/[0.01] shadow-lg backdrop-blur-md group-hover:border-white/20',
-      text: 'text-white/60',
+        `border-white/5 bg-white/[0.01] shadow-lg backdrop-blur-md group-hover:border-white/20 ${isDecaying ? 'border-[#c4785a]/40' : ''}`,
+      text: `${isDecaying ? 'text-[#c4785a]/80' : 'text-white/60'}`,
       label: 'text-white/10',
       handle: '!bg-white/20 !border-white/5',
       icon: '◍',
-      state: 'Fading',
-      progress: 'bg-white/20',
+      state: isDecaying ? 'Crumbling' : 'Fading',
+      progress: isDecaying ? 'bg-[#c4785a]/40' : 'bg-white/20',
+      isDecaying,
     };
   }
 
   if (retrievability > 0.3) {
     return {
       container:
-        'border-white/5 bg-transparent backdrop-blur-sm group-hover:border-white/15',
-      text: 'text-white/40',
+        `border-white/5 bg-transparent backdrop-blur-sm group-hover:border-white/15 ${isDecaying ? 'border-[#c4785a]/50' : ''}`,
+      text: `${isDecaying ? 'text-[#c4785a]/70' : 'text-white/40'}`,
       label: 'text-white/10',
       handle: '!bg-white/10 !border-white/5',
       icon: '◌',
-      state: 'Decaying',
-      progress: 'bg-white/10',
+      state: isDecaying ? 'Decayed' : 'Decaying',
+      progress: isDecaying ? 'bg-[#c4785a]/30' : 'bg-white/10',
+      isDecaying,
     };
   }
 
   return {
     container:
-      'border-white/5 bg-transparent opacity-60 grayscale group-hover:opacity-100 group-hover:grayscale-0',
-    text: 'text-white/30',
+      `border-white/5 bg-transparent opacity-60 grayscale group-hover:opacity-100 group-hover:grayscale-0 ${isDecaying ? 'border-[#c4785a]/60' : ''}`,
+    text: `${isDecaying ? 'text-[#c4785a]/60' : 'text-white/30'}`,
     label: 'text-white/5',
     handle: '!bg-white/5 !border-white/5',
     icon: '•',
     state: 'Critical',
-    progress: 'bg-white/5',
+    progress: isDecaying ? 'bg-[#c4785a]/20' : 'bg-white/5',
+    isDecaying,
   };
 }
 
+// ─── Ghost Node styles ──────────────────────────────────────────────────────
+
+function getGhostStyles(ghostDepth: number | null | undefined) {
+  const depth = ghostDepth ?? 99;
+
+  // Beacon / Target (depth 0) — glowing distant goal
+  if (depth === 0) {
+    return {
+      container:
+        'border-white/30 bg-white/[0.03] shadow-[0_0_30px_rgba(255,255,255,0.08)] backdrop-blur-xl animate-pulse',
+      text: 'text-white/70 font-medium',
+      label: 'text-white/40',
+      icon: '◇',
+      state: 'Beacon',
+      showTitle: true,
+      interactive: false,
+    };
+  }
+
+  // Immediate next step (depth 1) — dashed, inviting
+  if (depth === 1) {
+    return {
+      container:
+        'border-dashed border-white/20 bg-white/[0.02] backdrop-blur-md hover:border-white/40 hover:bg-white/[0.04] cursor-pointer',
+      text: 'text-white/50',
+      label: 'text-white/20',
+      icon: '◇',
+      state: 'Next Step',
+      showTitle: true,
+      interactive: true,
+    };
+  }
+
+  // Deep fog (depth 2+) — redacted, mysterious
+  return {
+    container:
+      'border-dotted border-white/8 bg-white/[0.01] backdrop-blur-sm opacity-40',
+    text: 'text-white/20 blur-[3px]',
+    label: 'text-white/5',
+    icon: '?',
+    state: 'Unknown',
+    showTitle: false,
+    interactive: false,
+  };
+}
+
+// ─── Component ──────────────────────────────────────────────────────────────
+
 export function NeuronNode({ id, data, selected }: NodeProps<NeuronFlowNode>) {
+  const isGhost = data.is_ghost ?? false;
+  const ghostDepth = data.ghost_depth;
   const retrievability = typeof data.retrievability === 'number' ? data.retrievability : 1.0;
-  const styles = getNodeStyles(retrievability);
   const removeNode = useGraphStore((state) => state.removeNode);
+
+  // ─── Ghost Node Rendering ──────────────────────────────────────────
+  if (isGhost) {
+    const ghost = getGhostStyles(ghostDepth);
+    const displayTitle = ghost.showTitle
+      ? (ghostDepth === 0 ? (data.ghost_target_title || data.title) : data.title)
+      : '???';
+
+    return (
+      <div
+        className={`group relative w-52 rounded-2xl border px-5 py-4 transition-all duration-300 ${ghost.container}`}
+      >
+        <Handle
+          type="target"
+          position={Position.Left}
+          className="!h-3 !w-3 !border-2 !border-neural-dark !bg-white/10"
+        />
+
+        <div className="flex items-center justify-between mb-3">
+          <p className={`text-[10px] font-medium uppercase tracking-wider ${ghost.label}`}>
+            {ghost.state}
+          </p>
+          <span className={`text-xs ${ghost.label} font-serif`}>{ghost.icon}</span>
+        </div>
+
+        <p className={`text-[15px] font-serif leading-snug mb-4 line-clamp-2 ${ghost.text}`}>
+          {displayTitle}
+        </p>
+
+        {ghostDepth === 1 && (
+          <p className="text-[10px] text-white/30 italic">
+            Click to begin learning →
+          </p>
+        )}
+
+        <Handle
+          type="source"
+          position={Position.Right}
+          className="!h-3 !w-3 !border-2 !border-neural-dark !bg-white/10"
+        />
+      </div>
+    );
+  }
+
+  // ─── Standard Neuron Rendering ─────────────────────────────────────
+  const styles = getNodeStyles(retrievability);
 
   const handleDelete = async (event: React.MouseEvent) => {
     event.stopPropagation();
@@ -116,6 +224,9 @@ export function NeuronNode({ id, data, selected }: NodeProps<NeuronFlowNode>) {
         <div className="flex items-center gap-2 mb-2 border-b border-white/5 pb-2">
           <span className="text-lg">{styles.icon}</span>
           <span className={`font-bold text-sm ${styles.text}`}>{styles.state} State</span>
+          {styles.isDecaying && (
+            <span className="text-[10px] text-[#c4785a] ml-auto" title="Foundation crumbling">⚠</span>
+          )}
         </div>
         <div className="space-y-1">
           <div className="flex justify-between items-center gap-4">
@@ -143,7 +254,7 @@ export function NeuronNode({ id, data, selected }: NodeProps<NeuronFlowNode>) {
 
       <Handle
         type="target"
-        position={Position.Top}
+        position={Position.Left}
         className={`!h-3.5 !w-3.5 !border-2 !border-neural-dark transition-colors duration-300 ${styles.handle}`}
       />
 
@@ -163,7 +274,7 @@ export function NeuronNode({ id, data, selected }: NodeProps<NeuronFlowNode>) {
 
       <Handle
         type="source"
-        position={Position.Bottom}
+        position={Position.Right}
         className={`!h-3.5 !w-3.5 !border-2 !border-neural-dark transition-colors duration-300 ${styles.handle}`}
       />
     </div>

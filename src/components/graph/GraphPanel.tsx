@@ -41,7 +41,7 @@ const nodeHeight = 80;
 const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
   const dagreGraph = new dagre.graphlib.Graph();
   dagreGraph.setDefaultEdgeLabel(() => ({}));
-  dagreGraph.setGraph({ rankdir: 'TB' });
+  dagreGraph.setGraph({ rankdir: 'LR', nodesep: 60, ranksep: 120 });
 
   nodes.forEach((node) => {
     dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
@@ -57,8 +57,8 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
     const nodeWithPosition = dagreGraph.node(node.id);
     return {
       ...node,
-      targetPosition: Position.Top,
-      sourcePosition: Position.Bottom,
+      targetPosition: Position.Left,
+      sourcePosition: Position.Right,
       position: {
         x: nodeWithPosition.x - nodeWidth / 2,
         y: nodeWithPosition.y - nodeHeight / 2,
@@ -167,6 +167,9 @@ function GraphCanvas() {
           stability: neuron.stability,
           last_review: neuron.last_review,
           state: neuron.state,
+          is_ghost: neuron.is_ghost ?? false,
+          ghost_depth: neuron.ghost_depth ?? null,
+          ghost_target_title: neuron.ghost_target_title ?? null,
         },
       }));
 
@@ -175,7 +178,8 @@ function GraphCanvas() {
         source: synapse.source_neuron_id,
         target: synapse.target_neuron_id,
         type: 'synapseEdge',
-        data: { typeLabel: synapse.type },
+        data: { typeLabel: synapse.type, is_ghost_edge: false },
+        style: synapse.type === 'PREREQUISITE' ? { stroke: 'rgba(255,255,255,0.15)', strokeWidth: 1 } : undefined,
         markerEnd:
           synapse.type === 'RELATED'
             ? undefined
