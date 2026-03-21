@@ -19,7 +19,6 @@ import dagre from '@dagrejs/dagre';
 
 import { SynapseEdge } from '@/components/graph/SynapseEdge';
 import { NeuronNode } from '@/components/graph/NeuronNode';
-import { NeuronDetailPanel } from '@/components/graph/NeuronDetailPanel';
 import { useGraphStore } from '@/stores/graphStore';
 import { calculateRetrievability } from '@/lib/ai/fsrs';
 import { Neuron } from '@/types/database';
@@ -233,7 +232,7 @@ function GraphCanvas() {
 export function GraphPanel() {
   return (
     <section className="graph-panel h-full overflow-hidden bg-neural-dark relative" data-tour="graph-panel">
-      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_right,_rgba(168,85,247,0.05)_0%,_rgba(10,10,10,0)_50%)] z-0" />
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.01)_0%,_transparent_70%)] z-0" />
       <ReactFlowProvider>
         <GraphCanvas />
       </ReactFlowProvider>

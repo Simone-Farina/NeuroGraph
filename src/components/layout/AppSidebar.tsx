@@ -70,7 +70,7 @@ export function AppSidebar() {
       {/* Header / Toggle */}
       <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} p-4 h-14 border-b border-white/5`}>
         {!isCollapsed && (
-          <span className="text-xs font-bold uppercase tracking-widest text-neural-light/40">
+          <span className="text-[10px] font-medium uppercase tracking-widest text-white/25">
             Navigation
           </span>
         )}
@@ -96,9 +96,9 @@ export function AppSidebar() {
               key={item.href}
               href={item.href}
               className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                isActive 
-                  ? 'bg-neural-cyan/10 text-neural-cyan border border-neural-cyan/20' 
-                  : 'text-neural-light/60 hover:text-neural-light hover:bg-white/5 border border-transparent'
+                isActive
+                  ? 'bg-white/[0.06] text-white/90 border border-white/[0.08]'
+                  : 'text-white/45 hover:text-white/80 hover:bg-white/[0.03] border border-transparent'
               } ${isCollapsed ? 'justify-center px-2' : ''}`}
               title={isCollapsed ? item.label : undefined}
             >
@@ -120,7 +120,7 @@ export function AppSidebar() {
             onClick={() => {
               handleNewConversation();
             }}
-            className={`flex items-center justify-center rounded-md border border-white/10 bg-white/5 text-xs font-medium text-neural-light/80 transition hover:bg-white/10 hover:text-neural-cyan hover:border-neural-cyan/30 ${
+            className={`flex items-center justify-center rounded-md border border-white/[0.08] bg-white/[0.03] text-xs font-medium text-white/60 transition hover:bg-white/[0.08] hover:text-white/90 hover:border-white/15 ${
               isCollapsed ? 'w-8 h-8 p-0' : 'px-2.5 py-1.5'
             }`}
             title="New Chat"
@@ -161,8 +161,8 @@ export function AppSidebar() {
                   }}
                   className={`w-full rounded-lg border px-3 py-2.5 text-left text-sm transition-all ${
                     currentConversationId === conversation.id && pathname === '/app'
-                      ? 'border-neural-cyan/30 bg-neural-cyan/5 text-neural-cyan shadow-[0_0_15px_-3px_rgba(6,182,212,0.1)]'
-                      : 'border-transparent text-neural-light/60 hover:bg-white/5 hover:text-neural-light'
+                      ? 'border-white/[0.08] bg-white/[0.04] text-white/90'
+                      : 'border-transparent text-white/50 hover:bg-white/[0.03] hover:text-white/80'
                   } ${isCollapsed ? 'justify-center px-2' : ''}`}
                   title={isCollapsed ? conversation.title : undefined}
                 >
@@ -208,7 +208,7 @@ export function AppSidebar() {
           )}
           <button
             onClick={startTour}
-            className="p-2 rounded-md text-neural-light/40 hover:text-neural-cyan hover:bg-white/5 transition-colors"
+            className="p-2 rounded-md text-white/30 hover:text-white/70 hover:bg-white/[0.04] transition-colors"
             title="Start Tour"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>

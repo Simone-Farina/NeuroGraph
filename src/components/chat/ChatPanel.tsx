@@ -616,8 +616,8 @@ export function ChatPanel() {
         </div>
 
         {connectionNotice ? (
-          <div className="mx-6 mb-4 rounded-lg border border-neural-cyan/30 bg-neural-cyan/10 px-4 py-3 text-sm text-neural-cyan flex items-center gap-2 shadow-lg shadow-neural-cyan/5 backdrop-blur-md">
-            <div className="h-2 w-2 rounded-full bg-neural-cyan animate-pulse" />
+          <div className="mx-6 mb-4 rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white/70 flex items-center gap-2 backdrop-blur-md">
+            <div className="h-1.5 w-1.5 rounded-full bg-white/50 animate-pulse" />
             {connectionNotice}
           </div>
         ) : null}
@@ -640,7 +640,7 @@ export function ChatPanel() {
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-neural-light">{suggestion.target_title}</p>
                       <p className="text-xs text-neural-light/40 flex items-center gap-1.5">
-                        <span className={`inline-block h-1.5 w-1.5 rounded-full ${suggestion.source === 'vector' ? 'bg-neural-purple' : 'bg-neural-cyan'}`} />
+                        <span className={`inline-block h-1.5 w-1.5 rounded-full ${suggestion.source === 'vector' ? 'bg-white/40' : 'bg-white/60'}`} />
                         {relationshipLabel}
                       </p>
                     </div>
@@ -650,7 +650,7 @@ export function ChatPanel() {
                         onClick={() => {
                           void handleConfirmEdgeSuggestion(suggestion);
                         }}
-                        className="rounded-md bg-neural-cyan/10 border border-neural-cyan/20 px-3 py-1.5 text-xs font-semibold text-neural-cyan transition hover:bg-neural-cyan/20 hover:border-neural-cyan/40 hover:shadow-[0_0_10px_-2px_rgba(6,182,212,0.3)]"
+                        className="rounded-md bg-white/[0.06] border border-white/[0.08] px-3 py-1.5 text-xs font-semibold text-white/70 transition hover:bg-white/10 hover:border-white/15 hover:text-white/90"
                       >
                         Connect
                       </button>

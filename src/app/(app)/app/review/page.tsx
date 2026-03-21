@@ -80,10 +80,10 @@ export default function ReviewPage() {
     return (
       <div className="min-h-screen p-8 bg-neural-dark flex flex-col items-center justify-center">
         <div className="text-center max-w-lg mx-auto">
-          <div className="mb-6 inline-flex items-center justify-center h-20 w-20 rounded-full bg-neural-purple/10 border border-neural-purple/30 text-4xl animate-pulse">
+          <div className="mb-6 inline-flex items-center justify-center h-20 w-20 rounded-full bg-white/[0.03] border border-white/[0.06] text-4xl animate-pulse">
             ✨
           </div>
-          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-neural-purple to-neural-cyan bg-clip-text text-transparent">
+          <h1 className="text-4xl font-serif font-bold mb-4 text-white/90">
             All caught up!
           </h1>
           <p className="text-neural-light/60 mb-8 leading-relaxed">
@@ -95,11 +95,11 @@ export default function ReviewPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-neural-dark/50 p-3 rounded-lg border border-white/5">
                 <p className="text-xs text-neural-light/40 uppercase tracking-wider">Reviewed</p>
-                <p className="text-2xl font-bold text-neural-cyan">{currentIndex}</p>
+                <p className="text-2xl font-bold text-white/70">{currentIndex}</p>
               </div>
               <div className="bg-neural-dark/50 p-3 rounded-lg border border-white/5">
                 <p className="text-xs text-neural-light/40 uppercase tracking-wider">Next Due</p>
-                <p className="text-2xl font-bold text-neural-purple">Tomorrow</p>
+                <p className="text-2xl font-bold text-white/50">Tomorrow</p>
               </div>
             </div>
           </div>
@@ -112,14 +112,14 @@ export default function ReviewPage() {
     <div className="min-h-screen p-4 sm:p-8 bg-neural-dark flex flex-col items-center justify-center">
       <div className="w-full max-w-2xl mb-4 sm:mb-8">
         <div className="flex justify-between items-end text-[10px] uppercase tracking-widest font-bold mb-2">
-          <span className="text-neural-cyan">Session Progress</span>
+          <span className="text-white/70">Session Progress</span>
           <span className="text-neural-light/40">
             {currentIndex + 1} of {neurons.length} reviewed
           </span>
         </div>
         <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
           <motion.div
-            className="h-full bg-neural-cyan"
+            className="h-full bg-white/40"
             initial={{ width: 0 }}
             animate={{ width: `${((currentIndex + 1) / neurons.length) * 100}%` }}
             transition={{ type: 'spring', stiffness: 100, damping: 20 }}
@@ -152,7 +152,7 @@ export default function ReviewPage() {
                   animate={{ opacity: 1, height: 'auto' }}
                   className="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-white/10"
                 >
-                  <div className="text-neural-cyan mb-2 text-xs sm:text-sm uppercase tracking-wider font-bold">
+                  <div className="text-white/70 mb-2 text-xs sm:text-sm uppercase tracking-wider font-bold">
                     Core Insight
                   </div>
                   <p className="text-sm sm:text-base text-neural-light leading-relaxed">
@@ -168,7 +168,7 @@ export default function ReviewPage() {
           {!isRevealed ? (
             <button
               onClick={handleReveal}
-              className="px-8 py-3 bg-neural-purple text-white rounded-lg font-bold hover:bg-neural-purple/80 transition-colors w-full sm:max-w-xs self-start"
+              className="px-8 py-3 bg-white/90 text-neural-dark rounded-lg font-bold hover:bg-white transition-colors w-full sm:max-w-xs self-start"
             >
               Show Answer
             </button>
