@@ -5,7 +5,7 @@ import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import Typography from '@tiptap/extension-typography';
 import Link from '@tiptap/extension-link';
-import { useEffect, useCallback } from 'react';
+import { useEffect } from 'react';
 
 interface NeuronTipTapEditorProps {
   content: string;

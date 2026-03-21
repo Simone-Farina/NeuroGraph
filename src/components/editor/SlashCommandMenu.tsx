@@ -93,6 +93,7 @@ export function createSlashCommandExtension(
     name: 'slashCommand',
 
     addProseMirrorPlugins() {
+      const editorRef = this.editor;
       return [
         new Plugin({
           key: SLASH_COMMAND_PLUGIN_KEY,
@@ -125,14 +126,14 @@ export function createSlashCommandExtension(
                   // Delete the slash + query text
                   const { state } = view;
                   const { $from } = state.selection;
-                  const currentLine = $from.nodeBefore?.textContent || '';
-                  const slashIndex = currentLine.lastIndexOf('/');
+                  const textBefore = $from.parent.textContent.slice(0, $from.parentOffset);
+                  const slashIndex = textBefore.lastIndexOf('/');
                   if (slashIndex >= 0) {
-                    const from = $from.pos - (currentLine.length - slashIndex);
-                    const to = $from.pos;
-                    view.dispatch(state.tr.deleteRange(from, to));
+                    const startPos = $from.pos - $from.parentOffset + slashIndex;
+                    const endPos = $from.pos;
+                    view.dispatch(state.tr.deleteRange(startPos, endPos));
                   }
-                  chosen.action(this.editor);
+                  chosen.action(editorRef);
                   onStateChange({ ...meta, active: false, query: '', selectedIndex: 0 });
                   return true;
                 }
@@ -157,7 +158,7 @@ export function createSlashCommandExtension(
             },
           },
 
-          view(editorView) {
+          view() {
             return {
               update(view) {
                 const { state } = view;
@@ -175,7 +176,7 @@ export function createSlashCommandExtension(
                   return;
                 }
 
-                const textBefore = $from.nodeBefore?.textContent || '';
+                const textBefore = $from.parent.textContent.slice(0, $from.parentOffset);
                 const slashIdx = textBefore.lastIndexOf('/');
 
                 if (slashIdx === -1) {
