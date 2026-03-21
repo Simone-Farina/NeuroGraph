@@ -19,64 +19,64 @@ function getNodeStyles(retrievability: number) {
   if (retrievability > 0.9) {
     return {
       container:
-        'border-cyan-400/60 bg-cyan-950/30 shadow-[0_0_30px_-5px_rgba(34,211,238,0.3)] animate-pulse-cyan backdrop-blur-xl',
-      text: 'text-cyan-50',
-      label: 'text-cyan-300/80',
-      handle: '!bg-cyan-400 !border-cyan-200',
-      icon: '💎',
+        'border-white/20 bg-white/[0.04] shadow-2xl backdrop-blur-xl group-hover:border-white/40',
+      text: 'text-white/90',
+      label: 'text-white/30',
+      handle: '!bg-white/40 !border-white/10',
+      icon: '○',
       state: 'Fresh',
-      progress: 'bg-cyan-400',
+      progress: 'bg-white/60',
     };
   }
 
   if (retrievability > 0.7) {
     return {
       container:
-        'border-purple-500/50 bg-purple-950/20 shadow-[0_0_20px_-5px_rgba(168,85,247,0.2)] backdrop-blur-lg',
-      text: 'text-purple-50',
-      label: 'text-purple-300/80',
-      handle: '!bg-purple-500 !border-purple-300',
-      icon: '🔮',
+        'border-white/10 bg-white/[0.02] shadow-xl backdrop-blur-lg group-hover:border-white/30',
+      text: 'text-white/80',
+      label: 'text-white/20',
+      handle: '!bg-white/30 !border-white/5',
+      icon: '◎',
       state: 'Stable',
-      progress: 'bg-purple-500',
+      progress: 'bg-white/40',
     };
   }
 
   if (retrievability > 0.5) {
     return {
       container:
-        'border-yellow-500/50 bg-yellow-950/20 shadow-[0_0_15px_-5px_rgba(234,179,8,0.2)] backdrop-blur-lg',
-      text: 'text-yellow-50',
-      label: 'text-yellow-300/80',
-      handle: '!bg-yellow-500 !border-yellow-300',
-      icon: '🌙',
+        'border-white/5 bg-white/[0.01] shadow-lg backdrop-blur-md group-hover:border-white/20',
+      text: 'text-white/60',
+      label: 'text-white/10',
+      handle: '!bg-white/20 !border-white/5',
+      icon: '◍',
       state: 'Fading',
-      progress: 'bg-yellow-500',
+      progress: 'bg-white/20',
     };
   }
 
   if (retrievability > 0.3) {
     return {
       container:
-        'border-orange-500/60 bg-orange-950/30 shadow-[0_0_20px_-5px_rgba(249,115,22,0.3)] animate-tremble backdrop-blur-xl',
-      text: 'text-orange-50',
-      label: 'text-orange-300/80',
-      handle: '!bg-orange-500 !border-orange-300',
-      icon: '🍂',
+        'border-white/5 bg-transparent backdrop-blur-sm group-hover:border-white/15',
+      text: 'text-white/40',
+      label: 'text-white/10',
+      handle: '!bg-white/10 !border-white/5',
+      icon: '◌',
       state: 'Decaying',
-      progress: 'bg-orange-500',
+      progress: 'bg-white/10',
     };
   }
 
   return {
     container:
-      'border-red-600/70 bg-red-950/40 shadow-[0_0_30px_-5px_rgba(220,38,38,0.4)] animate-pulse-red backdrop-blur-2xl',
-    text: 'text-red-50',
-    label: 'text-red-300/80',
-    handle: '!bg-red-600 !border-red-400',
-    icon: '⚠️',
+      'border-white/5 bg-transparent opacity-60 grayscale group-hover:opacity-100 group-hover:grayscale-0',
+    text: 'text-white/30',
+    label: 'text-white/5',
+    handle: '!bg-white/5 !border-white/5',
+    icon: '•',
     state: 'Critical',
-    progress: 'bg-red-600',
+    progress: 'bg-white/5',
   };
 }
 
@@ -110,7 +110,7 @@ export function NeuronNode({ id, data, selected }: NodeProps<NeuronFlowNode>) {
 
   return (
     <div
-      className={`group relative w-52 rounded-2xl border px-5 py-4 transition-all duration-300 hover:scale-105 hover:border-opacity-100 hover:z-50 ${styles.container} ${selected ? 'ring-2 ring-white ring-offset-2 ring-offset-black scale-105 z-50' : ''}`}
+      className={`group relative w-52 rounded-2xl border px-5 py-4 transition-all duration-300 hover:border-white/30 hover:z-50 ${styles.container} ${selected ? 'border-white/60 bg-white/[0.05] z-50' : ''}`}
     >
       <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-max max-w-[220px] rounded-xl bg-neural-gray-900/95 border border-white/10 p-3 text-xs text-neural-light opacity-0 transition-all duration-200 group-hover:opacity-100 group-hover:-top-24 pointer-events-none z-50 shadow-2xl">
         <div className="flex items-center gap-2 mb-2 border-b border-white/5 pb-2">
@@ -147,12 +147,12 @@ export function NeuronNode({ id, data, selected }: NodeProps<NeuronFlowNode>) {
         className={`!h-3.5 !w-3.5 !border-2 !border-neural-dark transition-colors duration-300 ${styles.handle}`}
       />
 
-      <div className="flex items-center justify-between mb-2">
-        <p className={`text-[10px] font-bold uppercase tracking-widest ${styles.label}`}>Neuron</p>
-        <span className="text-sm filter drop-shadow-md">{styles.icon}</span>
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-[10px] font-medium uppercase tracking-wider text-white/30">Neuron</p>
+        <span className="text-xs text-white/40 font-serif">{styles.icon}</span>
       </div>
 
-      <p className={`text-sm font-bold leading-snug mb-3 line-clamp-2 ${styles.text}`}>{data.title}</p>
+      <p className={`text-[15px] font-serif leading-snug mb-4 line-clamp-2 ${styles.text}`}>{data.title}</p>
 
       <div className="h-1.5 w-full rounded-full bg-black/40 overflow-hidden backdrop-blur-sm">
         <div

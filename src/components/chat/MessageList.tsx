@@ -19,13 +19,13 @@ type MessageListProps = {
 function ThinkingIndicator() {
   return (
     <div className="flex justify-start px-5 pb-2">
-      <div className="mr-12 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-5 py-3.5 backdrop-blur-sm">
+      <div className="mr-12 flex items-center gap-3 rounded-xl border border-white/5 bg-white/[0.02] px-5 py-3 backdrop-blur-sm">
         <div className="flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-full bg-neural-purple/70 animate-bounce [animation-delay:-0.3s]" />
-          <span className="h-2 w-2 rounded-full bg-neural-purple/70 animate-bounce [animation-delay:-0.15s]" />
-          <span className="h-2 w-2 rounded-full bg-neural-purple/70 animate-bounce" />
+          <span className="h-1.5 w-1.5 rounded-full bg-white/40 animate-pulse [animation-delay:-0.3s]" />
+          <span className="h-1.5 w-1.5 rounded-full bg-white/40 animate-pulse [animation-delay:-0.15s]" />
+          <span className="h-1.5 w-1.5 rounded-full bg-white/40 animate-pulse" />
         </div>
-        <span className="text-xs text-neural-light/40">NeuroGraph sta pensando...</span>
+        <span className="text-xs font-medium uppercase tracking-wider text-white/40">Processing...</span>
       </div>
     </div>
   );
@@ -62,9 +62,9 @@ export function MessageList({
             className={`flex ${isUser ? 'justify-end' : 'justify-start'} ${isUser ? 'message-user' : 'message-assistant'}`}
           >
             <div className={`max-w-[85%] ${isUser ? 'ml-12' : 'mr-12'}`}>
-              <div className={`mb-1.5 flex items-center gap-2 ${isUser ? 'justify-end' : 'justify-start'}`}>
-                <span className={`text-[10px] font-bold uppercase tracking-wider ${isUser ? 'text-neural-cyan' : 'text-neural-purple'}`}>
-                  {isUser ? 'You' : 'NeuroGraph'}
+              <div className={`mb-2 flex items-center gap-2 ${isUser ? 'justify-end' : 'justify-start'}`}>
+                <span className="text-xs font-medium uppercase tracking-wider text-white/40">
+                  {isUser ? 'Explorer' : 'NeuroGraph'}
                 </span>
               </div>
 
@@ -74,10 +74,10 @@ export function MessageList({
                   return (
                     <div
                       key={index}
-                      className={`rounded-2xl px-5 py-3.5 text-sm leading-7 shadow-sm backdrop-blur-sm ${isUser
-                          ? 'bg-neural-cyan/10 border border-neural-cyan/20 text-neural-light rounded-tr-sm'
-                          : 'bg-white/5 border border-white/10 text-neural-light/90 rounded-tl-sm markdown-content message-content'
-                        }`}
+                      className={`rounded-2xl px-6 py-4 text-[15px] leading-relaxed shadow-sm font-serif ${isUser
+                          ? 'bg-white/[0.04] border border-white/10 text-white/90 rounded-br-sm'
+                          : 'bg-white/[0.02] border border-white/5 text-white/80 rounded-bl-sm markdown-content message-content'
+                        } transition-all duration-300`}
                     >
                       {isUser ? (
                         part.text

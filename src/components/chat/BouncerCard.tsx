@@ -47,34 +47,36 @@ export function BouncerCard({ matchId, matchTitle, insightText, onAppendSuccess,
   };
 
   return (
-    <div className="neurogenesis-suggestion my-4 rounded-xl border border-red-500/30 bg-red-500/5 p-5 shadow-lg">
-      <div className="flex items-start gap-3">
-        <span className="text-2xl mt-1">🛡️</span>
-        <div className="flex-1 space-y-2">
-          <h3 className="text-sm font-bold text-neural-light">AI Bouncer</h3>
-          <p className="text-sm text-neural-light/80 leading-relaxed">
-            This insight closely matches your existing Neuron: <span className="font-semibold text-neural-cyan">[[{matchTitle}]]</span>.
+    <div className="bouncer-card my-6 rounded-2xl border border-white/10 bg-white/[0.03] p-6 shadow-xl animate-in fade-in zoom-in-95 duration-300">
+      <div className="flex items-start gap-4">
+        <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/5 text-sm text-white/50 border border-white/10 font-serif italic">
+          i
+        </div>
+        <div className="flex-1 space-y-3">
+          <h3 className="text-xs font-medium uppercase tracking-wider text-white/40">Bouncer Rejection</h3>
+          <p className="text-[15px] font-serif leading-relaxed text-white/90">
+            This insight closely matches your existing Neuron: <span className="font-semibold text-white/100 underline decoration-white/20 underline-offset-4">&quot;{matchTitle}&quot;</span>.
           </p>
           
-          <div className="pt-4 flex flex-wrap gap-3">
+          <div className="pt-6 flex flex-wrap gap-3">
             <button
               onClick={handleAppend}
               disabled={isAppending || isForcing}
-              className="rounded-lg bg-neural-cyan px-4 py-2 text-xs font-bold text-neural-dark transition hover:bg-neural-cyan/80 disabled:opacity-50"
+              className="rounded-xl bg-white/90 px-5 py-2.5 text-sm font-medium text-black transition-all hover:bg-white active:scale-[0.98] disabled:opacity-40"
             >
-              {isAppending ? 'Appending...' : 'Append to Existing'}
+              {isAppending ? 'Processing...' : 'Merge with Existing'}
             </button>
             <button
               onClick={handleForceNew}
               disabled={isAppending || isForcing}
-              className="rounded-lg border border-white/20 bg-transparent px-4 py-2 text-xs font-medium text-neural-light/70 transition hover:bg-white/5 hover:text-neural-light disabled:opacity-50"
+              className="rounded-xl border border-white/10 bg-transparent px-5 py-2.5 text-sm font-medium text-white/70 transition-all hover:bg-white/5 hover:text-white disabled:opacity-40"
             >
-              {isForcing ? 'Forcing...' : 'Force New Neuron'}
+              {isForcing ? 'Forcing...' : 'Create Separate'}
             </button>
             <button
               onClick={onDismiss}
               disabled={isAppending || isForcing}
-              className="rounded-lg px-4 py-2 text-xs font-medium text-neural-light/40 transition hover:text-neural-light/80 ml-auto disabled:opacity-50"
+              className="ml-auto rounded-xl px-4 py-2 text-sm font-medium text-white/40 transition-all hover:text-white/70 disabled:opacity-40"
             >
               Dismiss
             </button>

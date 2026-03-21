@@ -624,7 +624,7 @@ export function ChatPanel() {
 
         {edgeSuggestions.length > 0 ? (
           <div className="mx-6 mb-4 rounded-xl border border-white/10 bg-neural-gray-900/60 p-4 backdrop-blur-md shadow-2xl">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-neural-light/40 mb-3">
+            <p className="text-xs font-medium uppercase tracking-wider text-neural-light/50 mb-3">
               Suggested Connections
             </p>
             <div className="space-y-2">

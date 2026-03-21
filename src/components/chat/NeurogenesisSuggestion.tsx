@@ -78,18 +78,16 @@ export function NeurogenesisSuggestion({
   if (isSuccess || state === 'output-available') {
     const title = input?.title ?? 'Neuron';
     return (
-      <div className="neurogenesis-suggestion my-4 rounded-xl border border-emerald-500/40 bg-emerald-500/5 p-4 flex items-center gap-3 shadow-[0_0_24px_-6px_rgba(16,185,129,0.25)]">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-lg">
-          ✅
+      <div className="neurogenesis-suggestion my-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5 flex items-center gap-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/[0.04] border border-white/10 text-lg">
+          <span className="text-white/50 mb-0.5">●</span>
         </span>
-        <div>
-          <p className="text-sm font-semibold text-emerald-400">
-            Neuron{' '}
-            <span className="text-emerald-300">&quot;{title}&quot;</span>{' '}
-            aggiunto alla Rete Neurale
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-medium uppercase tracking-wider text-white/40 mb-1">
+            Neuron Synapsed
           </p>
-          <p className="text-xs text-neural-light/40 mt-0.5">
-            Il concetto è stato cristallizzato con successo.
+          <p className="text-[15px] font-serif text-white/90 truncate">
+            &quot;{title}&quot; added to your Neural Network.
           </p>
         </div>
       </div>
@@ -98,12 +96,10 @@ export function NeurogenesisSuggestion({
 
   if (!input) {
     return (
-      <div className="neurogenesis-suggestion my-4 rounded-xl border border-neural-purple/20 bg-neural-purple/5 p-5 animate-pulse">
-        <div className="flex items-center gap-2">
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-neural-purple/20 text-neural-purple">
-            ✨
-          </span>
-          <p className="text-sm text-neural-light/50">Generating neuron...</p>
+      <div className="neurogenesis-suggestion my-4 rounded-2xl border border-white/5 bg-white/[0.01] p-5 animate-pulse">
+        <div className="flex items-center gap-3">
+          <span className="h-2 w-2 rounded-full bg-white/20" />
+          <p className="text-xs font-medium uppercase tracking-wider text-white/40">Synthesizing Neuron...</p>
         </div>
       </div>
     );
@@ -116,54 +112,51 @@ export function NeurogenesisSuggestion({
   const isDisabled = isGenerating || isProcessing;
 
   return (
-    <div className="neurogenesis-suggestion my-4 rounded-xl border border-neural-purple/30 bg-neural-purple/5 p-5 backdrop-blur-md shadow-[0_0_20px_-5px_rgba(168,85,247,0.15)] hover:border-neural-purple/50 transition-colors">
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-neural-purple/20 text-neural-purple">
-            ✨
-          </span>
-          <h3 className="text-sm font-bold tracking-wide text-neural-light/90">Potential Neuron</h3>
+    <div className="neurogenesis-suggestion my-6 rounded-2xl border border-white/10 bg-white/[0.03] p-6 shadow-xl transition-all duration-300 hover:border-white/20 group">
+      <div className="mb-6 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="h-1.5 w-1.5 rounded-full bg-white/40 ring-4 ring-white/5" />
+          <h3 className="text-xs font-medium uppercase tracking-wider text-white/40">Insight Detected</h3>
         </div>
-        <span className="rounded-full border border-neural-cyan/30 bg-neural-cyan/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-neural-cyan">
+        <span className="rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-white/50">
           {bloomLevel}
         </span>
       </div>
 
-      <div className="space-y-2">
-        <p className="text-base font-semibold text-neural-light">{title}</p>
-        <p className="text-sm leading-relaxed text-neural-light/70">{definition}</p>
+      <div className="space-y-3">
+        <p className="text-xl font-serif font-medium text-white/90 leading-tight">{title}</p>
+        <p className="text-[15px] font-serif leading-relaxed text-white/70">{definition}</p>
       </div>
 
       {coreInsight && (
-        <div className="mt-4 rounded-lg border border-white/5 bg-white/5 px-4 py-3">
-          <div className="flex gap-2">
-            <span className="text-neural-yellow/80 shrink-0">💡</span>
-            <p className="text-xs italic text-neural-light/60 leading-relaxed">{coreInsight}</p>
-          </div>
+        <div className="mt-6 rounded-xl border border-white/10 bg-white/[0.02] px-5 py-4">
+          <p className="text-[15px] font-serif leading-relaxed text-white/60 italic">
+            &quot;{coreInsight}&quot;
+          </p>
         </div>
       )}
 
-      <div className="mt-5 flex items-center gap-3">
+      <div className="mt-8 flex items-center gap-3">
         <button
           type="button"
           onClick={() => void handleGenerate()}
           disabled={isDisabled}
-          className="flex-1 rounded-lg bg-gradient-to-r from-neural-cyan to-neural-purple px-4 py-2 text-xs font-bold text-white shadow-lg shadow-neural-purple/20 transition-all hover:shadow-neural-purple/40 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+          className="flex-1 rounded-xl bg-white/90 px-6 py-3 text-sm font-medium text-black transition-all hover:bg-white active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {isDisabled ? (
             <span className="flex items-center justify-center gap-2">
-              <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-              Generating...
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-black/20 border-t-black" />
+              Processing...
             </span>
           ) : (
-            'Generate Neuron'
+            'Commit to Network'
           )}
         </button>
         <button
           type="button"
           onClick={onDismiss}
           disabled={isDisabled}
-          className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-neural-light/60 transition-all hover:bg-white/10 hover:text-neural-light disabled:opacity-50 disabled:cursor-not-allowed"
+          className="rounded-xl border border-white/10 bg-transparent px-6 py-3 text-sm font-medium text-white/70 transition-all hover:bg-white/5 hover:text-white disabled:opacity-40"
         >
           Dismiss
         </button>

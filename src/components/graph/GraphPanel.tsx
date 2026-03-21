@@ -195,14 +195,14 @@ function GraphCanvas() {
 
   if (!flowNodes.length) {
     return (
-      <div className="flex h-full items-center justify-center p-8 text-center bg-neural-dark relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(6,182,212,0.1)_0%,_rgba(10,10,10,0)_70%)]" />
-        <div className="relative z-10 max-w-md">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-neural-cyan/10 text-3xl text-neural-cyan animate-pulse-cyan">
+      <div className="flex h-full items-center justify-center p-8 text-center bg-[#0c0c0e] relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.02)_0%,_transparent_70%)]" />
+        <div className="relative z-10 max-w-sm">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-white/5 bg-white/[0.02] text-2xl opacity-40">
             🕸️
           </div>
-          <h3 className="text-xl font-bold text-neural-light mb-2">Neural Network Empty</h3>
-          <p className="text-sm text-neural-light/60">
+          <h3 className="text-xl font-serif text-white/90 mb-3 tracking-tight">Neural Network Empty</h3>
+          <p className="text-[15px] font-serif text-white/60 leading-relaxed">
             Start a conversation to generate neurons. Your network will grow organically as you learn.
           </p>
         </div>
@@ -222,10 +222,10 @@ function GraphCanvas() {
       nodesConnectable={false}
       fitView
       fitViewOptions={{ padding: 0.3, maxZoom: 0.7 }}
-      className="bg-neural-dark"
+      className="bg-[#0c0c0e]"
       proOptions={{ hideAttribution: true }}
     >
-      <Background color="rgba(255, 255, 255, 0.05)" gap={20} size={1} />
+      <Background color="rgba(255, 255, 255, 0.03)" gap={40} size={1} variant={'lines' as any} />
     </ReactFlow>
   );
 }

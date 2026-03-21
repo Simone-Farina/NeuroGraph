@@ -87,8 +87,8 @@ export function ChatInput({
       
       {hasYouTubeUrl && (
         <div className="mt-2 flex items-center gap-2">
-            <span className="flex items-center gap-1.5 rounded-full border border-neural-cyan/30 bg-neural-cyan/10 px-2.5 py-1 text-[10px] font-medium text-neural-cyan uppercase tracking-wide">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
+            <span className="flex items-center gap-1.5 rounded-full border border-neural-cyan/30 bg-neural-cyan/10 px-3 py-1.5 text-[11px] font-medium text-neural-cyan uppercase tracking-wider">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
                 <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
             </svg>
             YouTube Context Active
