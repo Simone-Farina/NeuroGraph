@@ -94,12 +94,16 @@ export function NeurogenesisSuggestion({
     );
   }
 
-  if (!input) {
+  const isInputComplete = input && Object.keys(input).length > 0 && input.definition;
+
+  if (!isInputComplete) {
     return (
-      <div className="neurogenesis-suggestion my-4 rounded-2xl border border-white/5 bg-white/[0.01] p-5 animate-pulse">
+      <div className="neurogenesis-suggestion my-4 rounded-2xl border border-white/5 bg-white/[0.02] p-6 shadow-sm">
         <div className="flex items-center gap-3">
-          <span className="h-2 w-2 rounded-full bg-white/20" />
-          <p className="text-xs font-medium uppercase tracking-wider text-white/40">Synthesizing Neuron...</p>
+          <span className="h-1.5 w-1.5 rounded-full bg-white/40 animate-pulse" />
+          <p className="text-xs font-medium uppercase tracking-wider text-white/40">
+            {input?.title ? `Synthesizing "${input.title}"...` : 'Synthesizing Neuron...'}
+          </p>
         </div>
       </div>
     );

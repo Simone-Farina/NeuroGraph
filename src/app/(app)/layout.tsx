@@ -51,7 +51,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
           </header>
 
           <main className="flex-1 overflow-y-auto relative p-0 m-0 w-full h-full">
-            {leftPanelMode === 'neuron' ? <NeuronDetailPanel /> : children}
+            {children}
           </main>
         </div>
       </div>
@@ -59,6 +59,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
       {/* Area Rete Neurale Destra (60vw) */}
       <div className="w-[60vw] flex-grow relative overflow-hidden bg-neural-dark">
         <GraphPanel />
+        {leftPanelMode === 'neuron' && <NeuronDetailPanel />}
       </div>
     </div>
   );

@@ -1,0 +1,431 @@
+
+> NeuroGraph@1.0.0 dev
+> next dev
+
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3000
+  - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 1102ms
+ ✓ Compiled /api/chat in 448ms (281 modules)
+Rate limit check failed: TypeError: fetch failed
+ POST /api/chat 500 in 557ms
+ ✓ Compiled in 16ms
+ ✓ Compiled /src/middleware in 293ms (167 modules)
+ ○ Compiling /app ...
+ ✓ Compiled /app in 3s (3108 modules)
+ GET /app 200 in 3289ms
+ ✓ Compiled in 251ms (1529 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (133kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+ ○ Compiling /api/neurons ...
+ ✓ Compiled /api/neurons in 1570ms (1780 modules)
+ ✓ Compiled in 1ms (1787 modules)
+ ✓ Compiled in 0ms (1787 modules)
+ ✓ Compiled in 0ms (1787 modules)
+ GET /api/chat 200 in 2466ms
+ GET /api/chat 200 in 2467ms
+ GET /api/neurons 200 in 2452ms
+ GET /api/review 200 in 2464ms
+ GET /api/neurons 200 in 2462ms
+ GET /api/review 200 in 68ms
+ GET /app 200 in 170ms
+ GET /api/chat 200 in 225ms
+ GET /api/review 200 in 279ms
+ GET /api/chat 200 in 309ms
+ GET /api/neurons 200 in 302ms
+ GET /api/neurons 200 in 308ms
+ GET /api/review 200 in 72ms
+ POST /api/chat 429 in 153ms
+ GET /api/chat 200 in 164ms
+ GET /app 200 in 36ms
+ GET /api/review 200 in 302ms
+ GET /api/chat 200 in 312ms
+ GET /api/neurons 200 in 304ms
+ GET /api/chat 200 in 315ms
+ GET /api/neurons 200 in 308ms
+ GET /api/review 200 in 69ms
+ POST /api/chat 429 in 122ms
+ GET /api/chat 200 in 76ms
+ GET /app 200 in 19ms
+ GET /api/chat 200 in 390ms
+ GET /api/review 200 in 365ms
+ GET /api/chat 200 in 394ms
+ GET /api/neurons 200 in 366ms
+ GET /api/neurons 200 in 367ms
+ GET /api/review 200 in 71ms
+ ○ Compiling /login ...
+ ✓ Compiled /login in 667ms (3308 modules)
+ GET /login 200 in 711ms
+ GET /login 200 in 24ms
+ GET /app 200 in 113ms
+ GET /api/chat 200 in 337ms
+ GET /api/chat 200 in 347ms
+ GET /api/neurons 200 in 254ms
+ GET /api/review 200 in 259ms
+ GET /api/neurons 200 in 261ms
+ GET /api/review 200 in 79ms
+ POST /api/chat 429 in 209ms
+ GET /api/chat 200 in 66ms
+ GET /app 200 in 22ms
+ GET /api/chat 200 in 238ms
+ GET /api/neurons 200 in 234ms
+ GET /api/neurons 200 in 236ms
+ GET /api/chat 200 in 250ms
+ GET /api/review 200 in 242ms
+ GET /api/review 200 in 82ms
+ POST /api/chat 429 in 124ms
+ GET /api/chat 200 in 65ms
+ GET /login 200 in 25ms
+ GET /app 200 in 22ms
+ GET /api/chat 200 in 123ms
+ GET /api/chat 200 in 129ms
+ GET /api/review 200 in 139ms
+ GET /api/neurons 200 in 150ms
+ GET /api/neurons 200 in 159ms
+ GET /api/review 200 in 69ms
+ GET /login 200 in 27ms
+ GET /app?code=75c06114-2071-4533-9356-3f05dc132ea3 200 in 34ms
+ GET /api/chat 200 in 138ms
+ GET /api/chat 200 in 148ms
+ GET /api/review 200 in 136ms
+ GET /api/neurons 200 in 155ms
+ GET /api/review 200 in 75ms
+ GET /api/neurons 200 in 208ms
+ GET /app 200 in 27ms
+ GET /api/chat 200 in 123ms
+ GET /api/chat 200 in 135ms
+ GET /api/review 200 in 126ms
+ GET /api/neurons 200 in 166ms
+ GET /api/neurons 200 in 581ms
+ GET /api/review 200 in 476ms
+ POST /api/chat 429 in 108ms
+ GET /api/chat 200 in 107ms
+ ⨯ ./src/app/api/chat/route.ts
+Error: 
+  [31mx[0m Expected a semicolon
+    ,-[[36;1;4m/Users/simone/Desktop/Projects/NeuroGraph/src/app/api/chat/route.ts[0m:28:1]
+ [2m28[0m |       user = { id: '4ef5c03c-e2f4-419b-9c7b-7b7b7b7b7b7b' } as any;
+ [2m29[0m |     }
+ [2m30[0m | 
+ [2m31[0m |     const mode = request.nextUrl.searchParams.get('mode');
+    : [31;1m    ^[0m
+ [2m32[0m | 
+ [2m33[0m |     if (mode === 'messages') {
+ [2m34[0m |       const conversationId = request.nextUrl.searchParams.get('conversationId');
+    `----
+
+  [31mx[0m Expected a semicolon
+    ,-[[36;1;4m/Users/simone/Desktop/Projects/NeuroGraph/src/app/api/chat/route.ts[0m:70:1]
+ [2m70[0m |     }
+ [2m71[0m | 
+ [2m72[0m |     return NextResponse.json({ conversations: data || [] });
+ [2m73[0m |   } catch (error) {
+    : [31;1m    ^^^^^[0m
+ [2m74[0m |     const message = error instanceof Error ? error.message : 'Unexpected error';
+ [2m75[0m |     return NextResponse.json({ error: message }, { status: 500 });
+ [2m76[0m |   }
+    `----
+
+  [31mx[0m Return statement is not allowed here
+    ,-[[36;1;4m/Users/simone/Desktop/Projects/NeuroGraph/src/app/api/chat/route.ts[0m:72:1]
+ [2m72[0m |     return NextResponse.json({ conversations: data || [] });
+ [2m73[0m |   } catch (error) {
+ [2m74[0m |     const message = error instanceof Error ? error.message : 'Unexpected error';
+ [2m75[0m |     return NextResponse.json({ error: message }, { status: 500 });
+    : [31;1m    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+ [2m76[0m |   }
+ [2m77[0m | }
+    `----
+
+  [31mx[0m Expression expected
+    ,-[[36;1;4m/Users/simone/Desktop/Projects/NeuroGraph/src/app/api/chat/route.ts[0m:74:1]
+ [2m74[0m |     const message = error instanceof Error ? error.message : 'Unexpected error';
+ [2m75[0m |     return NextResponse.json({ error: message }, { status: 500 });
+ [2m76[0m |   }
+ [2m77[0m | }
+    : [31;1m^[0m
+ [2m78[0m | 
+ [2m79[0m | const postSchema = z.object({
+ [2m80[0m |   conversationId: z.string().uuid().optional(),
+    `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/app/api/chat/route.ts
+ ○ Compiling /_error ...
+ ⨯ ./src/app/api/chat/route.ts
+Error: 
+  [31mx[0m Expected a semicolon
+    ,-[[36;1;4m/Users/simone/Desktop/Projects/NeuroGraph/src/app/api/chat/route.ts[0m:28:1]
+ [2m28[0m |       user = { id: '4ef5c03c-e2f4-419b-9c7b-7b7b7b7b7b7b' } as any;
+ [2m29[0m |     }
+ [2m30[0m | 
+ [2m31[0m |     const mode = request.nextUrl.searchParams.get('mode');
+    : [31;1m    ^[0m
+ [2m32[0m | 
+ [2m33[0m |     if (mode === 'messages') {
+ [2m34[0m |       const conversationId = request.nextUrl.searchParams.get('conversationId');
+    `----
+
+  [31mx[0m Expected a semicolon
+    ,-[[36;1;4m/Users/simone/Desktop/Projects/NeuroGraph/src/app/api/chat/route.ts[0m:70:1]
+ [2m70[0m |     }
+ [2m71[0m | 
+ [2m72[0m |     return NextResponse.json({ conversations: data || [] });
+ [2m73[0m |   } catch (error) {
+    : [31;1m    ^^^^^[0m
+ [2m74[0m |     const message = error instanceof Error ? error.message : 'Unexpected error';
+ [2m75[0m |     return NextResponse.json({ error: message }, { status: 500 });
+ [2m76[0m |   }
+    `----
+
+  [31mx[0m Return statement is not allowed here
+    ,-[[36;1;4m/Users/simone/Desktop/Projects/NeuroGraph/src/app/api/chat/route.ts[0m:72:1]
+ [2m72[0m |     return NextResponse.json({ conversations: data || [] });
+ [2m73[0m |   } catch (error) {
+ [2m74[0m |     const message = error instanceof Error ? error.message : 'Unexpected error';
+ [2m75[0m |     return NextResponse.json({ error: message }, { status: 500 });
+    : [31;1m    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+ [2m76[0m |   }
+ [2m77[0m | }
+    `----
+
+  [31mx[0m Expression expected
+    ,-[[36;1;4m/Users/simone/Desktop/Projects/NeuroGraph/src/app/api/chat/route.ts[0m:74:1]
+ [2m74[0m |     const message = error instanceof Error ? error.message : 'Unexpected error';
+ [2m75[0m |     return NextResponse.json({ error: message }, { status: 500 });
+ [2m76[0m |   }
+ [2m77[0m | }
+    : [31;1m^[0m
+ [2m78[0m | 
+ [2m79[0m | const postSchema = z.object({
+ [2m80[0m |   conversationId: z.string().uuid().optional(),
+    `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/app/api/chat/route.ts
+ GET /app 500 in 7ms
+ ✓ Compiled /_error in 53ms (167 modules)
+ GET /app 500 in 37ms
+ GET /app 500 in 34ms
+ GET /app 500 in 18ms
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (133kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 718ms (3343 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /_next/static/webpack/6d74ea40c93c6acd.webpack.hot-update.json 404 in 770ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /app 200 in 120ms
+ GET /_next/static/webpack/6d74ea40c93c6acd.webpack.hot-update.json 404 in 128ms
+ GET /app 200 in 11ms
+ GET /app 200 in 9ms
+ ✓ Compiled /api/neurons in 216ms (1825 modules)
+ ✓ Compiled (1832 modules)
+ GET /api/chat 401 in 511ms
+ GET /api/chat 401 in 510ms
+ GET /api/chat 401 in 320ms
+ GET /api/neurons 401 in 502ms
+ GET /api/neurons 401 in 502ms
+ GET /api/review 401 in 509ms
+ GET /api/chat 401 in 5ms
+ GET /api/neurons 401 in 6ms
+ GET /api/neurons 401 in 6ms
+ GET /api/review 401 in 6ms
+ GET /api/review 401 in 4ms
+ GET /api/review 401 in 2ms
+ ⨯ ./src/app/api/chat/route.ts
+Error: 
+  [31mx[0m cannot reassign to a variable declared with `const`
+    ,-[[36;1;4m/Users/simone/Desktop/Projects/NeuroGraph/src/app/api/chat/route.ts[0m:20:1]
+ [2m20[0m |   try {
+ [2m21[0m |     const supabase = await createServerSupabaseClient();
+ [2m22[0m |     const {
+ [2m23[0m |       data: { user },
+    : [31;1m              ^^|^[0m
+    :                 [31;1m`-- [31;1mconst variable was declared here[0m[0m
+ [2m24[0m |     } = await supabase.auth.getUser();
+ [2m25[0m | 
+ [2m26[0m |     // MOCK USER FOR DEBUGGING UI REFINEMENT
+ [2m27[0m |     if (!user) {
+ [2m28[0m |       user = { id: '4ef5c03c-e2f4-419b-9c7b-7b7b7b7b7b7b' } as any;
+    : [33;1m      ^^|^[0m
+    :         [33;1m`-- [33;1mcannot reassign[0m[0m
+ [2m29[0m |     }
+ [2m30[0m | 
+ [2m31[0m |     const mode = request.nextUrl.searchParams.get('mode');
+    `----
+
+  [31mx[0m cannot reassign to a variable declared with `const`
+     ,-[[36;1;4m/Users/simone/Desktop/Projects/NeuroGraph/src/app/api/chat/route.ts[0m:92:1]
+ [2m 92[0m |   try {
+ [2m 93[0m |     const supabase = await createServerSupabaseClient();
+ [2m 94[0m |     const {
+ [2m 95[0m |       data: { user },
+     : [31;1m              ^^|^[0m
+     :                 [31;1m`-- [31;1mconst variable was declared here[0m[0m
+ [2m 96[0m |     } = await supabase.auth.getUser();
+ [2m 97[0m | 
+ [2m 98[0m |     // MOCK USER FOR DEBUGGING UI REFINEMENT
+ [2m 99[0m |     if (!user) {
+ [2m100[0m |       user = { id: '4ef5c03c-e2f4-419b-9c7b-7b7b7b7b7b7b' } as any;
+     : [33;1m      ^^|^[0m
+     :         [33;1m`-- [33;1mcannot reassign[0m[0m
+ [2m101[0m |     }
+ [2m102[0m | 
+ [2m103[0m |     const body = await request.json();
+     `----
+
+Import trace for requested module:
+./src/app/api/chat/route.ts
+ GET /app 500 in 24ms
+ GET /app 500 in 35ms
+ ⨯ ./src/app/api/chat/route.ts
+Error: 
+  [31mx[0m cannot reassign to a variable declared with `const`
+    ,-[[36;1;4m/Users/simone/Desktop/Projects/NeuroGraph/src/app/api/chat/route.ts[0m:20:1]
+ [2m20[0m |   try {
+ [2m21[0m |     const supabase = await createServerSupabaseClient();
+ [2m22[0m |     const {
+ [2m23[0m |       data: { user },
+    : [31;1m              ^^|^[0m
+    :                 [31;1m`-- [31;1mconst variable was declared here[0m[0m
+ [2m24[0m |     } = await supabase.auth.getUser();
+ [2m25[0m | 
+ [2m26[0m |     // MOCK USER FOR DEBUGGING UI REFINEMENT
+ [2m27[0m |     if (!user) {
+ [2m28[0m |       user = { id: '4ef5c03c-e2f4-419b-9c7b-7b7b7b7b7b7b' } as any;
+    : [33;1m      ^^|^[0m
+    :         [33;1m`-- [33;1mcannot reassign[0m[0m
+ [2m29[0m |     }
+ [2m30[0m | 
+ [2m31[0m |     const mode = request.nextUrl.searchParams.get('mode');
+    `----
+
+  [31mx[0m cannot reassign to a variable declared with `const`
+     ,-[[36;1;4m/Users/simone/Desktop/Projects/NeuroGraph/src/app/api/chat/route.ts[0m:92:1]
+ [2m 92[0m |   try {
+ [2m 93[0m |     const supabase = await createServerSupabaseClient();
+ [2m 94[0m |     const {
+ [2m 95[0m |       data: { user },
+     : [31;1m              ^^|^[0m
+     :                 [31;1m`-- [31;1mconst variable was declared here[0m[0m
+ [2m 96[0m |     } = await supabase.auth.getUser();
+ [2m 97[0m | 
+ [2m 98[0m |     // MOCK USER FOR DEBUGGING UI REFINEMENT
+ [2m 99[0m |     if (!user) {
+ [2m100[0m |       user = { id: '4ef5c03c-e2f4-419b-9c7b-7b7b7b7b7b7b' } as any;
+     : [33;1m      ^^|^[0m
+     :         [33;1m`-- [33;1mcannot reassign[0m[0m
+ [2m101[0m |     }
+ [2m102[0m | 
+ [2m103[0m |     const body = await request.json();
+     `----
+
+Import trace for requested module:
+./src/app/api/chat/route.ts
+ GET /_next/static/webpack/6d74ea40c93c6acd.webpack.hot-update.json 500 in 297ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /_next/static/webpack/6d74ea40c93c6acd.webpack.hot-update.json 500 in 5ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /app 200 in 11ms
+ GET /app 500 in 2ms
+ GET /app 500 in 9ms
+ GET /_next/static/webpack/6d74ea40c93c6acd.webpack.hot-update.json 500 in 1ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ ./src/app/api/chat/route.ts
+Error: 
+  [31mx[0m cannot reassign to a variable declared with `const`
+    ,-[[36;1;4m/Users/simone/Desktop/Projects/NeuroGraph/src/app/api/chat/route.ts[0m:20:1]
+ [2m20[0m |   try {
+ [2m21[0m |     const supabase = await createServerSupabaseClient();
+ [2m22[0m |     const {
+ [2m23[0m |       data: { user },
+    : [31;1m              ^^|^[0m
+    :                 [31;1m`-- [31;1mconst variable was declared here[0m[0m
+ [2m24[0m |     } = await supabase.auth.getUser();
+ [2m25[0m | 
+ [2m26[0m |     // MOCK USER FOR DEBUGGING UI REFINEMENT
+ [2m27[0m |     if (!user) {
+ [2m28[0m |       user = { id: '4ef5c03c-e2f4-419b-9c7b-7b7b7b7b7b7b' } as any;
+    : [33;1m      ^^|^[0m
+    :         [33;1m`-- [33;1mcannot reassign[0m[0m
+ [2m29[0m |     }
+ [2m30[0m | 
+ [2m31[0m |     const mode = request.nextUrl.searchParams.get('mode');
+    `----
+
+  [31mx[0m cannot reassign to a variable declared with `const`
+     ,-[[36;1;4m/Users/simone/Desktop/Projects/NeuroGraph/src/app/api/chat/route.ts[0m:92:1]
+ [2m 92[0m |   try {
+ [2m 93[0m |     const supabase = await createServerSupabaseClient();
+ [2m 94[0m |     const {
+ [2m 95[0m |       data: { user },
+     : [31;1m              ^^|^[0m
+     :                 [31;1m`-- [31;1mconst variable was declared here[0m[0m
+ [2m 96[0m |     } = await supabase.auth.getUser();
+ [2m 97[0m | 
+ [2m 98[0m |     // MOCK USER FOR DEBUGGING UI REFINEMENT
+ [2m 99[0m |     if (!user) {
+ [2m100[0m |       user = { id: '4ef5c03c-e2f4-419b-9c7b-7b7b7b7b7b7b' } as any;
+     : [33;1m      ^^|^[0m
+     :         [33;1m`-- [33;1mcannot reassign[0m[0m
+ [2m101[0m |     }
+ [2m102[0m | 
+ [2m103[0m |     const body = await request.json();
+     `----
+
+Import trace for requested module:
+./src/app/api/chat/route.ts
+ GET /app 500 in 224ms
+ GET /_next/static/webpack/6d74ea40c93c6acd.webpack.hot-update.json 500 in 257ms
+ GET /app 500 in 2ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /app 500 in 3ms
+ GET /app 500 in 4ms
+ ✓ Compiled in 437ms (3551 modules)
+ GET /_next/static/webpack/6d74ea40c93c6acd.webpack.hot-update.json 500 in 437ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /_next/static/webpack/6d74ea40c93c6acd.webpack.hot-update.json 404 in 44ms
+ GET /app 200 in 48ms
+ GET /app 200 in 9ms
+ GET /api/chat 200 in 475ms
+ GET /api/chat 200 in 269ms
+ GET /api/chat 200 in 482ms
+ GET /api/neurons 200 in 474ms
+ GET /api/review 200 in 478ms
+ GET /api/neurons 200 in 475ms
+ GET /api/chat 200 in 76ms
+ GET /api/review 200 in 94ms
+ GET /api/neurons 200 in 98ms
+ GET /api/neurons 200 in 107ms
+ GET /api/review 200 in 78ms
+ GET /api/review 200 in 67ms
+ POST /api/chat 500 in 361ms
+ GET /api/chat 200 in 144ms
+ GET /login 200 in 66ms
+ GET /login 200 in 27ms
+ GET /login 200 in 26ms
+ GET /app 200 in 35ms
+ GET /api/review 200 in 258ms
+ GET /api/neurons 200 in 260ms
+ GET /api/neurons 200 in 262ms
+ GET /api/chat 200 in 284ms
+ GET /api/chat 200 in 284ms
+ GET /api/review 200 in 95ms
+ POST /api/chat 500 in 436ms
+ GET /api/chat 200 in 100ms
+ ✓ Compiled in 602ms (3708 modules)
+ ✓ Compiled in 1172ms (3366 modules)
+ ✓ Compiled in 506ms (3340 modules)
+ ✓ Compiled in 166ms (3340 modules)
+ ✓ Compiled in 210ms (3340 modules)
+ ✓ Compiled in 698ms (3340 modules)
+ ✓ Compiled in 800ms (3340 modules)
+ ✓ Compiled in 292ms (3340 modules)
