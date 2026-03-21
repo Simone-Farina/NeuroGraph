@@ -95,18 +95,8 @@ export function LiquidDocumentEditor({
           if (done) break;
 
           const chunk = decoder.decode(value, { stream: true });
-          const lines = chunk.split('\n');
-          for (const line of lines) {
-            if (line.startsWith('0:')) {
-              try {
-                const text = JSON.parse(line.slice(2));
-                accumulated += text;
-                setAiOutput(accumulated);
-              } catch {
-                // skip
-              }
-            }
-          }
+          accumulated += chunk;
+          setAiOutput(accumulated);
         }
       } catch {
         setAiOutput('Stream interrupted. Please try again.');
@@ -219,7 +209,6 @@ export function LiquidDocumentEditor({
 
   const handleSave = useCallback(async () => {
     if (!editor) return;
-    const content = editor.getText();
 
     await onSave({
       title,
