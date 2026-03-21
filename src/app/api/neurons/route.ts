@@ -57,6 +57,9 @@ const createNeuronSchema = z.object({
   source_conversation_id: z.uuid(),
   source_message_ids: z.array(z.string()).optional(),
   related_neurons: z.array(relatedNeuronSchema).max(5).optional(),
+  is_ghost: z.boolean().optional(),
+  ghost_depth: z.number().int().optional().nullable(),
+  ghost_target_title: z.string().optional().nullable(),
 });
 
 export async function GET() {
@@ -127,7 +130,7 @@ export async function POST(request: NextRequest) {
     const embeddingInput = `${neuronInput.title} ${neuronInput.definition} ${neuronInput.core_insight}`;
     const embedding = await generateEmbedding(embeddingInput);
 
-    if (!forceNew) {
+    if (!forceNew && !neuronInput.is_ghost) {
       const { checkNeuronCollision } = await import('@/lib/ai/bouncer');
       const collision = await checkNeuronCollision(embedding, 0.85);
       
