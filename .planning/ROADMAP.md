@@ -9,7 +9,7 @@ Upgrading the live conversational graph prototype into a strict, active-extracti
 - [ ] **Phase 1: Knowledge Quality & Ephemerality** - AI Bouncer and 14-day chat TTL.
 - [ ] **Phase 2: Graph Pedagogy** - Strict DAG layouts and target-driven Ghost Nodes.
 - [ ] **Phase 3: Rigorous Retention** - `ts-fsrs` engine and Soft-FIRe decay visuals.
-- [ ] **Phase 4: Advanced AI Markdown Editor** - Live WYSIWYG block editor with AI Bouncer integration.
+- [x] **Phase 4: Advanced AI Markdown Editor** - Live WYSIWYG block editor with AI Bouncer integration. (completed 2026-03-21)
 
 ## Phase Details
 
@@ -69,4 +69,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Knowledge Quality & Ephemerality | 0/0 | Not started | - |
 | 2. Graph Pedagogy | 0/0 | Not started | - |
 | 3. Rigorous Retention | 0/0 | Not started | - |
-| 4. Advanced AI Markdown Editor | 0/0 | Not started | - |
+| 4. Advanced AI Markdown Editor | 1/1 | Complete   | 2026-03-21 |
