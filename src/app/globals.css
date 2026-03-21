@@ -217,3 +217,27 @@ body {
 .animate-tremble {
   animation: tremble 0.5s infinite;
 }
+
+/* TipTap Editor Styles */
+.tiptap.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: rgba(255, 255, 255, 0.2);
+  pointer-events: none;
+  height: 0;
+  font-family: var(--font-newsreader), serif;
+  font-style: italic;
+  font-size: 0.9375rem;
+}
+
+.tiptap:focus {
+  outline: none;
+}
+
+.tiptap p.is-empty::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: rgba(255, 255, 255, 0.2);
+  pointer-events: none;
+  height: 0;
+}
