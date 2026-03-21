@@ -30,6 +30,7 @@ The system enforces "Active Extraction" and rigorous retention over passive read
 - [ ] Rigorous Retention Engine (FSRS-6 spaced repetition applied to Neurons)
 - [ ] Soft-FIRe Visual Feedback (Visual flagging/rusting of dependent concepts when foundational Neurons decay)
 - [ ] Bidirectional UI Sync (Clicking map opens markdown and pans camera; selecting text injects into existing Neurons)
+- [x] Advanced AI Markdown Editor (TipTap WYSIWYG, slash commands, Bouncer bubble menu, liquid document extraction) — Validated in Phase 4
 
 ### Out of Scope
 
@@ -58,4 +59,4 @@ The system enforces "Active Extraction" and rigorous retention over passive read
 | Fractional Implicit Repetition (Soft-FIRe) | If a foundational concept rusts, advanced concepts built on it must flag decay to reinforce the DAG dependency tree. | — Pending |
 
 ---
-*Last updated: 2026-03-20 after initialization*
+*Last updated: 2026-03-21 — Phase 4 (Advanced AI Markdown Editor) complete*
