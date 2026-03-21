@@ -9,6 +9,7 @@ Upgrading the live conversational graph prototype into a strict, active-extracti
 - [ ] **Phase 1: Knowledge Quality & Ephemerality** - AI Bouncer and 14-day chat TTL.
 - [ ] **Phase 2: Graph Pedagogy** - Strict DAG layouts and target-driven Ghost Nodes.
 - [ ] **Phase 3: Rigorous Retention** - `ts-fsrs` engine and Soft-FIRe decay visuals.
+- [ ] **Phase 4: Advanced AI Markdown Editor** - Live WYSIWYG block editor with AI Bouncer integration.
 
 ## Phase Details
 
@@ -45,13 +46,27 @@ Upgrading the live conversational graph prototype into a strict, active-extracti
   2. Visually, if a foundational node "rusts" (falls below retention threshold), its distinct descendant nodes change border/glow color to indicate unstable foundations.
 **Plans**: TBD
 
+### Phase 4: Advanced AI Markdown Editor
+**Goal**: Replace the rigid field-based editor with a tactile, AI-assisted WYSIWYG writing surface that conforms to the Danish Computation aesthetic.
+**Depends on**: N/A (UI layer)
+**Requirements**: 
+- TipTap/Novel.sh Block Editor Integration
+- Slash Commands & Floating Bouncer Chat
+- Liquid Document AI Extraction (Metadata inference)
+**Success Criteria** (what must be TRUE):
+  1. The editor correctly live-renders markdown syntax using the Newsreader serif font.
+  2. Slash commands and text-highlight interactions spawn the AI Bouncer.
+  3. The core fields (Definition, Insight) are extracted in the background without rigid UI fields.
+**Plans**: TBD
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3
+Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Knowledge Quality & Ephemerality | 0/0 | Not started | - |
 | 2. Graph Pedagogy | 0/0 | Not started | - |
 | 3. Rigorous Retention | 0/0 | Not started | - |
+| 4. Advanced AI Markdown Editor | 0/0 | Not started | - |
