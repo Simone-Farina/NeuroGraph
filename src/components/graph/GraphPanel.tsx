@@ -160,6 +160,7 @@ function GraphCanvas() {
         id: neuron.id,
         type: 'neuron',
         position: { x: 0, y: 0 },
+        draggable: false,
         data: {
           title: neuron.title,
           retrievability: neuron.retrievability,

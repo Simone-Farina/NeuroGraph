@@ -3,9 +3,10 @@ import { MockLanguageModelV3, MockEmbeddingModelV3, simulateReadableStream } fro
 export const mockEmbeddingModel = new MockEmbeddingModelV3({
   doEmbed: async ({ values }) => ({
     embeddings: values.map(() => {
-        const arr = new Array(1536).fill(0.001);
-        arr[0] = 0.1 + (Math.random() * 0.01);
-        return arr;
+        // Generate a normalized random vector so cosine similarities are distributed and far below 0.85
+        const arr = new Array(1536).fill(0).map(() => Math.random() - 0.5);
+        const norm = Math.sqrt(arr.reduce((sum, val) => sum + val * val, 0));
+        return arr.map(val => val / norm);
     }),
     usage: { tokens: 10 },
     warnings: [],
@@ -13,13 +14,84 @@ export const mockEmbeddingModel = new MockEmbeddingModelV3({
 });
 
 export const mockModel = new MockLanguageModelV3({
-  doGenerate: async () => ({
-    rawCall: { rawPrompt: null, rawSettings: {} },
-    finishReason: 'stop',
-    usage: { inputTokens: 10, outputTokens: 20 },
-    content: [{ type: 'text', text: 'Mock response' }],
-    warnings: [],
-  } as any),
+  doGenerate: async (options) => {
+    const promptStr = JSON.stringify(options.prompt);
+    
+    // Prerequisite Inference Mock (Phase 2)
+    if (promptStr.includes('New Neuron:') && promptStr.includes('candidates for prerequisites')) {
+      return {
+        rawCall: { rawPrompt: null, rawSettings: {} },
+        finishReason: 'stop',
+        usage: { inputTokens: 50, outputTokens: 30 },
+        text: JSON.stringify({
+          prerequisites: [],
+          suggested_next: [
+            { title: "Advanced Topics", reasoning: "Natural next step" }
+          ]
+        }),
+        content: [{ type: 'text', text: JSON.stringify({
+          prerequisites: [],
+          suggested_next: [
+            { title: "Advanced Topics", reasoning: "Natural next step" }
+          ]
+        }) }],
+        warnings: [],
+      } as any;
+    }
+
+    // Curriculum Generation Mock (Phase 2)
+    if (promptStr.includes('Target concept:')) {
+      return {
+        rawCall: { rawPrompt: null, rawSettings: {} },
+        finishReason: 'stop',
+        usage: { inputTokens: 10, outputTokens: 50 },
+        text: JSON.stringify({
+          steps: [
+            { title: "Foundation Step 1", definition: "A basic concept.", reasoning: "Needed first." },
+            { title: "Target Concept", definition: "The final goal.", reasoning: "The destination." }
+          ]
+        }),
+        content: [{ type: 'text', text: JSON.stringify({
+          steps: [
+            { title: "Foundation Step 1", definition: "A basic concept.", reasoning: "Needed first." },
+            { title: "Target Concept", definition: "The final goal.", reasoning: "The destination." }
+          ]
+        }) }],
+        warnings: [],
+      } as any;
+    }
+
+    // Extraction Mock (Phase 1)
+    const isExtract = promptStr.includes('definition, core_insight') || 
+      promptStr.includes('NeuroGraph extraction');
+
+    if (isExtract) {
+      return {
+        rawCall: { rawPrompt: null, rawSettings: {} },
+        finishReason: 'stop',
+        usage: { inputTokens: 10, outputTokens: 20 },
+        text: JSON.stringify({
+          definition: "Mock defined concept.",
+          core_insight: "Mock core insight extracted from the text.",
+          bloom_level: "Understand"
+        }),
+        content: [{ type: 'text', text: JSON.stringify({
+          definition: "Mock defined concept.",
+          core_insight: "Mock core insight extracted from the text.",
+          bloom_level: "Understand"
+        }) }],
+        warnings: [],
+      } as any;
+    }
+
+    return {
+      rawCall: { rawPrompt: null, rawSettings: {} },
+      finishReason: 'stop',
+      usage: { inputTokens: 10, outputTokens: 20 },
+      content: [{ type: 'text', text: 'Mock response' }],
+      warnings: [],
+    } as any;
+  },
   doStream: async ({ prompt }) => {
     const lastMessage = prompt[prompt.length - 1];
     
