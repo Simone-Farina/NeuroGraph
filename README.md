@@ -24,7 +24,9 @@ NeuroGraph is a Next.js app for turning conversations into connected knowledge n
 
    Fill `.env.local` with real Supabase and AI provider keys.
 
-3. Apply database migrations in Supabase SQL Editor (in order):
+3. Apply database migrations in Supabase SQL Editor.
+
+   Baseline schema and RPC functions:
 
    - `src/lib/db/migrations/001_initial_schema.sql`
    - `src/lib/db/migrations/002_query_functions.sql`
@@ -35,6 +37,19 @@ NeuroGraph is a Next.js app for turning conversations into connected knowledge n
    - `src/lib/db/migrations/007_fix_recursive_query.sql`
    - `src/lib/db/migrations/008_add_content_and_editing.sql`
    - `src/lib/db/migrations/009_add_messages_metadata.sql`
+
+   Then apply the tracked Supabase migrations in `supabase/migrations/`:
+
+   - `supabase/migrations/20260217223000_add_messages_metadata.sql`
+   - `supabase/migrations/20260302120000_unique_neuron_titles.sql`
+   - `supabase/migrations/20260304000000_check_rate_limit.sql`
+   - `supabase/migrations/20260321000000_ttl_cron.sql`
+   - `supabase/migrations/20260322000000_knowledge_queue.sql`
+   - `supabase/migrations/20260322000001_user_api_keys.sql`
+
+   The last two are required for the Staging Area endpoints:
+   - `knowledge_queue` powers `/api/capture` and `/app/queue`
+   - `user_api_keys` powers `/api/keys`
 
 4. Verify database setup:
 
@@ -47,6 +62,34 @@ NeuroGraph is a Next.js app for turning conversations into connected knowledge n
    ```bash
    npm run dev
    ```
+
+## Run With Docker Compose
+
+1. Configure the local environment file:
+
+   ```bash
+   cp .env.example .env.local
+   ```
+
+   Fill `.env.local` with your real Supabase and AI keys.
+
+2. Start the app in Docker:
+
+   ```bash
+   docker compose up --build
+   ```
+
+3. Open the app:
+
+   ```text
+   http://localhost:3000
+   ```
+
+Notes:
+
+- The compose setup runs the existing Next.js dev server inside the container.
+- Source code is bind-mounted, so edits on the host reload in the container.
+- `NEXT_PUBLIC_APP_URL` is forced to `http://localhost:3000` inside compose.
 
 6. Build for production check:
 
@@ -92,6 +135,7 @@ NeuroGraph is a Next.js app for turning conversations into connected knowledge n
    - Login and chat work.
    - `/api/chat` can process a request without runtime env errors.
    - Rate-limit migration is present (`check_rate_limit` function exists in DB).
+   - Staging Area migrations are present (`knowledge_queue` and `user_api_keys` tables exist).
 
 ## Project Plans
 
