@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { Neuron } from '@/types/database';
+import { useGraphStore } from '@/stores/graphStore';
 
 type ReviewNeuron = Neuron & {
   intervals: {
@@ -30,6 +31,11 @@ export default function ReviewPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isRevealed, setIsRevealed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const setShellPreset = useGraphStore((state) => state.setShellPreset);
+
+  useEffect(() => {
+    setShellPreset('deep_read');
+  }, [setShellPreset]);
 
   useEffect(() => {
     async function load() {
@@ -70,8 +76,11 @@ export default function ReviewPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen p-8 bg-neural-dark flex flex-col items-center justify-center text-neural-light">
-        <div className="animate-pulse">Loading reviews...</div>
+      <div className="min-h-screen p-8 bg-neural-dark flex flex-col items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-6 w-6 animate-spin rounded-full border border-white/10 border-t-white/40" />
+          <div className="text-neural-light/30 text-xs font-medium tracking-widest uppercase">Loading reviews</div>
+        </div>
       </div>
     );
   }
@@ -80,29 +89,49 @@ export default function ReviewPage() {
     return (
       <div className="min-h-screen p-8 bg-neural-dark flex flex-col items-center justify-center">
         <div className="text-center max-w-lg mx-auto">
-          <div className="mb-6 inline-flex items-center justify-center h-20 w-20 rounded-full bg-white/[0.03] border border-white/[0.06] text-4xl animate-pulse">
-            ✨
-          </div>
-          <h1 className="text-4xl font-serif font-bold mb-4 text-white/90">
-            All caught up!
-          </h1>
-          <p className="text-neural-light/60 mb-8 leading-relaxed">
-            You&apos;ve reviewed all your due neurons. Great job consolidating your knowledge!
-          </p>
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="mb-6 inline-flex items-center justify-center h-16 w-16 rounded-full bg-white/[0.02] border border-white/[0.05]"
+          >
+            <div className="w-2 h-2 rounded-full bg-white/40" />
+          </motion.div>
+          <motion.h1 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            className="text-3xl font-serif font-medium mb-3 text-white/80"
+          >
+            Review complete
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="text-neural-light/50 mb-8 leading-relaxed text-sm"
+          >
+            All due knowledge has been consolidated.
+          </motion.p>
 
-          <div className="p-6 rounded-xl border border-white/5 bg-white/5 backdrop-blur-sm text-left">
-            <h3 className="text-neural-light font-bold mb-3">Session Stats</h3>
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className="p-6 rounded-xl border border-white/5 bg-white/[0.02] text-left"
+          >
+            <h3 className="text-white/60 font-medium text-xs uppercase tracking-widest mb-4">Session Stats</h3>
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-neural-dark/50 p-3 rounded-lg border border-white/5">
-                <p className="text-xs text-neural-light/40 uppercase tracking-wider">Reviewed</p>
-                <p className="text-2xl font-bold text-white/70">{currentIndex}</p>
+              <div className="bg-neural-dark/30 p-4 rounded-lg border border-white/5">
+                <p className="text-[10px] text-white/40 uppercase tracking-widest mb-1">Reviewed</p>
+                <p className="text-2xl font-serif text-white/70">{currentIndex}</p>
               </div>
-              <div className="bg-neural-dark/50 p-3 rounded-lg border border-white/5">
-                <p className="text-xs text-neural-light/40 uppercase tracking-wider">Next Due</p>
-                <p className="text-2xl font-bold text-white/50">Tomorrow</p>
+              <div className="bg-neural-dark/30 p-4 rounded-lg border border-white/5">
+                <p className="text-[10px] text-white/40 uppercase tracking-widest mb-1">Next Due</p>
+                <p className="text-2xl font-serif text-white/50">Tomorrow</p>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     );
@@ -112,17 +141,17 @@ export default function ReviewPage() {
     <div className="min-h-screen p-4 sm:p-8 bg-neural-dark flex flex-col items-center justify-center">
       <div className="w-full max-w-2xl mb-4 sm:mb-8">
         <div className="flex justify-between items-end text-[10px] uppercase tracking-widest font-bold mb-2">
-          <span className="text-white/70">Session Progress</span>
-          <span className="text-neural-light/40">
-            {currentIndex + 1} of {neurons.length} reviewed
+          <span className="text-white/40">Session Progress</span>
+          <span className="text-white/30">
+            {currentIndex + 1} <span className="opacity-50">/</span> {neurons.length}
           </span>
         </div>
-        <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+        <div className="h-0.5 w-full bg-white/5 rounded-full overflow-hidden">
           <motion.div
-            className="h-full bg-white/40"
+            className="h-full bg-white/30"
             initial={{ width: 0 }}
             animate={{ width: `${((currentIndex + 1) / neurons.length) * 100}%` }}
-            transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           />
         </div>
       </div>
@@ -131,16 +160,17 @@ export default function ReviewPage() {
         <div className="relative flex-1 min-h-[400px] sm:h-[500px] sm:flex-none">
           <motion.div
             key={currentNeuron.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="absolute inset-0 bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8 flex flex-col overflow-y-auto"
+            initial={{ opacity: 0, y: 10, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.98 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute inset-0 bg-white/[0.02] border border-white/5 rounded-2xl p-6 sm:p-10 flex flex-col overflow-y-auto"
           >
             <div className="flex-1">
-              <h2 className="text-xl sm:text-2xl font-bold text-neural-light mb-4 sm:mb-6">
+              <h2 className="text-2xl sm:text-3xl font-serif font-medium text-white/90 mb-6 sm:mb-8 leading-tight">
                 {currentNeuron.title}
               </h2>
-              <div className="text-base sm:text-lg text-neural-light/80 leading-relaxed">
+              <div className="text-base sm:text-lg text-white/60 leading-relaxed font-light">
                 {currentNeuron.definition}
               </div>
             </div>
@@ -148,14 +178,15 @@ export default function ReviewPage() {
             <AnimatePresence>
               {isRevealed && (
                 <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  className="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-white/10"
+                  initial={{ opacity: 0, height: 0, filter: 'blur(4px)' }}
+                  animate={{ opacity: 1, height: 'auto', filter: 'blur(0px)' }}
+                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  className="mt-8 pt-8 border-t border-white/5"
                 >
-                  <div className="text-white/70 mb-2 text-xs sm:text-sm uppercase tracking-wider font-bold">
+                  <div className="text-white/30 mb-3 text-[10px] uppercase tracking-widest font-medium">
                     Core Insight
                   </div>
-                  <p className="text-sm sm:text-base text-neural-light leading-relaxed">
+                  <p className="text-sm sm:text-base text-white/80 leading-relaxed font-serif">
                     {currentNeuron.core_insight}
                   </p>
                 </motion.div>
@@ -166,43 +197,49 @@ export default function ReviewPage() {
 
         <div className="mt-6 sm:mt-8 flex justify-center gap-4 min-h-[6rem]">
           {!isRevealed ? (
-            <button
+            <motion.button
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
               onClick={handleReveal}
-              className="px-8 py-3 bg-white/90 text-neural-dark rounded-lg font-bold hover:bg-white transition-colors w-full sm:max-w-xs self-start"
+              className="px-8 py-3 bg-white/[0.04] border border-white/[0.08] text-white/80 rounded-lg text-sm font-medium hover:bg-white/[0.08] hover:text-white transition-all w-full sm:max-w-xs self-start"
             >
-              Show Answer
-            </button>
+              Reveal Insight
+            </motion.button>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 w-full">
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 w-full"
+            >
               <button
                 onClick={() => handleRate(1)}
-                className="p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors flex flex-col items-center gap-1"
+                className="p-3 sm:p-4 rounded-xl border border-white/[0.04] bg-transparent text-white/40 hover:bg-white/[0.02] hover:text-white/60 hover:border-white/[0.08] transition-all flex flex-col items-center gap-1.5"
               >
-                <span className="font-bold text-sm sm:text-base">Again</span>
-                <span className="text-[10px] sm:text-xs opacity-60">{currentNeuron.intervals[1]}</span>
+                <span className="font-medium text-xs sm:text-sm tracking-wide">Again</span>
+                <span className="font-mono text-[9px] sm:text-[10px] opacity-50">{currentNeuron.intervals[1]}</span>
               </button>
               <button
                 onClick={() => handleRate(2)}
-                className="p-3 rounded-lg border border-orange-500/30 bg-orange-500/10 text-orange-400 hover:bg-orange-500/20 transition-colors flex flex-col items-center gap-1"
+                className="p-3 sm:p-4 rounded-xl border border-white/[0.06] bg-white/[0.01] text-white/50 hover:bg-white/[0.03] hover:text-white/70 hover:border-white/[0.1] transition-all flex flex-col items-center gap-1.5"
               >
-                <span className="font-bold text-sm sm:text-base">Hard</span>
-                <span className="text-[10px] sm:text-xs opacity-60">{currentNeuron.intervals[2]}</span>
+                <span className="font-medium text-xs sm:text-sm tracking-wide">Hard</span>
+                <span className="font-mono text-[9px] sm:text-[10px] opacity-60">{currentNeuron.intervals[2]}</span>
               </button>
               <button
                 onClick={() => handleRate(3)}
-                className="p-3 rounded-lg border border-blue-500/30 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-colors flex flex-col items-center gap-1"
+                className="p-3 sm:p-4 rounded-xl border border-white/[0.12] bg-white/[0.03] text-white/70 hover:bg-white/[0.06] hover:text-white/90 hover:border-white/[0.2] transition-all flex flex-col items-center gap-1.5"
               >
-                <span className="font-bold text-sm sm:text-base">Good</span>
-                <span className="text-[10px] sm:text-xs opacity-60">{currentNeuron.intervals[3]}</span>
+                <span className="font-semibold text-xs sm:text-sm tracking-wide">Good</span>
+                <span className="font-mono text-[9px] sm:text-[10px] opacity-70">{currentNeuron.intervals[3]}</span>
               </button>
               <button
                 onClick={() => handleRate(4)}
-                className="p-3 rounded-lg border border-green-500/30 bg-green-500/10 text-green-400 hover:bg-green-500/20 transition-colors flex flex-col items-center gap-1"
+                className="p-3 sm:p-4 rounded-xl border border-white/[0.2] bg-white/[0.06] text-white/90 hover:bg-white/[0.1] hover:text-white hover:border-white/[0.3] transition-all flex flex-col items-center gap-1.5"
               >
-                <span className="font-bold text-sm sm:text-base">Easy</span>
-                <span className="text-[10px] sm:text-xs opacity-60">{currentNeuron.intervals[4]}</span>
+                <span className="font-bold text-xs sm:text-sm tracking-wide">Easy</span>
+                <span className="font-mono text-[9px] sm:text-[10px] opacity-80">{currentNeuron.intervals[4]}</span>
               </button>
-            </div>
+            </motion.div>
           )}
         </div>
       </div>
