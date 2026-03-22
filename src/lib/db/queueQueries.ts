@@ -67,4 +67,19 @@ export const queueQueries = {
       .eq('id', id);
     if (error) throw error;
   },
+
+  async findByUrl(client: TypedClient, userId: string, url: string): Promise<KnowledgeQueueItem | null> {
+    const { data, error } = await client
+      .from('knowledge_queue')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('url', url)
+      .limit(1)
+      .single();
+    if (error) {
+      if (error.code === 'PGRST116') return null;
+      throw error;
+    }
+    return data;
+  },
 };
