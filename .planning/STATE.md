@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Staging Area
 status: unknown
-last_updated: "2026-03-22T14:55:47.528Z"
+last_updated: "2026-03-22T15:44:12.199Z"
 progress:
-  total_phases: 3
+  total_phases: 4
   completed_phases: 2
-  total_plans: 5
-  completed_plans: 6
+  total_plans: 8
+  completed_plans: 7
 ---
 
 # Project State
@@ -17,14 +17,14 @@ Current execution state for get-shit-done.
 
 ## Current Phase
 
-- **phase**: Phase 5 — Data Layer & Auth Foundation
-- **plan**: 03 (complete)
-- **status**: In progress — plans 01, 02, and 03 complete
+- **phase**: Phase 6 — Capture API & Key Management
+- **plan**: 00 (complete)
+- **status**: In progress — plan 00 complete (Nyquist test scaffolds)
 - **focus**: Milestone v1.1 Staging Area — cognitive funnel for chaotic inputs
 
 ## Progress
 
-[                                        ] 0% (0/4 phases complete)
+[█████████░] 88% (7/8 plans complete)
 
 ## Project Reference
 
@@ -38,7 +38,7 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 | Phase | Name | Requirements | Status |
 |-------|------|--------------|--------|
 | 5 | Data Layer & Auth Foundation | DATA-01, DATA-02, DATA-03, DATA-04 | In progress (3 of N plans complete) |
-| 6 | Capture API & Key Management | AUTH-01, AUTH-02, AUTH-03, AUTH-04 | Not started |
+| 6 | Capture API & Key Management | AUTH-01, AUTH-02, AUTH-03, AUTH-04 | In progress (1 of 3 plans complete) |
 | 7 | Queue Triage UI | TRIAGE-01, TRIAGE-02, TRIAGE-03, TRIAGE-04, TRIAGE-05 | Not started |
 | 8 | Crystallize Flow | CRYST-01, CRYST-02, CRYST-03 | Not started |
 | 9 | UI Polish & Design System | POLISH-01, POLISH-02, POLISH-03, POLISH-04, POLISH-05 | Not started |
@@ -77,6 +77,10 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 - **05-03-query-isolation**: Each table gets its own query module file (queueQueries.ts, apiKeyQueries.ts) — structural AI isolation enforced at module boundary, never cross-reference neuron/synapse tables from queue modules
 - **05-03-tsc-path-alias**: `npx tsc --noEmit <file>` fails on `@/` path aliases; use full project `npx tsc --noEmit` for type-checking in projects with tsconfig path mappings
 
+### v1.1 Decisions (executed in 06-00)
+
+- **06-00-nyquist**: Wave 0 Nyquist compliance plan — test scaffolds only, no production decisions required; contracts follow plan spec exactly
+
 ### v1.0 Performance
 
 | Phase | Plan | Duration | Tasks | Files |
@@ -87,6 +91,7 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 | 05-data-layer-auth-foundation | 01 | 1min | 2 | 3 |
 | 05-data-layer-auth-foundation | 02 | 2min | 2 | 5 |
 | 05-data-layer-auth-foundation | 03 | 2min | 2 | 4 |
+| 06-capture-api-key-management | 00 | 2min | 2 | 4 |
 
 ### Research Flags (address during planning)
 
@@ -96,4 +101,4 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 ## Session
 
 - **Last session**: 2026-03-22
-- **Stopped at**: Completed 05-03-PLAN.md (queueQueries and apiKeyQueries database query objects with TDD test coverage)
+- **Stopped at**: Completed 06-00-PLAN.md (RED state test scaffolds for capture route, keys route, metadata extraction, and findByUrl extension)

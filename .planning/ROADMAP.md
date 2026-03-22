@@ -105,7 +105,7 @@ Plans:
   2. User can revoke an existing API key and confirm it no longer accepts captures.
   3. A POST to `/api/capture` with a valid bearer token and a URL creates a new inbox item and returns `{ success: true, id }` in the response body (not just a 200 status code).
   4. A POST to `/api/capture` with an invalid or revoked token returns `{ success: false, error: "unauthorized" }` — and the iOS Shortcuts error branch fires correctly from this response body.
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 Plans:
 - [ ] 06-00-PLAN.md — Test scaffolds for capture route, keys route, metadata extraction, and findByUrl (Wave 0)
 - [ ] 06-01-PLAN.md — Capture endpoint with bearer auth, rate limiting, duplicate detection, and URL metadata extraction
@@ -160,7 +160,7 @@ v1.1: 5 → 6 → 7 → 8 (strictly sequential; each phase depends on the previo
 | 3. Rigorous Retention | 0/0 | Not started | - |
 | 4. Advanced AI Markdown Editor | 1/1 | Complete | 2026-03-21 |
 | 5. Data Layer & Auth Foundation | 3/3 | Complete   | 2026-03-22 |
-| 6. Capture API & Key Management | 0/3 | Planning complete | - |
+| 6. Capture API & Key Management | 1/3 | In Progress|  |
 | 7. Queue Triage UI | 0/0 | Not started | - |
 | 8. Crystallize Flow | 0/0 | Not started | - |
 | 9. UI Polish & Design System | 0/0 | Not started | - |

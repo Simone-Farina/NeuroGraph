@@ -28,10 +28,10 @@ Requirements for Milestone v1.1: Staging Area & Cognitive Funnel.
 
 ### Authentication & Capture
 
-- [ ] **AUTH-01**: User can generate a personal API key from the app UI
-- [ ] **AUTH-02**: User can revoke an existing API key
-- [ ] **AUTH-03**: User can POST to `/api/capture` with a bearer token to create a new inbox item (URL + optional title + optional notes)
-- [ ] **AUTH-04**: Capture endpoint validates bearer token in the route handler (not middleware) and returns body-level success/error JSON compatible with iOS Shortcuts
+- [x] **AUTH-01**: User can generate a personal API key from the app UI
+- [x] **AUTH-02**: User can revoke an existing API key
+- [x] **AUTH-03**: User can POST to `/api/capture` with a bearer token to create a new inbox item (URL + optional title + optional notes)
+- [x] **AUTH-04**: Capture endpoint validates bearer token in the route handler (not middleware) and returns body-level success/error JSON compatible with iOS Shortcuts
 
 ### Triage UI
 
@@ -100,10 +100,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DATA-02 | Phase 5 | Complete |
 | DATA-03 | Phase 5 | Complete |
 | DATA-04 | Phase 5 | Complete |
-| AUTH-01 | Phase 6 | Pending |
-| AUTH-02 | Phase 6 | Pending |
-| AUTH-03 | Phase 6 | Pending |
-| AUTH-04 | Phase 6 | Pending |
+| AUTH-01 | Phase 6 | Complete |
+| AUTH-02 | Phase 6 | Complete |
+| AUTH-03 | Phase 6 | Complete |
+| AUTH-04 | Phase 6 | Complete |
 | TRIAGE-01 | Phase 7 | Pending |
 | TRIAGE-02 | Phase 7 | Pending |
 | TRIAGE-03 | Phase 7 | Pending |
