@@ -6,6 +6,8 @@ export type BloomLevel =
   | 'Evaluate'
   | 'Create';
 
+export type Json = string | number | boolean | null | { [key: string]: Json } | Json[];
+
 export type SynapseType = 'PREREQUISITE' | 'RELATED' | 'BUILDS_ON';
 export type MessageRole = 'user' | 'assistant' | 'system';
 
@@ -62,6 +64,7 @@ export type Message = {
   conversation_id: string;
   role: MessageRole;
   content: string;
+  metadata: Json | null;
   youtube_url: string | null;
   created_at: string;
 };
@@ -162,10 +165,13 @@ export type Database = {
           conversation_id: string;
           role: MessageRole;
           content: string;
+          metadata?: Json | null;
           youtube_url?: string | null;
           created_at?: string;
         };
-        Update: Partial<Message>;
+        Update: Partial<Message> & {
+          metadata?: Json | null;
+        };
         Relationships: [];
       };
       knowledge_queue: {
