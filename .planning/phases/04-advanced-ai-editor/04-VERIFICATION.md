@@ -4,7 +4,7 @@ verified: 2026-03-21T00:00:00Z
 status: passed
 score: 3/3 success criteria verified
 re_verification: false
-gaps: []  # Gap resolved in commit 1542e06
+gaps: []
 human_verification:
   - test: "Open a neuron, type content, trigger a slash command (e.g. /Summarize)"
     expected: "AI output panel streams text into the panel below the editor"

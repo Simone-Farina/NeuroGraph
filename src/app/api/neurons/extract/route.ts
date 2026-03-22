@@ -14,6 +14,7 @@ const extractionResultSchema = z.object({
   core_insight: z.string().describe('The key takeaway or deepest insight from the writing (max 500 chars)'),
   bloom_level: z.enum(['Remember', 'Understand', 'Apply', 'Analyze', 'Evaluate', 'Create'])
     .describe('The Bloom taxonomy level demonstrated by the content'),
+  suggested_synapses: z.array(z.string()).describe('A list of other neuron titles that are conceptually prerequisites or related to this content'),
 });
 
 /**
@@ -64,6 +65,7 @@ Rules:
   - Analyze: Breaks down and compares
   - Evaluate: Judges and critiques
   - Create: Synthesizes something new
+- suggested_synapses: Identify other concepts the user might have in their brain that this note relies on or connects to. Return only titles.
 
 Be precise. Prefer specific, high-signal language over vague paraphrasing.`,
       prompt: `Title: ${title}

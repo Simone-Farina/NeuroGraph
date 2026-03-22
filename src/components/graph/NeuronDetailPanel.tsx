@@ -60,6 +60,7 @@ export function NeuronDetailPanel() {
       content: string;
       definition?: string;
       core_insight?: string;
+      bloom_level?: string;
     }) => {
       if (!activeNeuronId) return;
 
@@ -75,6 +76,7 @@ export function NeuronDetailPanel() {
             content: updates.content,
             ...(updates.definition ? { definition: updates.definition } : {}),
             ...(updates.core_insight ? { core_insight: updates.core_insight } : {}),
+            ...(updates.bloom_level ? { bloom_level: updates.bloom_level } : {}),
           }),
         });
 
