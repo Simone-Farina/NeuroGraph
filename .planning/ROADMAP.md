@@ -24,7 +24,7 @@ Introduce a cognitive funnel that catches chaotic real-world inputs (URLs, ideas
 - [x] **Phase 5: Data Layer & Auth Foundation** - Schema, RLS, TypeScript types, and API key utilities. (completed 2026-03-22)
 - [x] **Phase 6: Capture API & Key Management** - Bearer-token capture endpoint, key generation/revocation API routes. (completed 2026-03-22)
 - [x] **Phase 7: Queue Triage UI** - Staging Area page, state transitions, aging indicators, sidebar badge. (completed 2026-03-22)
-- [ ] **Phase 8: Crystallize Flow** - URL extraction, AI summarization, Socratic chat handoff, mastered state auto-advance.
+- [x] **Phase 8: Crystallize Flow** - URL extraction, AI summarization, Socratic chat handoff, mastered state auto-advance. (completed 2026-03-22)
 - [ ] **Phase 9: UI Polish & Design System** - Editorial chat, dynamic layout, motion language, review page redesign, empty states.
 
 ---
@@ -135,11 +135,11 @@ Plans:
   1. User can click "Crystallize" on a queue item with a URL and be taken to a new chat session pre-seeded with an AI summary of the article content — without manually pasting anything.
   2. When URL extraction fails (paywall, SPA, timeout), the system presents a manual paste area so the user can still Crystallize without abandoning the flow.
   3. When a Neuron is created from a Crystallize-initiated chat session, the originating queue item automatically transitions to "mastered" state — the user sees this reflected in the queue without any manual action.
-**Plans:** 3 planned
+**Plans:** 3/3 plans executed
 Plans:
-- [ ] 08-01-PLAN.md — Crystallize backend orchestration, extraction/summary helpers, and message-metadata provenance
-- [ ] 08-02-PLAN.md — Chat-side crystallize bootstrap, seeded-session loading, and embedded manual paste flow
-- [ ] 08-03-PLAN.md — Neurogenesis mastery handoff, queue refresh integration, and final human checkpoint
+- [x] 08-01-PLAN.md — Crystallize backend orchestration, extraction/summary helpers, and message-metadata provenance
+- [x] 08-02-PLAN.md — Chat-side crystallize bootstrap, seeded-session loading, and embedded manual paste flow
+- [x] 08-03-PLAN.md — Neurogenesis mastery handoff, queue refresh integration, and final human checkpoint
 
 ### Phase 9: UI Polish & Design System
 **Goal**: Elevate the entire app from functional to editorially refined — applying the critique findings across all existing surfaces so the Staging Area UI doesn't feel like it landed in a lesser product. This phase also absorbs the remaining Phase 7 UI review follow-through: calmer typography scale, stronger semantic decay tokens, and a flatter editorial queue surface.
@@ -151,7 +151,11 @@ Plans:
   3. Empty states for graph and chat teach the interface and match the brand voice — no emoji-in-circle templates.
   4. Review page rating buttons are monochrome — difficulty communicated through weight/size, not traffic-light colors.
   5. Panel transitions use intentional motion (micro-scale + fade, staggered list entries) — no binary cuts between states.
-**Plans**: TBD
+**Plans**: 3 planned
+Plans:
+- [ ] 09-01-PLAN.md — Shell preset state, dynamic panel layout, and curated conversation-history grouping
+- [ ] 09-02-PLAN.md — Editorial chat presentation, empty-state redesign, and Phase 7 queue polish follow-through
+- [ ] 09-03-PLAN.md — Monochrome review surface, motion-language unification, and final human checkpoint
 
 ---
 
@@ -170,5 +174,5 @@ v1.1: 5 → 6 → 7 → 8 (strictly sequential; each phase depends on the previo
 | 5. Data Layer & Auth Foundation | 3/3 | Complete   | 2026-03-22 |
 | 6. Capture API & Key Management | 3/3 | Complete | 2026-03-22 |
 | 7. Queue Triage UI | 3/3 | Complete | 2026-03-22 |
-| 8. Crystallize Flow | 0/3 | Planned | - |
-| 9. UI Polish & Design System | 0/0 | Not started | - |
+| 8. Crystallize Flow | 3/3 | Complete | 2026-03-22 |
+| 9. UI Polish & Design System | 0/3 | Planned | - |

@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Staging Area
 status: unknown
-last_updated: "2026-03-22T21:55:16.742Z"
+last_updated: "2026-03-22T23:20:44.721Z"
 progress:
-  total_phases: 6
-  completed_phases: 4
-  total_plans: 14
-  completed_plans: 13
+  total_phases: 7
+  completed_phases: 5
+  total_plans: 17
+  completed_plans: 16
 ---
 
 # Project State
@@ -17,14 +17,14 @@ Current execution state for get-shit-done.
 
 ## Current Phase
 
-- **phase**: Phase 8 — Crystallize Flow
-- **plan**: 3 execution plans drafted
-- **status**: Phase 8 planned via fallback — ready to execute Phase 8
-- **focus**: Turn queued inputs into seeded crystallization chats with graceful extraction fallback and mastered-state closure
+- **phase**: Phase 9 — UI Polish & Design System
+- **plan**: 02/03
+- **status**: Phase 9 discussed and planned via fallback — ready to execute Phase 9
+- **focus**: Align the main app surfaces with the design contract: quieter chat presence, calmer history/navigation, stronger editorial polish, and cohesive motion/layout language
 
 ## Progress
 
-[██████░░░░] 60% (3/5 milestone phases complete, 12/15 planned items executed)
+[████████░░] 80% (4/5 milestone phases complete, 15/15 planned items executed)
 
 ## Project Reference
 
@@ -40,7 +40,7 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 | 5 | Data Layer & Auth Foundation | DATA-01, DATA-02, DATA-03, DATA-04 | Complete |
 | 6 | Capture API & Key Management | AUTH-01, AUTH-02, AUTH-03, AUTH-04 | Complete |
 | 7 | Queue Triage UI | TRIAGE-01, TRIAGE-02, TRIAGE-03, TRIAGE-04, TRIAGE-05 | Complete |
-| 8 | Crystallize Flow | CRYST-01, CRYST-02, CRYST-03 | Planned |
+| 8 | Crystallize Flow | CRYST-01, CRYST-02, CRYST-03 | Complete |
 | 9 | UI Polish & Design System | POLISH-01, POLISH-02, POLISH-03, POLISH-04, POLISH-05 | Not started |
 
 ## Accumulated Context
@@ -123,6 +123,17 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 - **08-manual-paste-continuity**: Extraction failure should still create the conversation and show manual paste inside the chat surface; failure is a continuity state, not an ejection path
 - **08-mastered-state-walk**: Mastery must honor the existing queue allowlist by walking `inbox/resource -> passive_debt -> mastered` rather than bypassing queue rules with a raw state update
 - **08-planning-fallback**: `roadmap get-phase 8` still reports `malformed_roadmap`, so Phase 8 research, validation, and plan artifacts were written manually from roadmap/state/context sources
+- **08-approved-closeout**: Human verification passed on 2026-03-22: seeded crystallize flow, manual paste fallback continuity, mastery handoff, and repeated Neurogenesis idempotence all behave correctly end-to-end
+- **06-post-shortcut-validation**: Physical-device Shortcut validation is now complete, including URL-only capture, duplicate rejection, revoked-key unauthorized handling, and Inbox insertion confirmation
+- **09-shell-preset-model**: Phase 9 uses named layout presets (`standard`, `deep_read`, `graph_zenith`) managed by store state and Framer Motion, not drag resizing
+- **09-history-fading-model**: Conversation history is grouped into `Active/Recent` and `Fading`; fading sessions use semantic rust and reduced opacity to tell the TTL story without creating anxiety
+- **09-priority-order**: Shell/navigation/history polish comes first if sequencing tradeoffs are required, but Phase 9 remains balanced across shell, chat, empty states, review, and motion
+- **09-planning-fallback**: `gsd-tools init phase-op 9` failed to detect the roadmap phase, so Phase 9 context/research/validation/plans were written manually from roadmap/state/code sources
+
+### v1.1 Decisions (executed in 09-01)
+
+- **09-01-shell-presets**: The shell uses named layout presets (standard, deep_read, graph_zenith) instead of drag resizing.
+- **09-01-history-curation**: Conversation history is grouped into Active/Recent and Fading, using reduced opacity and rust semantics for fading.
 
 ### v1.0 Performance
 
@@ -140,19 +151,26 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 | 07-queue-triage-ui | 01 | 10min | 2 | 5 |
 | 07-queue-triage-ui | 02 | 12min | 2 | 8 |
 | 07-queue-triage-ui | 03 | 12min | 3 | 5 |
+| 08-crystallize-flow | 01 | 20min | 2 | 9 |
+| 08-crystallize-flow | 02 | 20min | 2 | 4 |
+| 08-crystallize-flow | 03 | 10min | 3 | 6 |
+| 09-ui-polish-design-system | 01 | 15min | 3 | 4 |
 
 ### Research Flags (address during planning)
 
-- **Phase 6**: Validate iOS Shortcuts `.shortcut` template behavior on a physical device before declaring Phase 6 done.
 - **Phase 8**: Run URL extraction test harness against 20+ diverse real URLs before committing to fallback UX threshold. Confirm Vercel plan tier for function timeout budget (Hobby = 10s, Pro = 60s).
+
+### Operational Validation
+
+- **Phase 6 physical-device validation**: Closed on 2026-03-22. iPhone Shortcut capture now works with URL-only payloads, duplicate URLs are rejected cleanly, revoked keys return `unauthorized`, and successful captures appear in Inbox.
 
 ## Session
 
-- **Last session**: 2026-03-22T21:29:34Z
-- **Stopped at**: Auto-routed from `$gsd-next` into a manual Phase 8 planning fallback and created research, validation, and plan artifacts despite the roadmap parser failure
+- **Last session**: 2026-03-22T23:18:30Z
+- **Stopped at**: Completed 09-01-PLAN.md
 
 ## Session Continuity
 
 - **Last resumed**: 2026-03-22T21:29:34Z
-- **Resume point**: Execute Phase 8 starting with backend crystallize orchestration in `08-01-PLAN.md`
-- **Next action**: `$gsd-execute-phase 8`
+- **Resume point**: Execute Phase 9 starting with shell presets and curated conversation history in `09-01-PLAN.md`
+- **Next action**: `$gsd-execute-phase 9`
