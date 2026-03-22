@@ -1,26 +1,23 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextResponse } from 'next/server';
 
+const { mockSupabaseAdmin } = vi.hoisted(() => ({
+  mockSupabaseAdmin: {
+    from: vi.fn(),
+    auth: {
+      getUser: vi.fn(),
+    },
+  },
+}));
+
 // Mock dependencies before importing route
 vi.mock('@/lib/auth/server');
 vi.mock('@/lib/auth/apiKeys');
 vi.mock('@/lib/db/apiKeyQueries');
 
-// vi.mock factories are hoisted -- cannot reference outer variables.
-// Use vi.fn() inline; tests that need the admin client can import createClient.
 vi.mock('@supabase/supabase-js', () => ({
-  createClient: vi.fn(() => ({
-    from: vi.fn(),
-    auth: { getUser: vi.fn() },
-  })),
+  createClient: vi.fn(() => mockSupabaseAdmin),
 }));
-
-const mockSupabaseAdmin = {
-  from: vi.fn(),
-  auth: {
-    getUser: vi.fn(),
-  },
-};
 
 import { getAuthenticatedUser } from '@/lib/auth/server';
 import { generateApiKey, hashApiKey, getKeyPrefix } from '@/lib/auth/apiKeys';
@@ -43,6 +40,8 @@ const MOCK_KEY_ROW = {
 describe('GET /api/keys', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSupabaseAdmin.from.mockReset();
+    mockSupabaseAdmin.auth.getUser.mockReset();
     // Default: authenticated
     (getAuthenticatedUser as any).mockResolvedValue({
       user: MOCK_USER,
@@ -130,7 +129,7 @@ describe('POST /api/keys', () => {
 
     const response = await POST();
 
-    expect(apiKeyQueries.revoke).toHaveBeenCalledWith(expect.anything(), 'key-1');
+    expect(apiKeyQueries.revoke).toHaveBeenCalledWith(mockSupabaseAdmin, 'key-1');
     expect(apiKeyQueries.create).toHaveBeenCalled();
     expect(response.status).toBe(201);
   });
@@ -158,6 +157,8 @@ describe('POST /api/keys', () => {
 describe('DELETE /api/keys', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSupabaseAdmin.from.mockReset();
+    mockSupabaseAdmin.auth.getUser.mockReset();
     // Default: authenticated
     (getAuthenticatedUser as any).mockResolvedValue({
       user: MOCK_USER,
@@ -172,7 +173,7 @@ describe('DELETE /api/keys', () => {
     const response = await DELETE();
     const json = await response.json();
 
-    expect(apiKeyQueries.revoke).toHaveBeenCalledWith(expect.anything(), 'key-1');
+    expect(apiKeyQueries.revoke).toHaveBeenCalledWith(mockSupabaseAdmin, 'key-1');
     expect(response.status).toBe(200);
     expect(json).toEqual({ success: true });
   });

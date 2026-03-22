@@ -6,7 +6,9 @@ import { generateApiKey, hashApiKey, getKeyPrefix } from '@/lib/auth/apiKeys';
 import { apiKeyQueries } from '@/lib/db/apiKeyQueries';
 import type { Database } from '@/types/database';
 
-// Service role client for INSERT only (RLS blocks user INSERT on user_api_keys)
+// Service role client for INSERT and UPDATE on user_api_keys.
+// User-scoped clients have SELECT and DELETE RLS only; revoked_at/last_used_at updates
+// must bypass RLS through the service role client.
 const supabaseAdmin = createClient<Database>(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -49,10 +51,10 @@ export async function POST() {
     const { user, supabase, errorResponse } = await getAuthenticatedUser();
     if (errorResponse) return errorResponse;
 
-    // 1. Revoke any existing active key (user-scoped DELETE via RLS)
+    // 1. Revoke any existing active key.
     const existing = await apiKeyQueries.getActiveByUserId(supabase, user.id);
     if (existing) {
-      await apiKeyQueries.revoke(supabase, existing.id);
+      await apiKeyQueries.revoke(supabaseAdmin, existing.id);
     }
 
     // 2. Generate new key
@@ -92,7 +94,7 @@ export async function DELETE() {
 
     const key = await apiKeyQueries.getActiveByUserId(supabase, user.id);
     if (key) {
-      await apiKeyQueries.revoke(supabase, key.id);
+      await apiKeyQueries.revoke(supabaseAdmin, key.id);
     }
     return NextResponse.json({ success: true });
   } catch (error) {
