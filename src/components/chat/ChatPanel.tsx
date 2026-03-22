@@ -61,6 +61,7 @@ type CreatedNeuronResponse = {
     confidence: 'medium';
     source: 'vector' | 'ai';
   }>;
+  mastered_queue_item_id?: string;
 };
 
 type SynapseUpsertResponse = {
@@ -522,7 +523,7 @@ export function ChatPanel() {
           return;
         }
 
-        const { neuron, synapses, synapse_suggestions } =
+        const { neuron, synapses, synapse_suggestions, mastered_queue_item_id } =
           (await response.json()) as CreatedNeuronResponse;
 
         // 4. Update Graph Store Optimistically
@@ -566,6 +567,12 @@ export function ChatPanel() {
           );
         }
 
+        if (mastered_queue_item_id) {
+          void useQueueStore.getState().refreshQueue();
+          clearCrystallizeIntent();
+          setCrystallizeNotice('Queue item mastered');
+        }
+
         setMessages((prev) =>
           prev.map((msg) => ({
             ...msg,
@@ -593,7 +600,14 @@ export function ChatPanel() {
         setProcessingToolCalls(new Set(processingToolCallsRef.current));
       }
     },
-    [messages, currentConversationId, setMessages, showConnectionsNotice, upsertEdgeInStore]
+    [
+      clearCrystallizeIntent,
+      currentConversationId,
+      messages,
+      setMessages,
+      showConnectionsNotice,
+      upsertEdgeInStore,
+    ]
   );
 
   const handleDismiss = useCallback((toolCallId: string) => {

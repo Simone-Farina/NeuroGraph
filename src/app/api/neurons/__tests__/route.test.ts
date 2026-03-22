@@ -3,9 +3,14 @@ import { NextRequest } from 'next/server';
 import { POST } from '../route';
 import { createServerSupabaseClient } from '@/lib/auth/supabase';
 import { generateEmbedding } from '@/lib/ai/embeddings';
+import {
+  advanceQueueItemToMastered,
+  resolveCrystallizeQueueItemId,
+} from '@/lib/crystallize/provenance';
 
 vi.mock('@/lib/auth/supabase');
 vi.mock('@/lib/ai/embeddings');
+vi.mock('@/lib/crystallize/provenance');
 
 const mockUser = {
   id: 'user-123',
@@ -25,7 +30,6 @@ const validPayload = {
 describe('POST /api/neurons', () => {
   let mockSupabase: any;
   let mockInsert: any;
-  let mockUpdate: any;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -35,19 +39,6 @@ describe('POST /api/neurons', () => {
         single: vi.fn().mockResolvedValue({
           data: { id: 'neuron-1', ...validPayload, user_id: mockUser.id, embedding: [0.1, 0.2, 0.3] },
           error: null,
-        }),
-      }),
-    });
-
-    mockUpdate = vi.fn().mockReturnValue({
-      eq: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          select: vi.fn().mockReturnValue({
-            single: vi.fn().mockResolvedValue({
-              data: { id: 'neuron-1', ...validPayload, user_id: mockUser.id, embedding: [0.1, 0.2, 0.3] },
-              error: null,
-            }),
-          }),
         }),
       }),
     });
@@ -65,7 +56,6 @@ describe('POST /api/neurons', () => {
                 not: vi.fn().mockResolvedValue({ count: 1 }),
               }),
             }),
-            update: mockUpdate,
           };
         }
 
@@ -95,6 +85,8 @@ describe('POST /api/neurons', () => {
 
     (createServerSupabaseClient as any).mockResolvedValue(mockSupabase);
     (generateEmbedding as any).mockResolvedValue([0.1, 0.2, 0.3]);
+    vi.mocked(resolveCrystallizeQueueItemId).mockResolvedValue(null);
+    vi.mocked(advanceQueueItemToMastered).mockResolvedValue('not_found');
   });
 
   it('should include source_message_ids in the insert payload', async () => {
@@ -114,7 +106,7 @@ describe('POST /api/neurons', () => {
     expect(insertPayload).toHaveProperty('source_message_ids', validPayload.source_message_ids);
   });
 
-  it('should return a neuron payload and perform embedding update', async () => {
+  it('should return a neuron payload and generate an embedding for insert', async () => {
     const req = new NextRequest('http://localhost:3000/api/neurons', {
       method: 'POST',
       body: JSON.stringify(validPayload),
@@ -129,6 +121,42 @@ describe('POST /api/neurons', () => {
       `${validPayload.title} ${validPayload.definition} ${validPayload.core_insight}`
     );
     expect(mockInsert).toHaveBeenCalledTimes(1);
-    expect(mockUpdate).toHaveBeenCalled();
+  });
+
+  it('includes mastered_queue_item_id when the conversation is crystallize-linked', async () => {
+    vi.mocked(resolveCrystallizeQueueItemId).mockResolvedValue('queue-1');
+    vi.mocked(advanceQueueItemToMastered).mockResolvedValue('mastered');
+
+    const req = new NextRequest('http://localhost:3000/api/neurons', {
+      method: 'POST',
+      body: JSON.stringify(validPayload),
+    });
+
+    const response = await POST(req);
+    const json = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(json.mastered_queue_item_id).toBe('queue-1');
+    expect(resolveCrystallizeQueueItemId).toHaveBeenCalledWith(
+      mockSupabase,
+      validPayload.source_conversation_id
+    );
+    expect(advanceQueueItemToMastered).toHaveBeenCalledWith(mockSupabase, 'queue-1');
+  });
+
+  it('returns mastered_queue_item_id when the queue item was already mastered', async () => {
+    vi.mocked(resolveCrystallizeQueueItemId).mockResolvedValue('queue-1');
+    vi.mocked(advanceQueueItemToMastered).mockResolvedValue('already_mastered');
+
+    const req = new NextRequest('http://localhost:3000/api/neurons', {
+      method: 'POST',
+      body: JSON.stringify(validPayload),
+    });
+
+    const response = await POST(req);
+    const json = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(json.mastered_queue_item_id).toBe('queue-1');
   });
 });
