@@ -1,18 +1,22 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
+
+// Use vi.hoisted so mockSupabaseAdmin is available inside vi.mock factory (hoisting order fix)
+const { mockSupabaseAdmin } = vi.hoisted(() => {
+  const mockSupabaseAdmin = {
+    from: vi.fn(),
+    auth: {
+      getUser: vi.fn(),
+    },
+  };
+  return { mockSupabaseAdmin };
+});
 
 // Mock dependencies before importing route
 vi.mock('@/lib/auth/apiKeys');
 vi.mock('@/lib/db/apiKeyQueries');
 vi.mock('@/lib/db/queueQueries');
 vi.mock('@/lib/capture/metadata');
-
-const mockSupabaseAdmin = {
-  from: vi.fn(),
-  auth: {
-    getUser: vi.fn(),
-  },
-};
 
 vi.mock('@supabase/supabase-js', () => ({
   createClient: vi.fn(() => mockSupabaseAdmin),
@@ -34,7 +38,8 @@ function captureRequest(body: object, token?: string) {
   });
 }
 
-const VALID_TOKEN = 'ng_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+// Must be ng_ + exactly 48 alphanumeric chars to pass RawApiKeySchema validation
+const VALID_TOKEN = 'ng_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuv';
 const VALID_HASH = 'abc123hash';
 const VALID_KEY_ROW = {
   id: 'key-1',
@@ -50,34 +55,38 @@ describe('POST /api/capture', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Default: hash returns valid hash
-    (hashApiKey as any).mockReturnValue(VALID_HASH);
+    vi.mocked(hashApiKey).mockReturnValue(VALID_HASH);
     // Default: findByHash returns valid key
-    (apiKeyQueries.findByHash as any) = vi.fn().mockResolvedValue(VALID_KEY_ROW);
-    (apiKeyQueries.updateLastUsed as any) = vi.fn().mockResolvedValue(undefined);
+    vi.mocked(apiKeyQueries.findByHash).mockResolvedValue(VALID_KEY_ROW);
+    vi.mocked(apiKeyQueries.updateLastUsed).mockResolvedValue(undefined);
     // Default: rate limit not exceeded (count = 0)
-    const mockCountResult = vi.fn().mockResolvedValue({ count: 0, error: null });
-    const mockLte = vi.fn().mockReturnValue({ count: mockCountResult });
-    const mockGte = vi.fn().mockReturnValue({ lte: mockLte });
+    // Supabase chain: .from().select().eq().gte() returns a Promise<{count, data, error}>
+    const mockGte = vi.fn().mockResolvedValue({ count: 0, data: null, error: null });
     const mockEqUser = vi.fn().mockReturnValue({ gte: mockGte });
     const mockSelect = vi.fn().mockReturnValue({ eq: mockEqUser });
     mockSupabaseAdmin.from.mockReturnValue({ select: mockSelect });
     // Default: no duplicate URL
-    (queueQueries.findByUrl as any) = vi.fn().mockResolvedValue(null);
+    vi.mocked(queueQueries.findByUrl).mockResolvedValue(null);
     // Default: metadata extraction returns data
-    (extractHeadMetadata as any).mockResolvedValue({
+    vi.mocked(extractHeadMetadata).mockResolvedValue({
       title: 'Test Title',
       favicon_url: 'https://example.com/favicon.ico',
       estimated_read_time: null,
       source_domain: 'example.com',
     });
     // Default: create returns a queue item
-    (queueQueries.create as any) = vi.fn().mockResolvedValue({
+    vi.mocked(queueQueries.create).mockResolvedValue({
       id: 'item-1',
       title: 'Test Title',
       url: 'https://example.com/article',
       source_domain: 'example.com',
       state: 'inbox',
       user_id: 'user-1',
+      notes: null,
+      favicon_url: null,
+      estimated_read_time: null,
+      created_at: '2026-01-01T00:00:00Z',
+      updated_at: '2026-01-01T00:00:00Z',
     });
   });
 
@@ -100,7 +109,7 @@ describe('POST /api/capture', () => {
   });
 
   it('returns 401 when key hash not found (revoked or nonexistent)', async () => {
-    (apiKeyQueries.findByHash as any) = vi.fn().mockResolvedValue(null);
+    vi.mocked(apiKeyQueries.findByHash).mockResolvedValue(null);
 
     const req = captureRequest({ title: 'Test', url: 'https://example.com' }, VALID_TOKEN);
     const response = await POST(req);
@@ -111,9 +120,7 @@ describe('POST /api/capture', () => {
   });
 
   it('returns 429 when rate limit exceeded (60/hour)', async () => {
-    const mockCountResult = vi.fn().mockResolvedValue({ count: 60, error: null });
-    const mockLte = vi.fn().mockReturnValue({ count: mockCountResult });
-    const mockGte = vi.fn().mockReturnValue({ lte: mockLte });
+    const mockGte = vi.fn().mockResolvedValue({ count: 60, data: null, error: null });
     const mockEqUser = vi.fn().mockReturnValue({ gte: mockGte });
     const mockSelect = vi.fn().mockReturnValue({ eq: mockEqUser });
     mockSupabaseAdmin.from.mockReturnValue({ select: mockSelect });
@@ -141,9 +148,16 @@ describe('POST /api/capture', () => {
       id: 'existing-1',
       title: 'Existing',
       url: 'https://example.com/article',
-      state: 'inbox',
+      state: 'inbox' as const,
+      user_id: 'user-1',
+      notes: null,
+      source_domain: null,
+      favicon_url: null,
+      estimated_read_time: null,
+      created_at: '2026-01-01T00:00:00Z',
+      updated_at: '2026-01-01T00:00:00Z',
     };
-    (queueQueries.findByUrl as any) = vi.fn().mockResolvedValue(existingItem);
+    vi.mocked(queueQueries.findByUrl).mockResolvedValue(existingItem);
 
     const req = captureRequest(
       { title: 'Test', url: 'https://example.com/article' },
@@ -186,13 +200,18 @@ describe('POST /api/capture', () => {
       estimated_read_time: null,
       source_domain: 'example.com',
     });
-    (queueQueries.create as any) = vi.fn().mockResolvedValue({
+    vi.mocked(queueQueries.create).mockResolvedValue({
       id: 'item-2',
       title: 'My Article',
       url: 'https://example.com/article',
       source_domain: 'example.com',
       state: 'inbox',
       user_id: 'user-1',
+      notes: null,
+      favicon_url: null,
+      estimated_read_time: null,
+      created_at: '2026-01-01T00:00:00Z',
+      updated_at: '2026-01-01T00:00:00Z',
     });
 
     const req = captureRequest(
