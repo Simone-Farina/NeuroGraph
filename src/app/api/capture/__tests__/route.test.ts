@@ -193,6 +193,36 @@ describe('POST /api/capture', () => {
     });
   });
 
+  it('returns 201 when only url is provided and derives the title server-side', async () => {
+    const req = captureRequest(
+      { url: 'https://example.com/article' },
+      VALID_TOKEN
+    );
+    const response = await POST(req);
+    const json = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(json).toEqual({
+      success: true,
+      item: {
+        id: 'item-1',
+        title: expect.any(String),
+        url: 'https://example.com/article',
+        source_domain: 'example.com',
+        state: 'inbox',
+      },
+    });
+
+    const createPayload = vi.mocked(queueQueries.create).mock.calls[0]?.[1];
+    expect(createPayload).toMatchObject({
+      url: 'https://example.com/article',
+      source_domain: 'example.com',
+      state: 'inbox',
+    });
+    expect(typeof createPayload?.title).toBe('string');
+    expect(createPayload?.title.length).toBeGreaterThan(0);
+  });
+
   it('succeeds even when metadata extraction fails', async () => {
     (extractHeadMetadata as any).mockResolvedValue({
       title: null,
