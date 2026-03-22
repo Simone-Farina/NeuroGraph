@@ -33,7 +33,7 @@ API route handlers for key generation/revocation + mobile capture endpoint. User
 
 ### API Route Architecture (from Phase 5 decisions)
 - Capture endpoint uses **service role client** (not cookie-based session). Bearer token validated in route handler, not middleware (CVE-2025-29927).
-- Rate limit: 60 captures/hour per key, checked via `last_used_at` timestamp.
+- Rate limit: 60 captures/hour per user, checked by counting `knowledge_queue` rows with `created_at` in the last hour.
 - Key management routes (generate/revoke) use standard `createServerSupabaseClient()` — they require a browser session.
 
 ### Claude's Discretion
