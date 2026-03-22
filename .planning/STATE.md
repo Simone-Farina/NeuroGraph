@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Staging Area
 status: unknown
-last_updated: "2026-03-22T14:45:51.840Z"
+last_updated: "2026-03-22T14:51:29.528Z"
 progress:
   total_phases: 3
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 5
-  completed_plans: 5
+  completed_plans: 6
 ---
 
 # Project State
@@ -18,8 +18,8 @@ Current execution state for get-shit-done.
 ## Current Phase
 
 - **phase**: Phase 5 — Data Layer & Auth Foundation
-- **plan**: 02 (complete)
-- **status**: In progress — plans 01 and 02 complete
+- **plan**: 03 (complete)
+- **status**: In progress — plans 01, 02, and 03 complete
 - **focus**: Milestone v1.1 Staging Area — cognitive funnel for chaotic inputs
 
 ## Progress
@@ -37,7 +37,7 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 
 | Phase | Name | Requirements | Status |
 |-------|------|--------------|--------|
-| 5 | Data Layer & Auth Foundation | DATA-01, DATA-02, DATA-03, DATA-04 | In progress (2 of N plans complete) |
+| 5 | Data Layer & Auth Foundation | DATA-01, DATA-02, DATA-03, DATA-04 | In progress (3 of N plans complete) |
 | 6 | Capture API & Key Management | AUTH-01, AUTH-02, AUTH-03, AUTH-04 | Not started |
 | 7 | Queue Triage UI | TRIAGE-01, TRIAGE-02, TRIAGE-03, TRIAGE-04, TRIAGE-05 | Not started |
 | 8 | Crystallize Flow | CRYST-01, CRYST-02, CRYST-03 | Not started |
@@ -72,6 +72,11 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 - **05-02-state-machine**: 4-state queue machine locked at Zod schema level: inbox, passive_debt, resource, mastered — no crystallizing or discarded states
 - **05-02-nanoid**: nanoid v3.3.11 used via existing transitive dependency — no new npm packages installed
 
+### v1.1 Decisions (executed in 05-03)
+
+- **05-03-query-isolation**: Each table gets its own query module file (queueQueries.ts, apiKeyQueries.ts) — structural AI isolation enforced at module boundary, never cross-reference neuron/synapse tables from queue modules
+- **05-03-tsc-path-alias**: `npx tsc --noEmit <file>` fails on `@/` path aliases; use full project `npx tsc --noEmit` for type-checking in projects with tsconfig path mappings
+
 ### v1.0 Performance
 
 | Phase | Plan | Duration | Tasks | Files |
@@ -81,6 +86,7 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 | 04-advanced-ai-editor | 01 | 45min | 5 | 8 |
 | 05-data-layer-auth-foundation | 01 | 1min | 2 | 3 |
 | 05-data-layer-auth-foundation | 02 | 2min | 2 | 5 |
+| 05-data-layer-auth-foundation | 03 | 2min | 2 | 4 |
 
 ### Research Flags (address during planning)
 
@@ -90,4 +96,4 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 ## Session
 
 - **Last session**: 2026-03-22
-- **Stopped at**: Completed 05-02-PLAN.md (API key crypto utilities, Zod validation schemas for queue and API keys)
+- **Stopped at**: Completed 05-03-PLAN.md (queueQueries and apiKeyQueries database query objects with TDD test coverage)
