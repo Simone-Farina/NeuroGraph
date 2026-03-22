@@ -19,13 +19,13 @@ Current execution state for get-shit-done.
 ## Current Phase
 
 - **phase**: Phase 6 — Capture API & Key Management
-- **plan**: 01 (complete)
-- **status**: In progress — plan 01 complete (capture endpoint, metadata extraction, findByUrl)
-- **focus**: Milestone v1.1 Staging Area — cognitive funnel for chaotic inputs
+- **plan**: 02 (complete)
+- **status**: complete
+- **focus**: Milestone v1.1 Staging Area — Phase 6 finished. Ready for Phase 7 (Queue Triage UI).
 
 ## Progress
 
-[██████████] 100% (8/8 plans complete)
+[██████████] 100% (9/9 plans complete)
 
 ## Project Reference
 
