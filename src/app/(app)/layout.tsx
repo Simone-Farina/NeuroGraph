@@ -41,7 +41,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
       <motion.div 
         initial={false}
         animate={{ width: PRESET_WIDTHS[shellPreset].left }}
-        transition={{ type: 'spring', bounce: 0, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ type: 'tween', ease: [0.16, 1, 0.3, 1], duration: 0.5 }}
         className="flex flex-shrink-0 border-r border-white/5 relative bg-neural-dark z-10"
       >
         <AppSidebar />
@@ -75,7 +75,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
       <motion.div 
         initial={false}
         animate={{ width: PRESET_WIDTHS[shellPreset].right }}
-        transition={{ type: 'spring', bounce: 0, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ type: 'tween', ease: [0.16, 1, 0.3, 1], duration: 0.5 }}
         className="flex-grow relative overflow-hidden bg-neural-dark"
       >
         <GraphPanel />

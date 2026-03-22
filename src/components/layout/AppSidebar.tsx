@@ -133,6 +133,7 @@ export function AppSidebar() {
     <motion.aside 
       initial={false}
       animate={{ width: isCollapsed ? 64 : 288 }}
+      transition={{ type: 'tween', ease: [0.16, 1, 0.3, 1], duration: 0.4 }}
       className="flex flex-col border-r border-white/5 bg-neural-dark/30 h-full shrink-0 overflow-hidden relative z-20"
       data-tour="sidebar"
     >
