@@ -47,6 +47,14 @@ Requirements for Milestone v1.1: Staging Area & Cognitive Funnel.
 - [ ] **CRYST-02**: If URL extraction fails (paywall, SPA, timeout), system shows a manual paste area for the user to provide content
 - [ ] **CRYST-03**: When a Neuron is created from a Crystallize-initiated chat session, the originating queue item auto-transitions to "mastered" state
 
+### UI Polish & Design System
+
+- [ ] **POLISH-01**: Chat AI messages render as editorial prose without bubble containers — full-width, borderless, serif typography
+- [ ] **POLISH-02**: The 40/60 panel split is dynamic, flexing based on active content (wider chat when reading, wider graph when exploring)
+- [ ] **POLISH-03**: Empty states for graph and chat teach the interface using brand voice and visual hints of future structure
+- [ ] **POLISH-04**: Review page rating buttons are monochrome — difficulty communicated through weight/size, not colored backgrounds
+- [ ] **POLISH-05**: Panel transitions use intentional motion (micro-scale + fade for detail panel, staggered list entries, spatial momentum)
+
 ## Active (Remaining from v1.0)
 
 <!-- Deferred from v1.0, not in current milestone -->
@@ -88,28 +96,33 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DATA-01 | — | Pending |
-| DATA-02 | — | Pending |
-| DATA-03 | — | Pending |
-| DATA-04 | — | Pending |
-| AUTH-01 | — | Pending |
-| AUTH-02 | — | Pending |
-| AUTH-03 | — | Pending |
-| AUTH-04 | — | Pending |
-| TRIAGE-01 | — | Pending |
-| TRIAGE-02 | — | Pending |
-| TRIAGE-03 | — | Pending |
-| TRIAGE-04 | — | Pending |
-| TRIAGE-05 | — | Pending |
-| CRYST-01 | — | Pending |
-| CRYST-02 | — | Pending |
-| CRYST-03 | — | Pending |
+| DATA-01 | Phase 5 | Pending |
+| DATA-02 | Phase 5 | Pending |
+| DATA-03 | Phase 5 | Pending |
+| DATA-04 | Phase 5 | Pending |
+| AUTH-01 | Phase 6 | Pending |
+| AUTH-02 | Phase 6 | Pending |
+| AUTH-03 | Phase 6 | Pending |
+| AUTH-04 | Phase 6 | Pending |
+| TRIAGE-01 | Phase 7 | Pending |
+| TRIAGE-02 | Phase 7 | Pending |
+| TRIAGE-03 | Phase 7 | Pending |
+| TRIAGE-04 | Phase 7 | Pending |
+| TRIAGE-05 | Phase 7 | Pending |
+| CRYST-01 | Phase 8 | Pending |
+| CRYST-02 | Phase 8 | Pending |
+| CRYST-03 | Phase 8 | Pending |
+| POLISH-01 | Phase 9 | Pending |
+| POLISH-02 | Phase 9 | Pending |
+| POLISH-03 | Phase 9 | Pending |
+| POLISH-04 | Phase 9 | Pending |
+| POLISH-05 | Phase 9 | Pending |
 
 **Coverage:**
-- v1.1 requirements: 16 total
-- Mapped to phases: 0
-- Unmapped: 16 ⚠️
+- v1.1 requirements: 21 total
+- Mapped to phases: 21
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-22*
-*Last updated: 2026-03-22 after initial definition*
+*Last updated: 2026-03-22 — traceability filled after roadmap creation*
