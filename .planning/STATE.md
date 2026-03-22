@@ -66,6 +66,12 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 - **Queue store**: Separate `queueStore` (Zustand) owns queue state. `graphStore` retains sole ownership of panel mode. Only coupling: `graphStore.openQueue()` after Crystallize.
 - **State machine**: Transitions validated server-side with allowlist. Client does optimistic update with rollback on failure.
 
+### v1.1 Decisions (executed in 05-02)
+
+- **05-02-hashing**: SHA-256 (not bcrypt/argon2) for API key hashing — per-request speed critical, high-entropy tokens don't need slow hashing
+- **05-02-state-machine**: 4-state queue machine locked at Zod schema level: inbox, passive_debt, resource, mastered — no crystallizing or discarded states
+- **05-02-nanoid**: nanoid v3.3.11 used via existing transitive dependency — no new npm packages installed
+
 ### v1.0 Performance
 
 | Phase | Plan | Duration | Tasks | Files |
@@ -84,4 +90,4 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 ## Session
 
 - **Last session**: 2026-03-22
-- **Stopped at**: Completed 05-01-PLAN.md (knowledge_queue + user_api_keys migrations, Database type extension)
+- **Stopped at**: Completed 05-02-PLAN.md (API key crypto utilities, Zod validation schemas for queue and API keys)
