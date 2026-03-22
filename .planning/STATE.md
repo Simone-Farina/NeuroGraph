@@ -1,6 +1,5 @@
 ---
 gsd_state_version: 1.0
-<<<<<<< HEAD
 milestone: v1.1
 milestone_name: Staging Area
 status: unknown
