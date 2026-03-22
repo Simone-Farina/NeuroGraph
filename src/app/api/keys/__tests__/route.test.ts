@@ -6,16 +6,21 @@ vi.mock('@/lib/auth/server');
 vi.mock('@/lib/auth/apiKeys');
 vi.mock('@/lib/db/apiKeyQueries');
 
+// vi.mock factories are hoisted -- cannot reference outer variables.
+// Use vi.fn() inline; tests that need the admin client can import createClient.
+vi.mock('@supabase/supabase-js', () => ({
+  createClient: vi.fn(() => ({
+    from: vi.fn(),
+    auth: { getUser: vi.fn() },
+  })),
+}));
+
 const mockSupabaseAdmin = {
   from: vi.fn(),
   auth: {
     getUser: vi.fn(),
   },
 };
-
-vi.mock('@supabase/supabase-js', () => ({
-  createClient: vi.fn(() => mockSupabaseAdmin),
-}));
 
 import { getAuthenticatedUser } from '@/lib/auth/server';
 import { generateApiKey, hashApiKey, getKeyPrefix } from '@/lib/auth/apiKeys';
