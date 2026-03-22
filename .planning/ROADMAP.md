@@ -90,7 +90,11 @@ Introduce a cognitive funnel that catches chaotic real-world inputs (URLs, ideas
   2. An API key can be stored as a hashed value with a display prefix, created_at, and last_used_at — no plaintext key ever persists in the database.
   3. Neither the `knowledge_queue` table nor the `user_api_keys` table appears in any query used by the chat or Neurogenesis routes (structural AI isolation is verifiable at the migration level).
   4. TypeScript types for QueueItem and ApiKey compile without errors and Zod schemas reject malformed payloads at the boundary.
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 05-01-PLAN.md — SQL migrations (knowledge_queue + user_api_keys) and Database type extension
+- [ ] 05-02-PLAN.md — API key crypto utilities and Zod validation schemas
+- [ ] 05-03-PLAN.md — Typed query layer (queueQueries + apiKeyQueries) with unit tests
 
 ### Phase 6: Capture API & Key Management
 **Goal**: A user can generate a personal API key from the browser and immediately use it to POST a new inbox item from iOS Shortcuts — with correct structured responses for every success and failure path.
@@ -151,7 +155,7 @@ v1.1: 5 → 6 → 7 → 8 (strictly sequential; each phase depends on the previo
 | 2. Graph Pedagogy | 0/0 | Not started | - |
 | 3. Rigorous Retention | 0/0 | Not started | - |
 | 4. Advanced AI Markdown Editor | 1/1 | Complete | 2026-03-21 |
-| 5. Data Layer & Auth Foundation | 0/0 | Not started | - |
+| 5. Data Layer & Auth Foundation | 0/3 | Planned | - |
 | 6. Capture API & Key Management | 0/0 | Not started | - |
 | 7. Queue Triage UI | 0/0 | Not started | - |
 | 8. Crystallize Flow | 0/0 | Not started | - |
