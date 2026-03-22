@@ -63,7 +63,7 @@ created: 2026-03-22
 | Behavior | Requirement | Why Manual | Test Instructions |
 |----------|-------------|------------|-------------------|
 | Sidebar key management UI states | AUTH-01, AUTH-02 | React component with 6 visual states needs browser rendering | Generate key from sidebar, copy, revoke, verify curl fails |
-| iOS Shortcuts end-to-end | AUTH-03, AUTH-04 | Requires physical device + Shortcuts app | POST via curl simulates the flow; real device test deferred |
+| iOS Shortcuts end-to-end | AUTH-03, AUTH-04 | Requires physical device + Shortcuts app | Closed on 2026-03-22: validated on device with URL-only capture, duplicate rejection, and revoked-key unauthorized response |
 
 ---
 
@@ -76,4 +76,4 @@ created: 2026-03-22
 - [x] Feedback latency < 5s
 - [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** manual device validation completed on 2026-03-22

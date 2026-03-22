@@ -91,12 +91,6 @@ Notes:
 - Source code is bind-mounted, so edits on the host reload in the container.
 - `NEXT_PUBLIC_APP_URL` is forced to `http://localhost:3000` inside compose.
 
-6. Build for production check:
-
-   ```bash
-   npm run build
-   ```
-
 ## Deploy to Vercel
 
 1. Install dependencies and run preflight:
@@ -136,33 +130,3 @@ Notes:
    - `/api/chat` can process a request without runtime env errors.
    - Rate-limit migration is present (`check_rate_limit` function exists in DB).
    - Staging Area migrations are present (`knowledge_queue` and `user_api_keys` tables exist).
-
-## Project Plans
-
-The canonical, portable context file is:
-
-- `MASTER_SPECIFICATION.txt`
-
-Historical planning artifacts (Sisyphus/OpenCode-era) are versioned in:
-
-- `.sisyphus/plans/neurograph-mvp.md`
-- `.sisyphus/plans/neurograph-dev-process.md`
-
-The repo is configured to keep plan markdown files while ignoring other local Sisyphus runtime state.
-
-## Switching Development Environments
-
-This repository supports mutually-exclusive development sessions for:
-
-- OpenCode (Linux machine)
-- Google Antigravity (Mac Mini M4)
-
-Use:
-
-```bash
-bash scripts/switch-environment.sh opencode
-# or
-bash scripts/switch-environment.sh antigravity
-```
-
-Details are documented in `docs/DEVELOPMENT_ENVIRONMENTS.md`.
