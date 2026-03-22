@@ -8,6 +8,17 @@ NeuroGraph 2.0 is a MicroSaaS platform for Active Generative Mastery. It is a co
 
 The system enforces "Active Extraction" and rigorous retention over passive reading; users only create nodes when they reach a "Deep Insight," and the AI acts as a bouncer to prevent hallucinated or disconnected knowledge graphs.
 
+## Current Milestone: v1.1 Staging Area
+
+**Goal:** Introduce a cognitive funnel that catches chaotic real-world inputs (URLs, ideas, articles) in a Staging Area before they earn entry into the sacred Knowledge Graph.
+
+**Target features:**
+- Knowledge Queue data model (Inbox → Resource / Passive Debt → Mastered Neuron)
+- Personal API key auth + mobile capture endpoint (iOS Shortcuts)
+- Staging Area UI in Left Panel (editorial list, auto-detect state transitions, manual triage)
+- Crystallize flow: auto-fetch URL content, summarize, open Socratic chat session
+- AI isolation: queue invisible to chat AI unless explicitly Crystallized
+
 ## Requirements
 
 ### Validated
@@ -22,15 +33,15 @@ The system enforces "Active Extraction" and rigorous retention over passive read
 ### Active
 
 - [ ] Socratic Chat Engine (Tabula Rasa start, AI guides user to insights)
-- [x] Ephemeral Discovery Engine (Chats have a strict 14-day Time-To-Live to force knowledge extraction)
-- [x] AI Bouncer Mechanism (Background vector search prevents duplicate Neurons, suggests appending)
+- ✓ Ephemeral Discovery Engine (14-day TTL) — Validated in Phase 1
+- ✓ AI Bouncer Mechanism (pgvector duplicate prevention) — Validated in Phase 1
 - [ ] Neurogenesis Flow (High-friction conversion of deep insights into new Neurons)
 - [ ] Strict Prerequisite DAG Enforcer (Knowledge is built on dependency trees)
 - [ ] Horizon Layer & Ghost Nodes (Target-driven learning paths with a "Fog of War" UI)
 - [ ] Rigorous Retention Engine (FSRS-6 spaced repetition applied to Neurons)
 - [ ] Soft-FIRe Visual Feedback (Visual flagging/rusting of dependent concepts when foundational Neurons decay)
 - [ ] Bidirectional UI Sync (Clicking map opens markdown and pans camera; selecting text injects into existing Neurons)
-- [x] Advanced AI Markdown Editor (TipTap WYSIWYG, slash commands, Bouncer bubble menu, liquid document extraction) — Validated in Phase 4
+- ✓ Advanced AI Markdown Editor (TipTap WYSIWYG, slash commands, Bouncer bubble menu) — Validated in Phase 4
 
 ### Out of Scope
 
@@ -57,6 +68,9 @@ The system enforces "Active Extraction" and rigorous retention over passive read
 | AI as a Bouncer | Prevents graph bloat and passive junk generation; ensures knowledge mapping is highly deliberate. | — Pending |
 | Ghost Nodes & Fog of War | Prevents cognitive overload when outlining complex learning roadmaps (e.g., AI Engineer). | — Pending |
 | Fractional Implicit Repetition (Soft-FIRe) | If a foundational concept rusts, advanced concepts built on it must flag decay to reinforce the DAG dependency tree. | — Pending |
+| Cognitive Funnel (4-state) | Raw inputs must pass through Inbox → Passive Debt → Crystallize before earning Neuron status. Prevents graph from becoming a bookmark graveyard. | — Pending |
+| Personal API Key auth | Stateless bearer token for mobile capture. Scoped to user. Simple for iOS Shortcuts. | — Pending |
+| AI Isolation from Queue | Queue items invisible to chat AI. Only surfaced on explicit Crystallize. Keeps Socratic process intentional. | — Pending |
 
 ---
-*Last updated: 2026-03-21 — Phase 4 (Advanced AI Markdown Editor) complete*
+*Last updated: 2026-03-22 — Milestone v1.1 Staging Area started*
