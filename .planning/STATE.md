@@ -1,14 +1,14 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.1
-milestone_name: staging-area
-status: active
-last_updated: "2026-03-22T00:00:00.000Z"
+milestone_name: Staging Area
+status: unknown
+last_updated: "2026-03-22T14:45:51.840Z"
 progress:
-  total_phases: 5
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_phases: 3
+  completed_phases: 1
+  total_plans: 5
+  completed_plans: 5
 ---
 
 # Project State
@@ -18,8 +18,8 @@ Current execution state for get-shit-done.
 ## Current Phase
 
 - **phase**: Phase 5 — Data Layer & Auth Foundation
-- **plan**: —
-- **status**: Roadmap defined, ready for planning
+- **plan**: 02 (complete)
+- **status**: In progress — plans 01 and 02 complete
 - **focus**: Milestone v1.1 Staging Area — cognitive funnel for chaotic inputs
 
 ## Progress
@@ -37,7 +37,7 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 
 | Phase | Name | Requirements | Status |
 |-------|------|--------------|--------|
-| 5 | Data Layer & Auth Foundation | DATA-01, DATA-02, DATA-03, DATA-04 | Not started |
+| 5 | Data Layer & Auth Foundation | DATA-01, DATA-02, DATA-03, DATA-04 | In progress (2 of N plans complete) |
 | 6 | Capture API & Key Management | AUTH-01, AUTH-02, AUTH-03, AUTH-04 | Not started |
 | 7 | Queue Triage UI | TRIAGE-01, TRIAGE-02, TRIAGE-03, TRIAGE-04, TRIAGE-05 | Not started |
 | 8 | Crystallize Flow | CRYST-01, CRYST-02, CRYST-03 | Not started |
@@ -46,10 +46,18 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 ## Accumulated Context
 
 ### v1.0 Decisions (carried forward)
+
 - **04-advanced-ai-editor**: TipTap v3 directly (not Novel.sh); slash menu as React state overlay; custom Bouncer bubble menu; AI SDK v6 toTextStreamResponse + maxOutputTokens
 - **01-knowledge-quality**: pg_cron daily TTL wipe; pgvector 0.85 similarity bouncer; 409 Conflict for collisions
 
 ### v1.1 Decisions (locked in research)
+
+### v1.1 Decisions (executed in 05-01)
+
+- **05-01-schema**: CHECK constraint (not PostgreSQL ENUM) for knowledge_queue state field — simpler ALTER TABLE if state machine ever needs to change
+- **05-01-column-name**: `key_hash` (not `hashed_key`) as canonical column name — consistent across SQL migration and TypeScript types
+- **05-01-rls**: Narrow RLS on user_api_keys (SELECT+DELETE only) — service role client bypasses RLS for INSERT (key generation) and UPDATE (last_used_at) in Phase 6 capture endpoint
+
 - **Queue routing**: Queue renders at `/app/queue` as an App Router page — NOT as a `leftPanelMode` value. Prevents Zustand mode explosion.
 - **API key storage**: SHA-256 hash via Node.js `crypto`, `ng_` prefix for display, `timingSafeEqual` for comparison. No bcrypt/argon2 (too slow per-request).
 - **Capture endpoint auth**: Bearer token validation lives inside the `/api/capture` route handler itself — never in middleware (CVE-2025-29927 CVSS 9.1 mitigation).
@@ -59,17 +67,21 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 - **State machine**: Transitions validated server-side with allowlist. Client does optimistic update with rollback on failure.
 
 ### v1.0 Performance
+
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
 | 01-knowledge-quality | 01 | 5min | 2 | 4 |
 | 01-knowledge-quality | 02 | 10min | 1 | 6 |
 | 04-advanced-ai-editor | 01 | 45min | 5 | 8 |
+| 05-data-layer-auth-foundation | 01 | 1min | 2 | 3 |
+| 05-data-layer-auth-foundation | 02 | 2min | 2 | 5 |
 
 ### Research Flags (address during planning)
+
 - **Phase 6**: Validate iOS Shortcuts `.shortcut` template behavior on a physical device before declaring Phase 6 done.
 - **Phase 8**: Run URL extraction test harness against 20+ diverse real URLs before committing to fallback UX threshold. Confirm Vercel plan tier for function timeout budget (Hobby = 10s, Pro = 60s).
 
 ## Session
 
 - **Last session**: 2026-03-22
-- **Stopped at**: Milestone v1.1 roadmap created — ready for `/gsd:plan-phase 5`
+- **Stopped at**: Completed 05-01-PLAN.md (knowledge_queue + user_api_keys migrations, Database type extension)

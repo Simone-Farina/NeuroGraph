@@ -21,10 +21,10 @@ Requirements for Milestone v1.1: Staging Area & Cognitive Funnel.
 
 ### Data Layer
 
-- [ ] **DATA-01**: System stores queue items with title, URL (optional), notes (optional), and a 4-state enum (inbox, resource, passive_debt, mastered)
-- [ ] **DATA-02**: System stores hashed API keys per user with key_prefix for display, created_at, and last_used_at timestamps
-- [ ] **DATA-03**: Queue items table has RLS policies scoped to the owning user and is structurally isolated from the neurons/embeddings pipeline
-- [ ] **DATA-04**: TypeScript types and Zod validation schemas exist for QueueItem and ApiKey entities
+- [x] **DATA-01**: System stores queue items with title, URL (optional), notes (optional), and a 4-state enum (inbox, resource, passive_debt, mastered)
+- [x] **DATA-02**: System stores hashed API keys per user with key_prefix for display, created_at, and last_used_at timestamps
+- [x] **DATA-03**: Queue items table has RLS policies scoped to the owning user and is structurally isolated from the neurons/embeddings pipeline
+- [x] **DATA-04**: TypeScript types and Zod validation schemas exist for QueueItem and ApiKey entities
 
 ### Authentication & Capture
 
@@ -96,10 +96,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DATA-01 | Phase 5 | Pending |
-| DATA-02 | Phase 5 | Pending |
-| DATA-03 | Phase 5 | Pending |
-| DATA-04 | Phase 5 | Pending |
+| DATA-01 | Phase 5 | Complete |
+| DATA-02 | Phase 5 | Complete |
+| DATA-03 | Phase 5 | Complete |
+| DATA-04 | Phase 5 | Complete |
 | AUTH-01 | Phase 6 | Pending |
 | AUTH-02 | Phase 6 | Pending |
 | AUTH-03 | Phase 6 | Pending |
