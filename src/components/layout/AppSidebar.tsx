@@ -58,6 +58,10 @@ export function AppSidebar() {
     setKeyState('generating');
     try {
       const res = await fetch('/api/keys', { method: 'POST' });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
       const data = await res.json();
       setRawKey(data.key);
       setKeyPrefix(data.prefix);
