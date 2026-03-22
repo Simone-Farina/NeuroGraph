@@ -115,4 +115,47 @@ describe('queueQueries', () => {
       expect(mockEq).toHaveBeenCalledWith('id', '1');
     });
   });
+
+  describe('findByUrl', () => {
+    it('returns item when URL exists for user', async () => {
+      const mockItem = { id: '1', title: 'Existing', url: 'https://example.com' };
+      const mockSingle = vi.fn().mockResolvedValue({ data: mockItem, error: null });
+      const mockLimit = vi.fn().mockReturnValue({ single: mockSingle });
+      const mockEqUrl = vi.fn().mockReturnValue({ limit: mockLimit });
+      const mockEqUser = vi.fn().mockReturnValue({ eq: mockEqUrl });
+      const mockSelect = vi.fn().mockReturnValue({ eq: mockEqUser });
+      mockClient.from.mockReturnValue({ select: mockSelect });
+
+      const result = await queueQueries.findByUrl(mockClient, 'u1', 'https://example.com');
+
+      expect(mockClient.from).toHaveBeenCalledWith('knowledge_queue');
+      expect(mockEqUser).toHaveBeenCalledWith('user_id', 'u1');
+      expect(mockEqUrl).toHaveBeenCalledWith('url', 'https://example.com');
+      expect(result).toEqual(mockItem);
+    });
+
+    it('returns null when URL not found (PGRST116)', async () => {
+      const mockSingle = vi.fn().mockResolvedValue({ data: null, error: { code: 'PGRST116' } });
+      const mockLimit = vi.fn().mockReturnValue({ single: mockSingle });
+      const mockEqUrl = vi.fn().mockReturnValue({ limit: mockLimit });
+      const mockEqUser = vi.fn().mockReturnValue({ eq: mockEqUrl });
+      const mockSelect = vi.fn().mockReturnValue({ eq: mockEqUser });
+      mockClient.from.mockReturnValue({ select: mockSelect });
+
+      const result = await queueQueries.findByUrl(mockClient, 'u1', 'https://nonexistent.com');
+      expect(result).toBeNull();
+    });
+
+    it('throws on non-PGRST116 errors', async () => {
+      const mockSingle = vi.fn().mockResolvedValue({ data: null, error: { code: 'OTHER', message: 'fail' } });
+      const mockLimit = vi.fn().mockReturnValue({ single: mockSingle });
+      const mockEqUrl = vi.fn().mockReturnValue({ limit: mockLimit });
+      const mockEqUser = vi.fn().mockReturnValue({ eq: mockEqUrl });
+      const mockSelect = vi.fn().mockReturnValue({ eq: mockEqUser });
+      mockClient.from.mockReturnValue({ select: mockSelect });
+
+      await expect(queueQueries.findByUrl(mockClient, 'u1', 'https://example.com'))
+        .rejects.toEqual({ code: 'OTHER', message: 'fail' });
+    });
+  });
 });
