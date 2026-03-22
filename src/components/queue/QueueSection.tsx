@@ -16,20 +16,20 @@ export function QueueSection({
   children,
 }: QueueSectionProps) {
   return (
-    <section className="border-b border-white/5 pb-8 last:border-b-0 last:pb-0">
-      <header className="mb-4">
+    <section className="border-b border-white/[0.03] pb-10 mb-10 last:border-b-0 last:pb-0 last:mb-0">
+      <header className="mb-6">
         <div>
-          <h2 className="font-mono text-[10px] uppercase tracking-[0.28em] text-white/25">
+          <h2 className="text-[12px] font-medium uppercase tracking-widest text-white/30">
             {title}
           </h2>
-          <p className="mt-1 text-sm text-white/45">{subtitle}</p>
+          <p className="mt-1 text-[14px] text-white/40">{subtitle}</p>
         </div>
       </header>
 
       {count > 0 ? (
-        <div className="space-y-3">{children}</div>
+        <div className="space-y-0">{children}</div>
       ) : (
-        <p className="border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-sm leading-relaxed text-white/32">
+        <p className="text-[14px] text-white/20 italic">
           {emptyMessage}
         </p>
       )}
