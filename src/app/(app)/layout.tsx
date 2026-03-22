@@ -7,6 +7,7 @@ import { AppSidebar } from '@/components/layout/AppSidebar';
 import { ConversationProvider } from '@/lib/contexts/ConversationContext';
 import { GraphPanel } from '@/components/graph/GraphPanel';
 import { NeuronDetailPanel } from '@/components/graph/NeuronDetailPanel';
+import { QueueBootstrap } from '@/components/queue/QueueBootstrap';
 import { useGraphStore } from '@/stores/graphStore';
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
@@ -26,6 +27,8 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-neural-dark selection:bg-white/20 selection:text-neural-light">
+      <QueueBootstrap />
+
       {/* Area Operativa Sinistra (40vw) */}
       <div className="flex w-[40vw] flex-shrink-0 border-r border-white/5 relative bg-neural-dark">
         <AppSidebar />

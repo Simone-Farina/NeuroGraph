@@ -22,8 +22,8 @@ Introduce a cognitive funnel that catches chaotic real-world inputs (URLs, ideas
 ### Phases
 
 - [x] **Phase 5: Data Layer & Auth Foundation** - Schema, RLS, TypeScript types, and API key utilities. (completed 2026-03-22)
-- [ ] **Phase 6: Capture API & Key Management** - Bearer-token capture endpoint, key generation/revocation API routes.
-- [ ] **Phase 7: Queue Triage UI** - Staging Area page, state transitions, aging indicators, sidebar badge.
+- [x] **Phase 6: Capture API & Key Management** - Bearer-token capture endpoint, key generation/revocation API routes. (completed 2026-03-22)
+- [x] **Phase 7: Queue Triage UI** - Staging Area page, state transitions, aging indicators, sidebar badge. (completed 2026-03-22)
 - [ ] **Phase 8: Crystallize Flow** - URL extraction, AI summarization, Socratic chat handoff, mastered state auto-advance.
 - [ ] **Phase 9: UI Polish & Design System** - Editorial chat, dynamic layout, motion language, review page redesign, empty states.
 
@@ -105,23 +105,27 @@ Plans:
   2. User can revoke an existing API key and confirm it no longer accepts captures.
   3. A POST to `/api/capture` with a valid bearer token and a URL creates a new inbox item and returns `{ success: true, id }` in the response body (not just a 200 status code).
   4. A POST to `/api/capture` with an invalid or revoked token returns `{ success: false, error: "unauthorized" }` — and the iOS Shortcuts error branch fires correctly from this response body.
-**Plans:** 1/3 plans executed
+**Plans:** 3/3 plans executed
 Plans:
-- [ ] 06-00-PLAN.md — Test scaffolds for capture route, keys route, metadata extraction, and findByUrl (Wave 0)
-- [ ] 06-01-PLAN.md — Capture endpoint with bearer auth, rate limiting, duplicate detection, and URL metadata extraction
-- [ ] 06-02-PLAN.md — Key management API route (GET/POST/DELETE) and sidebar UI section
+- [x] 06-00-PLAN.md — Test scaffolds for capture route, keys route, metadata extraction, and findByUrl (Wave 0)
+- [x] 06-01-PLAN.md — Capture endpoint with bearer auth, rate limiting, duplicate detection, and URL metadata extraction
+- [x] 06-02-PLAN.md — Key management API route (GET/POST/DELETE) and sidebar UI section
 
 ### Phase 7: Queue Triage UI
-**Goal**: Users can see all their queued items in the Left Panel, understand their states at a glance, act on them, and feel the ambient pressure of unprocessed Passive Debt accumulating.
+**Goal**: Users can see all their queued items in the Left Panel, understand their states at a glance, act on them, and maintain a calm Inbox Zero model while Passive Debt remains quietly visible.
 **Depends on**: Phase 6
 **Requirements**: TRIAGE-01, TRIAGE-02, TRIAGE-03, TRIAGE-04, TRIAGE-05
 **Success Criteria** (what must be TRUE):
   1. User can navigate to a Queue page at `/app/queue` via the sidebar — the page groups items visually by state (Inbox, Passive Debt, Resource) without any panel mode change.
-  2. The sidebar Queue nav link displays a live unread count badge reflecting the number of unprocessed items.
+  2. The sidebar Queue nav link displays a live unread count badge reflecting Inbox items only.
   3. User can transition any item: Archive as Resource, Mark as Passive Debt, or Delete — with optimistic UI and server-side rollback on failure.
-  4. A newly captured item appears in Inbox; once a user opens or views it, it auto-advances to Passive Debt — manual override always remains available.
+  4. A newly captured item appears in Inbox; once a user explicitly opens its external URL, it auto-advances to Passive Debt — manual override always remains available.
   5. Each Passive Debt item displays a human-readable "X days ago" aging indicator without any user action.
-**Plans**: TBD
+**Plans:** 3/3 plans executed
+Plans:
+- [x] 07-01-PLAN.md — Queue API routes, queue store, and optimistic mutation boundary
+- [x] 07-02-PLAN.md — `/app/queue` editorial page, stacked sections, and semantic-aging item UI
+- [x] 07-03-PLAN.md — Sidebar Queue nav/badge, inbox-only auto-advance trigger, and crystallize handoff surface
 
 ### Phase 8: Crystallize Flow
 **Goal**: Users can take any queued item and convert it into an active Socratic chat session seeded with the item's content — and the queue item automatically reaches "mastered" state when a Neuron is born from that session.
@@ -160,7 +164,7 @@ v1.1: 5 → 6 → 7 → 8 (strictly sequential; each phase depends on the previo
 | 3. Rigorous Retention | 0/0 | Not started | - |
 | 4. Advanced AI Markdown Editor | 1/1 | Complete | 2026-03-21 |
 | 5. Data Layer & Auth Foundation | 3/3 | Complete   | 2026-03-22 |
-| 6. Capture API & Key Management | 1/3 | In Progress|  |
-| 7. Queue Triage UI | 0/0 | Not started | - |
+| 6. Capture API & Key Management | 3/3 | Complete | 2026-03-22 |
+| 7. Queue Triage UI | 3/3 | Complete | 2026-03-22 |
 | 8. Crystallize Flow | 0/0 | Not started | - |
 | 9. UI Polish & Design System | 0/0 | Not started | - |

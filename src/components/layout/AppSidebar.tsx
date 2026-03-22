@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { useOnboarding } from '@/components/onboarding/OnboardingTour';
 import { useConversationContext } from '@/lib/contexts/ConversationContext';
+import { useQueueStore } from '@/stores/queueStore';
 
 type KeyUIState = 'loading' | 'no-key' | 'has-key' | 'generating' | 'revealed' | 'confirm-regenerate';
 
@@ -16,6 +17,7 @@ export function AppSidebar() {
   const { signOut, user } = useAuth();
   const { startTour } = useOnboarding();
   const { conversations, currentConversationId, setCurrentConversationId, deleteConversation } = useConversationContext();
+  const inboxCount = useQueueStore((state) => state.inboxCount);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   // API key management state
@@ -119,6 +121,9 @@ export function AppSidebar() {
     { label: 'Chat', href: '/app', icon: (
       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
     )},
+    { label: 'Queue', href: '/app/queue', badgeCount: inboxCount, icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12H8"/><path d="M21 6H8"/><path d="M21 18H8"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>
+    )},
     { label: 'Review', href: '/app/review', icon: (
       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
     )},
@@ -159,15 +164,27 @@ export function AppSidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+              className={`relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                 isActive
                   ? 'bg-white/[0.06] text-white/90 border border-white/[0.08]'
                   : 'text-white/45 hover:text-white/80 hover:bg-white/[0.03] border border-transparent'
               } ${isCollapsed ? 'justify-center px-2' : ''}`}
               title={isCollapsed ? item.label : undefined}
             >
-              {item.icon}
-              {!isCollapsed && <span>{item.label}</span>}
+              <span className="shrink-0">{item.icon}</span>
+              {!isCollapsed && <span className="min-w-0 flex-1">{item.label}</span>}
+              {typeof item.badgeCount === 'number' && item.badgeCount > 0 ? (
+                <span
+                  aria-label={`${item.label} unread count: ${item.badgeCount}`}
+                  className={
+                    isCollapsed
+                      ? 'absolute right-1.5 top-1.5 inline-flex min-w-[1rem] items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.08] px-1 text-[9px] font-medium text-white/65'
+                      : 'inline-flex min-w-[1.4rem] items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.06] px-1.5 py-0.5 text-[10px] font-medium text-white/60'
+                  }
+                >
+                  {item.badgeCount}
+                </span>
+              ) : null}
             </Link>
           );
         })}
