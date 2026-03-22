@@ -8,10 +8,16 @@ export const QueueItemStateSchema = z.enum(['inbox', 'passive_debt', 'resource',
  * source_domain, favicon_url, estimated_read_time are server-extracted -- never client-supplied.
  */
 export const QueueItemInsertSchema = z.object({
-  title: z.string().min(1).max(500),
+  title: z.string().min(1).max(500).nullable().optional(),
   url: z.string().url().nullable().optional(),
   notes: z.string().max(2000).nullable().optional(),
-});
+}).refine(
+  (value) => Boolean(value.title ?? value.url),
+  {
+    message: 'Either title or url is required',
+    path: ['title'],
+  }
+);
 
 /** Schema for state transition requests (PATCH). */
 export const QueueStateTransitionSchema = z.object({

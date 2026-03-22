@@ -9,6 +9,13 @@ describe('Queue Validation Schemas', () => {
       expect(result.success).toBe(true);
     });
 
+    it('accepts valid insert with url only', () => {
+      const result = QueueItemInsertSchema.safeParse({
+        url: 'https://example.com/article',
+      });
+      expect(result.success).toBe(true);
+    });
+
     it('accepts valid insert with title + url + notes', () => {
       const result = QueueItemInsertSchema.safeParse({
         title: 'Article Title',
@@ -21,6 +28,11 @@ describe('Queue Validation Schemas', () => {
     it('accepts null url (pure thought)', () => {
       const result = QueueItemInsertSchema.safeParse({ title: 'A thought', url: null });
       expect(result.success).toBe(true);
+    });
+
+    it('rejects payload with neither title nor url', () => {
+      const result = QueueItemInsertSchema.safeParse({ notes: 'Only notes' });
+      expect(result.success).toBe(false);
     });
 
     it('rejects empty title', () => {
