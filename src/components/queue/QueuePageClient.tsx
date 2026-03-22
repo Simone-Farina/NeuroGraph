@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import type { KnowledgeQueueItem } from '@/types/database';
@@ -14,11 +14,13 @@ export function QueuePageClient() {
     groupedItems,
     isLoading,
     error,
+    pendingById,
     refreshQueue,
     transitionItem,
     deleteItem,
     beginCrystallize,
   } = useQueueStore();
+  const [feedbackItemId, setFeedbackItemId] = useState<string | null>(null);
 
   useEffect(() => {
     void refreshQueue();
@@ -50,18 +52,21 @@ export function QueuePageClient() {
 
   const handleOpenUrl = (item: KnowledgeQueueItem) => {
     if (item.state === 'inbox' && item.url) {
+      setFeedbackItemId(item.id);
       void transitionItem(item.id, 'passive_debt');
     }
   };
 
   const handleMarkPassiveDebt = (item: KnowledgeQueueItem) => {
     if (item.state === 'inbox' || item.state === 'resource') {
+      setFeedbackItemId(item.id);
       void transitionItem(item.id, 'passive_debt');
     }
   };
 
   const handleArchiveResource = (item: KnowledgeQueueItem) => {
     if (item.state === 'inbox') {
+      setFeedbackItemId(item.id);
       void transitionItem(item.id, 'resource');
     }
   };
@@ -72,6 +77,7 @@ export function QueuePageClient() {
   };
 
   const handleDelete = (item: KnowledgeQueueItem) => {
+    setFeedbackItemId(item.id);
     void deleteItem(item.id);
   };
 
@@ -117,6 +123,8 @@ export function QueuePageClient() {
               <QueueItemCard
                 key={item.id}
                 item={item}
+                pendingState={pendingById[item.id]}
+                errorMessage={feedbackItemId === item.id ? error : null}
                 onOpenUrl={handleOpenUrl}
                 onMarkPassiveDebt={handleMarkPassiveDebt}
                 onArchiveResource={handleArchiveResource}

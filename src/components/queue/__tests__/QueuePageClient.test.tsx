@@ -55,6 +55,7 @@ describe('QueuePageClient', () => {
       },
       isLoading: false,
       error: null,
+      pendingById: {},
       refreshQueue: vi.fn(),
       transitionItem: vi.fn(),
       deleteItem: vi.fn(),
@@ -72,6 +73,7 @@ describe('QueuePageClient', () => {
       },
       isLoading: false,
       error: null,
+      pendingById: {},
       refreshQueue,
       transitionItem: vi.fn(),
       deleteItem: vi.fn(),
@@ -96,6 +98,7 @@ describe('QueuePageClient', () => {
       },
       isLoading: false,
       error: null,
+      pendingById: {},
       refreshQueue: vi.fn(),
       transitionItem,
       deleteItem: vi.fn(),
@@ -118,6 +121,7 @@ describe('QueuePageClient', () => {
       },
       isLoading: false,
       error: null,
+      pendingById: {},
       refreshQueue: vi.fn(),
       transitionItem: vi.fn(),
       deleteItem: vi.fn(),
@@ -129,5 +133,27 @@ describe('QueuePageClient', () => {
 
     expect(beginCrystallize).toHaveBeenCalledWith('item-1');
     expect(mockPush).toHaveBeenCalledWith('/app');
+  });
+
+  it('localizes queue mutation errors to the active row', () => {
+    vi.mocked(useQueueStore).mockReturnValue({
+      groupedItems: {
+        inbox: [INBOX_ITEM],
+        passive_debt: [PASSIVE_ITEM],
+        resource: [RESOURCE_ITEM],
+      },
+      isLoading: false,
+      error: 'Failed to update queue item',
+      pendingById: {},
+      refreshQueue: vi.fn(),
+      transitionItem: vi.fn(),
+      deleteItem: vi.fn(),
+      beginCrystallize: vi.fn(),
+    } as any);
+
+    render(<QueuePageClient />);
+    fireEvent.click(screen.getByRole('link', { name: /open inbox article/i }));
+
+    expect(screen.getAllByText('Failed to update queue item').length).toBeGreaterThan(0);
   });
 });

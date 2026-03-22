@@ -23,8 +23,8 @@ describe('QueueItemCard', () => {
 
     render(<QueueItemCard item={BASE_ITEM} onOpenUrl={onOpenUrl} />);
 
-    expect(screen.getByRole('button', { name: 'Archive' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Mark Read' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Archive as Resource' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Mark as Read' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Crystallize' })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('link', { name: /open readable article/i }));
@@ -42,7 +42,7 @@ describe('QueueItemCard', () => {
     );
 
     expect(screen.getByText('10 days ago')).toHaveAttribute('data-rusty', 'true');
-    expect(screen.queryByRole('button', { name: 'Archive' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Archive as Resource' })).not.toBeInTheDocument();
   });
 
   it('does not show passive-debt-only actions on resource items', () => {
@@ -55,8 +55,37 @@ describe('QueueItemCard', () => {
       />
     );
 
-    expect(screen.queryByRole('button', { name: 'Archive' })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Return to Debt' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Archive as Resource' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Return to Passive Debt' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Crystallize' })).not.toBeInTheDocument();
+  });
+
+  it('requires an explicit second click before deleting and disables actions while pending', () => {
+    const onDelete = vi.fn();
+
+    render(
+      <QueueItemCard
+        item={BASE_ITEM}
+        pendingState="transition"
+        onDelete={onDelete}
+      />
+    );
+
+    expect(screen.getByText('Updating...')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Delete' })).toBeDisabled();
+    expect(onDelete).not.toHaveBeenCalled();
+  });
+
+  it('shows delete confirmation copy before firing the destructive action', () => {
+    const onDelete = vi.fn();
+
+    render(<QueueItemCard item={BASE_ITEM} onDelete={onDelete} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    expect(screen.getByRole('button', { name: 'Confirm Delete' })).toBeInTheDocument();
+    expect(screen.getByText('Second click deletes this item permanently.')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm Delete' }));
+    expect(onDelete).toHaveBeenCalledWith(BASE_ITEM);
   });
 });
