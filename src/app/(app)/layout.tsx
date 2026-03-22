@@ -1,5 +1,6 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import { AuthProvider, useAuth } from '@/lib/auth/AuthContext';
 import { ReviewBadge } from '@/components/ReviewBadge';
 import { OnboardingProvider } from '@/components/onboarding/OnboardingTour';
@@ -10,9 +11,16 @@ import { NeuronDetailPanel } from '@/components/graph/NeuronDetailPanel';
 import { QueueBootstrap } from '@/components/queue/QueueBootstrap';
 import { useGraphStore } from '@/stores/graphStore';
 
+const PRESET_WIDTHS = {
+  standard: { left: '40vw', right: '60vw' },
+  deep_read: { left: '60vw', right: '40vw' },
+  graph_zenith: { left: '25vw', right: '75vw' }
+};
+
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const leftPanelMode = useGraphStore((state) => state.leftPanelMode);
+  const shellPreset = useGraphStore((state) => state.shellPreset);
 
   if (loading) {
     return (
@@ -29,8 +37,13 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     <div className="flex h-screen w-full overflow-hidden bg-neural-dark selection:bg-white/20 selection:text-neural-light">
       <QueueBootstrap />
 
-      {/* Area Operativa Sinistra (40vw) */}
-      <div className="flex w-[40vw] flex-shrink-0 border-r border-white/5 relative bg-neural-dark">
+      {/* Area Operativa Sinistra */}
+      <motion.div 
+        initial={false}
+        animate={{ width: PRESET_WIDTHS[shellPreset].left }}
+        transition={{ type: 'spring', bounce: 0, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        className="flex flex-shrink-0 border-r border-white/5 relative bg-neural-dark z-10"
+      >
         <AppSidebar />
 
         {/* Area di Contesto Attivo */}
@@ -56,13 +69,18 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
             {children}
           </main>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Area Rete Neurale Destra (60vw) */}
-      <div className="w-[60vw] flex-grow relative overflow-hidden bg-neural-dark">
+      {/* Area Rete Neurale Destra */}
+      <motion.div 
+        initial={false}
+        animate={{ width: PRESET_WIDTHS[shellPreset].right }}
+        transition={{ type: 'spring', bounce: 0, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        className="flex-grow relative overflow-hidden bg-neural-dark"
+      >
         <GraphPanel />
         {leftPanelMode === 'neuron' && <NeuronDetailPanel />}
-      </div>
+      </motion.div>
     </div>
   );
 }
