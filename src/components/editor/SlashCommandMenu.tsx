@@ -92,36 +92,48 @@ export function createSlashCommandExtension(
   return Extension.create({
     name: 'slashCommand',
 
-    addProseMirrorPlugins() {
+  addProseMirrorPlugins() {
       const editorRef = this.editor;
+      let currentState: SlashMenuState = {
+        active: false,
+        query: '',
+        position: { top: 0, left: 0 },
+        commands: [],
+        selectedIndex: 0,
+      };
+
+      const updateState = (next: SlashMenuState) => {
+        currentState = next;
+        onStateChange(next);
+      };
+
       return [
         new Plugin({
           key: SLASH_COMMAND_PLUGIN_KEY,
 
           props: {
             handleKeyDown: (view, event) => {
-              const meta = SLASH_COMMAND_PLUGIN_KEY.getState(view.state) as SlashMenuState | null;
-              if (!meta?.active) return false;
+              if (!currentState.active) return false;
 
               if (event.key === 'Escape') {
-                onStateChange({ ...meta, active: false, query: '', selectedIndex: 0 });
+                updateState({ ...currentState, active: false, query: '', selectedIndex: 0 });
                 return true;
               }
 
               if (event.key === 'ArrowDown') {
-                const next = (meta.selectedIndex + 1) % meta.commands.length;
-                onStateChange({ ...meta, selectedIndex: next });
+                const next = (currentState.selectedIndex + 1) % currentState.commands.length;
+                updateState({ ...currentState, selectedIndex: next });
                 return true;
               }
 
               if (event.key === 'ArrowUp') {
-                const prev = (meta.selectedIndex + meta.commands.length - 1) % meta.commands.length;
-                onStateChange({ ...meta, selectedIndex: prev });
+                const prev = (currentState.selectedIndex + currentState.commands.length - 1) % currentState.commands.length;
+                updateState({ ...currentState, selectedIndex: prev });
                 return true;
               }
 
-              if (event.key === 'Enter' && meta.commands.length > 0) {
-                const chosen = meta.commands[meta.selectedIndex];
+              if (event.key === 'Enter' && currentState.commands.length > 0) {
+                const chosen = currentState.commands[currentState.selectedIndex];
                 if (chosen) {
                   // Delete the slash + query text
                   const { state } = view;
@@ -134,7 +146,7 @@ export function createSlashCommandExtension(
                     view.dispatch(state.tr.deleteRange(startPos, endPos));
                   }
                   chosen.action(editorRef);
-                  onStateChange({ ...meta, active: false, query: '', selectedIndex: 0 });
+                  updateState({ ...currentState, active: false, query: '', selectedIndex: 0 });
                   return true;
                 }
               }
@@ -143,35 +155,21 @@ export function createSlashCommandExtension(
             },
           },
 
-          state: {
-            init: (): SlashMenuState => ({
-              active: false,
-              query: '',
-              position: { top: 0, left: 0 },
-              commands: [],
-              selectedIndex: 0,
-            }),
-            apply: (tr, prev): SlashMenuState => {
-              const meta = tr.getMeta(SLASH_COMMAND_PLUGIN_KEY);
-              if (meta !== undefined) return meta;
-              return prev;
-            },
-          },
-
           view() {
             return {
-              update(view) {
+              update(view, prevState) {
                 const { state } = view;
                 const { selection } = state;
                 const { $from, empty } = selection;
 
-                const currentState = SLASH_COMMAND_PLUGIN_KEY.getState(state) as SlashMenuState;
+                // Only update if selection or document changed
+                if (prevState.doc.eq(state.doc) && prevState.selection.eq(selection)) {
+                  return;
+                }
 
                 if (!empty) {
                   if (currentState.active) {
-                    const next: SlashMenuState = { ...currentState, active: false, query: '' };
-                    view.dispatch(view.state.tr.setMeta(SLASH_COMMAND_PLUGIN_KEY, next));
-                    onStateChange(next);
+                    updateState({ ...currentState, active: false, query: '' });
                   }
                   return;
                 }
@@ -181,9 +179,16 @@ export function createSlashCommandExtension(
 
                 if (slashIdx === -1) {
                   if (currentState.active) {
-                    const next: SlashMenuState = { ...currentState, active: false, query: '' };
-                    view.dispatch(view.state.tr.setMeta(SLASH_COMMAND_PLUGIN_KEY, next));
-                    onStateChange(next);
+                    updateState({ ...currentState, active: false, query: '' });
+                  }
+                  return;
+                }
+
+                // Ensure there is a space before the slash, or it's the start of the block
+                const charBeforeSlash = textBefore.slice(slashIdx - 1, slashIdx);
+                if (charBeforeSlash && !/\s/.test(charBeforeSlash)) {
+                  if (currentState.active) {
+                    updateState({ ...currentState, active: false, query: '' });
                   }
                   return;
                 }
@@ -204,7 +209,7 @@ export function createSlashCommandExtension(
                   left: coords.left - editorRect.left,
                 };
 
-                const next: SlashMenuState = {
+                updateState({
                   active: true,
                   query,
                   position,
@@ -213,10 +218,7 @@ export function createSlashCommandExtension(
                     currentState.selectedIndex,
                     Math.max(filtered.length - 1, 0)
                   ),
-                };
-
-                view.dispatch(view.state.tr.setMeta(SLASH_COMMAND_PLUGIN_KEY, next));
-                onStateChange(next);
+                });
               },
             };
           },

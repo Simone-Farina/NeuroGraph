@@ -28,6 +28,7 @@ export function NeuronTipTapEditor({
   className = '',
 }: NeuronTipTapEditorProps) {
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit.configure({
         // Enable markdown shortcut parsing

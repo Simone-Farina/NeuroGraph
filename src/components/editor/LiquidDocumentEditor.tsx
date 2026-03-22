@@ -22,6 +22,7 @@ interface LiquidDocumentEditorProps {
     content: string;
     definition?: string;
     core_insight?: string;
+    bloom_level?: string;
   }) => Promise<void>;
   isSaving?: boolean;
 }
@@ -51,6 +52,7 @@ export function LiquidDocumentEditor({
     definition: string;
     core_insight: string;
     bloom_level: string;
+    suggested_synapses: string[];
   } | null>(null);
   const [aiOutput, setAiOutput] = useState<string | null>(null);
   const [slashMenu, setSlashMenu] = useState<SlashMenuState>({
@@ -112,6 +114,7 @@ export function LiquidDocumentEditor({
   );
 
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
@@ -182,6 +185,7 @@ export function LiquidDocumentEditor({
       });
 
       if (!response.ok) {
+        console.warn('[LiquidDocumentEditor] Extraction returned non-200', response.status);
         setExtractionState('error');
         return;
       }
@@ -189,7 +193,8 @@ export function LiquidDocumentEditor({
       const data = await response.json();
       setExtractedMeta(data);
       setExtractionState('done');
-    } catch {
+    } catch (err) {
+      console.warn('[LiquidDocumentEditor] Extraction failed', err);
       setExtractionState('error');
     }
   }, [editor, title]);
@@ -218,6 +223,7 @@ export function LiquidDocumentEditor({
       content: editor.getHTML(),
       definition: extractedMeta?.definition,
       core_insight: extractedMeta?.core_insight,
+      bloom_level: extractedMeta?.bloom_level || neuron.bloom_level,
     });
 
     setIsDirty(false);
@@ -434,6 +440,23 @@ export function LiquidDocumentEditor({
                   {extractedMeta.core_insight}
                 </p>
               </div>
+              {extractedMeta.suggested_synapses?.length > 0 && (
+                <div>
+                  <div className="text-[9px] text-white/25 uppercase tracking-wider mb-2 font-sans">
+                    Suggested Connections
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {extractedMeta.suggested_synapses.map((syn, idx) => (
+                      <span
+                        key={idx}
+                        className="px-2 py-0.5 rounded-md bg-white/[0.04] border border-white/5 text-[11px] text-white/40"
+                      >
+                        {syn}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

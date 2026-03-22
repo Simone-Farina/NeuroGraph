@@ -73,12 +73,14 @@ export const mockModel = new MockLanguageModelV3({
         text: JSON.stringify({
           definition: "Mock defined concept.",
           core_insight: "Mock core insight extracted from the text.",
-          bloom_level: "Understand"
+          bloom_level: "Understand",
+          suggested_synapses: ["Neural Networks", "Deep Learning"]
         }),
         content: [{ type: 'text', text: JSON.stringify({
           definition: "Mock defined concept.",
           core_insight: "Mock core insight extracted from the text.",
-          bloom_level: "Understand"
+          bloom_level: "Understand",
+          suggested_synapses: ["Neural Networks", "Deep Learning"]
         }) }],
         warnings: [],
       } as any;
