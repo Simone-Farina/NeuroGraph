@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Staging Area
 status: unknown
-last_updated: "2026-03-22T15:44:12.199Z"
+last_updated: "2026-03-22T15:54:27.217Z"
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 8
-  completed_plans: 7
+  completed_plans: 8
 ---
 
 # Project State
@@ -18,13 +18,13 @@ Current execution state for get-shit-done.
 ## Current Phase
 
 - **phase**: Phase 6 — Capture API & Key Management
-- **plan**: 00 (complete)
-- **status**: In progress — plan 00 complete (Nyquist test scaffolds)
+- **plan**: 01 (complete)
+- **status**: In progress — plan 01 complete (capture endpoint, metadata extraction, findByUrl)
 - **focus**: Milestone v1.1 Staging Area — cognitive funnel for chaotic inputs
 
 ## Progress
 
-[█████████░] 88% (7/8 plans complete)
+[██████████] 100% (8/8 plans complete)
 
 ## Project Reference
 
@@ -38,7 +38,7 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 | Phase | Name | Requirements | Status |
 |-------|------|--------------|--------|
 | 5 | Data Layer & Auth Foundation | DATA-01, DATA-02, DATA-03, DATA-04 | In progress (3 of N plans complete) |
-| 6 | Capture API & Key Management | AUTH-01, AUTH-02, AUTH-03, AUTH-04 | In progress (1 of 3 plans complete) |
+| 6 | Capture API & Key Management | AUTH-01, AUTH-02, AUTH-03, AUTH-04 | In progress (2 of 3 plans complete) |
 | 7 | Queue Triage UI | TRIAGE-01, TRIAGE-02, TRIAGE-03, TRIAGE-04, TRIAGE-05 | Not started |
 | 8 | Crystallize Flow | CRYST-01, CRYST-02, CRYST-03 | Not started |
 | 9 | UI Polish & Design System | POLISH-01, POLISH-02, POLISH-03, POLISH-04, POLISH-05 | Not started |
@@ -81,6 +81,11 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 
 - **06-00-nyquist**: Wave 0 Nyquist compliance plan — test scaffolds only, no production decisions required; contracts follow plan spec exactly
 
+### v1.1 Decisions (executed in 06-01)
+
+- **06-01-service-role-client**: Service role Supabase client created module-level in capture route (not per-request) — safe because credentials are env vars not user-scoped
+- **06-01-test-scaffold-bugs**: Three bugs in 06-00 scaffold fixed: (1) vi.hoisted for mockSupabaseAdmin, (2) VALID_TOKEN was 52 chars not 48, (3) Supabase count query mock must return Promise not {count: fn}
+
 ### v1.0 Performance
 
 | Phase | Plan | Duration | Tasks | Files |
@@ -92,6 +97,7 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 | 05-data-layer-auth-foundation | 02 | 2min | 2 | 5 |
 | 05-data-layer-auth-foundation | 03 | 2min | 2 | 4 |
 | 06-capture-api-key-management | 00 | 2min | 2 | 4 |
+| 06-capture-api-key-management | 01 | 8min | 2 | 4 |
 
 ### Research Flags (address during planning)
 
@@ -101,4 +107,4 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 ## Session
 
 - **Last session**: 2026-03-22
-- **Stopped at**: Completed 06-00-PLAN.md (RED state test scaffolds for capture route, keys route, metadata extraction, and findByUrl extension)
+- **Stopped at**: Completed 06-01-PLAN.md (capture endpoint, metadata extraction, findByUrl — all 36 vitest tests pass)
