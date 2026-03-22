@@ -8,6 +8,8 @@ import { useAuth } from '@/lib/auth/AuthContext';
 import { useOnboarding } from '@/components/onboarding/OnboardingTour';
 import { useConversationContext } from '@/lib/contexts/ConversationContext';
 
+type KeyUIState = 'loading' | 'no-key' | 'has-key' | 'generating' | 'revealed' | 'confirm-regenerate';
+
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
@@ -16,6 +18,12 @@ export function AppSidebar() {
   const { conversations, currentConversationId, setCurrentConversationId, deleteConversation } = useConversationContext();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
+  // API key management state
+  const [keyState, setKeyState] = useState<KeyUIState>('loading');
+  const [keyPrefix, setKeyPrefix] = useState<string | null>(null);
+  const [rawKey, setRawKey] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
   // Load collapsed state from localStorage on mount
   useEffect(() => {
     const savedState = localStorage.getItem('neurograph_sidebar_collapsed');
@@ -23,6 +31,62 @@ export function AppSidebar() {
       setIsCollapsed(savedState === 'true');
     }
   }, []);
+
+  // Fetch active API key on mount
+  useEffect(() => {
+    fetch('/api/keys')
+      .then(res => res.json())
+      .then(data => {
+        if (data.key) {
+          setKeyPrefix(data.key.prefix);
+          setKeyState('has-key');
+        } else {
+          setKeyState('no-key');
+        }
+      })
+      .catch(() => setKeyState('no-key'));
+  }, []);
+
+  const handleGenerate = async () => {
+    // If key exists and not in confirm state, show confirmation first
+    if (keyState === 'has-key') {
+      setKeyState('confirm-regenerate');
+      return;
+    }
+    setKeyState('generating');
+    try {
+      const res = await fetch('/api/keys', { method: 'POST' });
+      const data = await res.json();
+      setRawKey(data.key);
+      setKeyPrefix(data.prefix);
+      setKeyState('revealed');
+    } catch {
+      setKeyState(keyPrefix ? 'has-key' : 'no-key');
+    }
+  };
+
+  const handleRevoke = async () => {
+    try {
+      await fetch('/api/keys', { method: 'DELETE' });
+      setKeyPrefix(null);
+      setRawKey(null);
+      setKeyState('no-key');
+    } catch {
+      // Silent fail -- key state unchanged
+    }
+  };
+
+  const handleCopy = async () => {
+    if (!rawKey) return;
+    await navigator.clipboard.writeText(rawKey);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleDismissReveal = () => {
+    setRawKey(null);
+    setKeyState('has-key');
+  };
 
   const toggleCollapse = () => {
     const newState = !isCollapsed;
@@ -197,6 +261,100 @@ export function AppSidebar() {
           })}
         </div>
       </div>
+
+      {/* API Key Management Section */}
+      {!isCollapsed && keyState !== 'loading' && (
+        <div className="px-4 pb-2 border-b border-white/5">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-neural-light/40 mb-2">API</p>
+
+          {keyState === 'no-key' && (
+            <button
+              onClick={handleGenerate}
+              className="flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-xs text-white/30 hover:text-white/70 hover:bg-white/[0.04] transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+              Generate key
+            </button>
+          )}
+
+          {keyState === 'has-key' && (
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-mono text-xs text-white/50 truncate">{keyPrefix}...</span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={handleGenerate}
+                  className="p-1.5 rounded-md text-white/30 hover:text-white/70 hover:bg-white/[0.04] transition-colors"
+                  title="Regenerate key"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+                </button>
+                <button
+                  onClick={handleRevoke}
+                  className="p-1.5 rounded-md text-white/30 hover:text-red-400/70 hover:bg-white/[0.04] transition-colors"
+                  title="Revoke key"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {keyState === 'confirm-regenerate' && (
+            <div className="space-y-1.5">
+              <p className="text-[10px] text-white/40">This will revoke your existing key. Any shortcuts using the old key will stop working.</p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => { setKeyState('has-key'); }}
+                  className="px-2 py-1 rounded text-[10px] text-white/40 hover:text-white/70 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => { setKeyState('no-key'); handleGenerate(); }}
+                  className="px-2 py-1 rounded text-[10px] text-white/50 hover:text-white/80 bg-white/[0.04] hover:bg-white/[0.08] transition-colors"
+                >
+                  Regenerate
+                </button>
+              </div>
+            </div>
+          )}
+
+          {keyState === 'generating' && (
+            <div className="flex items-center gap-2 px-2 py-1.5">
+              <div className="w-3 h-3 border border-white/30 border-t-transparent rounded-full animate-spin" />
+              <span className="text-xs text-white/30">Generating...</span>
+            </div>
+          )}
+
+          {keyState === 'revealed' && (
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-1.5">
+                <code className="flex-1 font-mono text-xs text-white/70 bg-white/[0.04] px-2 py-1.5 rounded border border-white/[0.08] truncate select-all">
+                  {rawKey}
+                </code>
+                <button
+                  onClick={handleCopy}
+                  className="p-1.5 rounded-md text-white/30 hover:text-white/70 hover:bg-white/[0.04] transition-colors shrink-0"
+                  title="Copy to clipboard"
+                >
+                  {copied ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-400"><polyline points="20 6 9 17 4 12"/></svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+                  )}
+                </button>
+              </div>
+              <p className="text-[10px] text-white/30">This key won&apos;t be shown again.</p>
+              <button
+                onClick={handleDismissReveal}
+                className="text-[10px] text-white/40 hover:text-white/70 transition-colors"
+              >
+                Done
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Footer / User */}
       <div className="p-4 border-t border-white/5">
