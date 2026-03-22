@@ -51,7 +51,14 @@ async function verifySetup() {
     console.log('❌ Function verification failed:', error);
   }
 
-  const requiredTables: TableName[] = ['neurons', 'synapses', 'conversations', 'messages'];
+  const requiredTables: TableName[] = [
+    'neurons',
+    'synapses',
+    'conversations',
+    'messages',
+    'knowledge_queue',
+    'user_api_keys',
+  ];
   let allTablesExist = true;
 
   for (const table of requiredTables) {

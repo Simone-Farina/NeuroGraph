@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Staging Area
-status: unknown
-last_updated: "2026-03-22T15:54:27.217Z"
+status: ready_for_next_phase
+last_updated: "2026-03-22T18:34:05Z"
 progress:
-  total_phases: 4
-  completed_phases: 2
-  total_plans: 8
-  completed_plans: 8
+  total_phases: 5
+  completed_phases: 3
+  total_plans: 12
+  completed_plans: 12
 ---
 
 # Project State
@@ -17,14 +17,14 @@ Current execution state for get-shit-done.
 
 ## Current Phase
 
-- **phase**: Phase 6 — Capture API & Key Management
-- **plan**: 01 (complete)
-- **status**: In progress — plan 01 complete (capture endpoint, metadata extraction, findByUrl)
-- **focus**: Milestone v1.1 Staging Area — cognitive funnel for chaotic inputs
+- **phase**: Phase 8 — Crystallize Flow
+- **plan**: Discussion pending
+- **status**: Phase 7 complete and approved — ready to discuss Phase 8
+- **focus**: Turn queued inputs into seeded crystallization chats with graceful extraction fallback
 
 ## Progress
 
-[██████████] 100% (8/8 plans complete)
+[██████░░░░] 60% (3/5 milestone phases complete, 12/12 planned items executed)
 
 ## Project Reference
 
@@ -37,9 +37,9 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 
 | Phase | Name | Requirements | Status |
 |-------|------|--------------|--------|
-| 5 | Data Layer & Auth Foundation | DATA-01, DATA-02, DATA-03, DATA-04 | In progress (3 of N plans complete) |
-| 6 | Capture API & Key Management | AUTH-01, AUTH-02, AUTH-03, AUTH-04 | In progress (2 of 3 plans complete) |
-| 7 | Queue Triage UI | TRIAGE-01, TRIAGE-02, TRIAGE-03, TRIAGE-04, TRIAGE-05 | Not started |
+| 5 | Data Layer & Auth Foundation | DATA-01, DATA-02, DATA-03, DATA-04 | Complete |
+| 6 | Capture API & Key Management | AUTH-01, AUTH-02, AUTH-03, AUTH-04 | Complete |
+| 7 | Queue Triage UI | TRIAGE-01, TRIAGE-02, TRIAGE-03, TRIAGE-04, TRIAGE-05 | Complete |
 | 8 | Crystallize Flow | CRYST-01, CRYST-02, CRYST-03 | Not started |
 | 9 | UI Polish & Design System | POLISH-01, POLISH-02, POLISH-03, POLISH-04, POLISH-05 | Not started |
 
@@ -86,6 +86,33 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 - **06-01-service-role-client**: Service role Supabase client created module-level in capture route (not per-request) — safe because credentials are env vars not user-scoped
 - **06-01-test-scaffold-bugs**: Three bugs in 06-00 scaffold fixed: (1) vi.hoisted for mockSupabaseAdmin, (2) VALID_TOKEN was 52 chars not 48, (3) Supabase count query mock must return Promise not {count: fn}
 
+### v1.1 Decisions (executed in 06-02)
+
+- **06-02-key-route-split**: `/api/keys` GET and DELETE use the cookie-session client, while POST inserts through the service-role client because RLS blocks user INSERT
+- **06-02-inline-secret-reveal**: API key generation stays in the sidebar footer with one-time reveal and copy feedback instead of a separate settings page or modal
+
+### v1.1 Decisions (locked in 07 context)
+
+- **07-queue-composition**: Queue page is a single stacked editorial index with sections in fixed order: Inbox, Passive Debt, Resources
+- **07-inbox-trigger**: `inbox -> passive_debt` auto-advances only when the user explicitly clicks the external URL
+- **07-sidebar-badge**: Queue badge counts `inbox` items only to preserve a low-anxiety Inbox Zero model
+- **07-semantic-rust**: Passive Debt aging uses human relative time plus restrained rust/terracotta semantic styling after a threshold
+
+### v1.1 Decisions (executed in 07-01)
+
+- **07-01-queue-boundary**: Queue client state is route-backed only; the store never calls Supabase directly and all mutations go through `/api/queue`
+- **07-01-derived-inbox-count**: Sidebar badge state derives from grouped queue items in `queueStore`, avoiding duplicated counters
+
+### v1.1 Decisions (executed in 07-02)
+
+- **07-02-editorial-stacking**: Queue is rendered as a single editorial column with fixed section order rather than tabs or mixed-list filtering
+- **07-02-inline-triage**: Actions stay subtle and inline; no nested modal or detail pane inside the 40vw shell
+
+### v1.1 Decisions (executed in 07-03)
+
+- **07-03-shell-bootstrap**: Queue refresh is mounted once at the shell level and re-syncs on focus and visibility return
+- **07-03-badge-zero-anxiety**: The Queue badge hides at zero and remains visible in collapsed mode without introducing any new panel mode
+
 ### v1.0 Performance
 
 | Phase | Plan | Duration | Tasks | Files |
@@ -98,6 +125,10 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 | 05-data-layer-auth-foundation | 03 | 2min | 2 | 4 |
 | 06-capture-api-key-management | 00 | 2min | 2 | 4 |
 | 06-capture-api-key-management | 01 | 8min | 2 | 4 |
+| 06-capture-api-key-management | 02 | 1min | 2 | 2 |
+| 07-queue-triage-ui | 01 | 10min | 2 | 5 |
+| 07-queue-triage-ui | 02 | 12min | 2 | 8 |
+| 07-queue-triage-ui | 03 | 12min | 3 | 5 |
 
 ### Research Flags (address during planning)
 
@@ -106,5 +137,11 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 
 ## Session
 
-- **Last session**: 2026-03-22
-- **Stopped at**: Completed 06-01-PLAN.md (capture endpoint, metadata extraction, findByUrl — all 36 vitest tests pass)
+- **Last session**: 2026-03-22T18:34:05Z
+- **Stopped at**: Completed and human-approved Phase 7 Queue Triage UI, including shell integration and Inbox-only badge behavior
+
+## Session Continuity
+
+- **Last resumed**: 2026-03-22T18:34:05Z
+- **Resume point**: Discuss Phase 8 requirements and extraction fallback boundaries
+- **Next action**: `$gsd-discuss-phase 8`
