@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Staging Area
-status: ready_for_next_phase
-last_updated: "2026-03-22T18:34:05Z"
+status: unknown
+last_updated: "2026-03-22T21:55:16.742Z"
 progress:
-  total_phases: 5
-  completed_phases: 3
-  total_plans: 12
-  completed_plans: 12
+  total_phases: 6
+  completed_phases: 4
+  total_plans: 14
+  completed_plans: 13
 ---
 
 # Project State
@@ -18,13 +18,13 @@ Current execution state for get-shit-done.
 ## Current Phase
 
 - **phase**: Phase 8 — Crystallize Flow
-- **plan**: Discussion pending
-- **status**: Phase 7 complete and approved — ready to discuss Phase 8
-- **focus**: Turn queued inputs into seeded crystallization chats with graceful extraction fallback
+- **plan**: 3 execution plans drafted
+- **status**: Phase 8 planned via fallback — ready to execute Phase 8
+- **focus**: Turn queued inputs into seeded crystallization chats with graceful extraction fallback and mastered-state closure
 
 ## Progress
 
-[██████░░░░] 60% (3/5 milestone phases complete, 12/12 planned items executed)
+[██████░░░░] 60% (3/5 milestone phases complete, 12/15 planned items executed)
 
 ## Project Reference
 
@@ -40,7 +40,7 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 | 5 | Data Layer & Auth Foundation | DATA-01, DATA-02, DATA-03, DATA-04 | Complete |
 | 6 | Capture API & Key Management | AUTH-01, AUTH-02, AUTH-03, AUTH-04 | Complete |
 | 7 | Queue Triage UI | TRIAGE-01, TRIAGE-02, TRIAGE-03, TRIAGE-04, TRIAGE-05 | Complete |
-| 8 | Crystallize Flow | CRYST-01, CRYST-02, CRYST-03 | Not started |
+| 8 | Crystallize Flow | CRYST-01, CRYST-02, CRYST-03 | Planned |
 | 9 | UI Polish & Design System | POLISH-01, POLISH-02, POLISH-03, POLISH-04, POLISH-05 | Not started |
 
 ## Accumulated Context
@@ -113,6 +113,17 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 - **07-03-shell-bootstrap**: Queue refresh is mounted once at the shell level and re-syncs on focus and visibility return
 - **07-03-badge-zero-anxiety**: The Queue badge hides at zero and remains visible in collapsed mode without introducing any new panel mode
 
+### v1.1 Decisions (post-07 hardening)
+
+- **07-post-key-rotation**: `user_api_keys.revoked_at` updates must use the service-role client; user-scoped clients only have SELECT+DELETE RLS and can silently fail to revoke, leading to `idx_user_api_keys_active_per_user` collisions
+- **07-post-ui-review**: Phase 7 UI audit scored 16/24 in `07-UI-REVIEW.md`; immediate fixes landed for row-level pending feedback, safer delete confirmation, explicit state-transition copy, and quieter section chrome
+- **07-post-ui-review-defer**: Remaining queue polish around typography simplification, terracotta semantic tokens, and flatter editorial row treatment is intentionally deferred to Phase 9
+- **08-parser-fallback**: `gsd-tools init phase-op 8` still fails to detect the roadmap phase, so Phase 8 context was created manually from roadmap/state/project sources; planning may need the same fallback path if the parser issue persists
+- **08-provenance-metadata**: Phase 8 will store crystallize provenance in `messages.metadata` instead of adding a new queue/conversation linkage table; the database already has a JSONB metadata column and chat message loading already exposes it
+- **08-manual-paste-continuity**: Extraction failure should still create the conversation and show manual paste inside the chat surface; failure is a continuity state, not an ejection path
+- **08-mastered-state-walk**: Mastery must honor the existing queue allowlist by walking `inbox/resource -> passive_debt -> mastered` rather than bypassing queue rules with a raw state update
+- **08-planning-fallback**: `roadmap get-phase 8` still reports `malformed_roadmap`, so Phase 8 research, validation, and plan artifacts were written manually from roadmap/state/context sources
+
 ### v1.0 Performance
 
 | Phase | Plan | Duration | Tasks | Files |
@@ -137,11 +148,11 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 
 ## Session
 
-- **Last session**: 2026-03-22T18:34:05Z
-- **Stopped at**: Completed and human-approved Phase 7 Queue Triage UI, including shell integration and Inbox-only badge behavior
+- **Last session**: 2026-03-22T21:29:34Z
+- **Stopped at**: Auto-routed from `$gsd-next` into a manual Phase 8 planning fallback and created research, validation, and plan artifacts despite the roadmap parser failure
 
 ## Session Continuity
 
-- **Last resumed**: 2026-03-22T18:34:05Z
-- **Resume point**: Discuss Phase 8 requirements and extraction fallback boundaries
-- **Next action**: `$gsd-discuss-phase 8`
+- **Last resumed**: 2026-03-22T21:29:34Z
+- **Resume point**: Execute Phase 8 starting with backend crystallize orchestration in `08-01-PLAN.md`
+- **Next action**: `$gsd-execute-phase 8`

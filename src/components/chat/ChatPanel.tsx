@@ -2,13 +2,18 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
-import { DefaultChatTransport } from 'ai';
+import { DefaultChatTransport, type UIMessage } from 'ai';
 import { Edge, MarkerType } from '@xyflow/react';
 
 import { ChatInput } from '@/components/chat/ChatInput';
+import { CrystallizeBootstrap } from '@/components/chat/CrystallizeBootstrap';
+import { CrystallizePasteComposer } from '@/components/chat/CrystallizePasteComposer';
 import { MessageList } from '@/components/chat/MessageList';
 import { SelectionToolbar } from '@/components/chat/SelectionToolbar';
+import type { CrystallizeMetadata, StartCrystallizeResponse } from '@/lib/crystallize/types';
+import { useConversationContext } from '@/lib/contexts/ConversationContext';
 import { extractFirstYouTubeUrl, isYouTubeUrl } from '@/lib/youtube';
+import { useQueueStore } from '@/stores/queueStore';
 import { useGraphStore } from '@/stores/graphStore';
 
 type SuggestionInput = {
@@ -56,6 +61,7 @@ type CreatedNeuronResponse = {
     confidence: 'medium';
     source: 'vector' | 'ai';
   }>;
+  mastered_queue_item_id?: string;
 };
 
 type SynapseUpsertResponse = {
@@ -66,6 +72,19 @@ type SynapseUpsertResponse = {
     type: RelationshipType;
     weight: number;
   };
+};
+
+type ActiveCrystallizeSession = {
+  queueItemId: string;
+  status: 'seeded' | 'awaiting_manual_paste';
+  failureReason?: string;
+} | null;
+
+type PersistedMessagePayload = {
+  id: string;
+  role: string;
+  content: string;
+  metadata: unknown;
 };
 
 function markerForEdge(type: RelationshipType) {
@@ -117,12 +136,57 @@ function isToolPartWithId(part: unknown, toolCallId: string): part is Suggestion
   );
 }
 
-import { useConversationContext } from '@/lib/contexts/ConversationContext';
+function isCrystallizeMetadata(value: unknown): value is CrystallizeMetadata {
+  if (!value || typeof value !== 'object' || !('crystallize' in value)) {
+    return false;
+  }
+
+  const crystallize = (value as { crystallize?: unknown }).crystallize;
+  if (!crystallize || typeof crystallize !== 'object') {
+    return false;
+  }
+
+  const candidate = crystallize as {
+    queue_item_id?: unknown;
+    status?: unknown;
+    failure_reason?: unknown;
+  };
+
+  return (
+    typeof candidate.queue_item_id === 'string' &&
+    (candidate.status === 'seeded' || candidate.status === 'awaiting_manual_paste') &&
+    (candidate.failure_reason === undefined || typeof candidate.failure_reason === 'string')
+  );
+}
+
+function deriveCrystallizeSession(messages: PersistedMessagePayload[]): ActiveCrystallizeSession {
+  let latest: ActiveCrystallizeSession = null;
+
+  for (const message of messages) {
+    if (!isCrystallizeMetadata(message.metadata)) {
+      continue;
+    }
+
+    latest = {
+      queueItemId: message.metadata.crystallize.queue_item_id,
+      status: message.metadata.crystallize.status,
+      failureReason: message.metadata.crystallize.failure_reason,
+    };
+  }
+
+  return latest;
+}
 
 export function ChatPanel() {
   const { currentConversationId, setCurrentConversationId, refreshConversations } = useConversationContext();
+  const pendingCrystallizeItemId = useQueueStore((state) => state.pendingCrystallizeItemId);
+  const clearCrystallizeIntent = useQueueStore((state) => state.clearCrystallizeIntent);
   const [input, setInput] = useState('');
   const [isFetchingTranscript, setIsFetchingTranscript] = useState(false);
+  const [isCrystallizing, setIsCrystallizing] = useState(false);
+  const [crystallizeNotice, setCrystallizeNotice] = useState<string | null>(null);
+  const [activeCrystallizeSession, setActiveCrystallizeSession] =
+    useState<ActiveCrystallizeSession>(null);
   const [connectionNotice, setConnectionNotice] = useState<string | null>(null);
   const [processingToolCalls, setProcessingToolCalls] = useState<Set<string>>(new Set());
   const processingToolCallsRef = useRef<Set<string>>(new Set());
@@ -208,8 +272,8 @@ export function ChatPanel() {
       }
 
       const payload = await response.json();
-      const loadedMessages = (payload.messages || []).map(
-        (msg: { id: string; role: string; content: string; metadata: unknown }) => {
+      const persistedMessages = (payload.messages || []) as PersistedMessagePayload[];
+      const loadedMessages = persistedMessages.map((msg) => {
           try {
             const textParts: Array<{ type: 'text'; text: string }> = msg.content
               ? [{ type: 'text' as const, text: msg.content }]
@@ -253,13 +317,14 @@ export function ChatPanel() {
               parts: msg.content ? [{ type: 'text' as const, text: msg.content }] : [],
             };
           }
-        }
-      );
+        }) as UIMessage[];
 
       console.log('[loadMessages] loaded', loadedMessages.length, 'messages, replacing useChat state');
       setMessages(loadedMessages);
+      setActiveCrystallizeSession(deriveCrystallizeSession(persistedMessages));
       setEdgeSuggestions([]);
       setConnectionNotice(null);
+      setCrystallizeNotice(null);
     } catch (error) {
       console.error('[loadMessages] failed to load conversation:', error);
     }
@@ -274,6 +339,7 @@ export function ChatPanel() {
       setMessages([]);
       setEdgeSuggestions([]);
       setConnectionNotice(null);
+      setActiveCrystallizeSession(null);
       return;
     }
 
@@ -331,7 +397,7 @@ export function ChatPanel() {
 
   const handleSend = useCallback(async () => {
     const text = input.trim();
-    if (!text || status !== 'ready' || isFetchingTranscript) return;
+    if (!text || status !== 'ready' || isFetchingTranscript || isCrystallizing) return;
 
     let finalText = text;
 
@@ -384,7 +450,7 @@ export function ChatPanel() {
 
     sendMessage({ text: finalText });
     setInput('');
-  }, [input, status, isFetchingTranscript, sendMessage, currentConversationId, setCurrentConversationId]);
+  }, [input, status, isFetchingTranscript, isCrystallizing, sendMessage, currentConversationId, setCurrentConversationId]);
 
   const handleNeurogenesis = useCallback(
     async (toolCallId: string, force = false) => {
@@ -457,7 +523,7 @@ export function ChatPanel() {
           return;
         }
 
-        const { neuron, synapses, synapse_suggestions } =
+        const { neuron, synapses, synapse_suggestions, mastered_queue_item_id } =
           (await response.json()) as CreatedNeuronResponse;
 
         // 4. Update Graph Store Optimistically
@@ -501,6 +567,12 @@ export function ChatPanel() {
           );
         }
 
+        if (mastered_queue_item_id) {
+          void useQueueStore.getState().refreshQueue();
+          clearCrystallizeIntent();
+          setCrystallizeNotice('Queue item mastered');
+        }
+
         setMessages((prev) =>
           prev.map((msg) => ({
             ...msg,
@@ -528,7 +600,14 @@ export function ChatPanel() {
         setProcessingToolCalls(new Set(processingToolCallsRef.current));
       }
     },
-    [messages, currentConversationId, setMessages, showConnectionsNotice, upsertEdgeInStore]
+    [
+      clearCrystallizeIntent,
+      currentConversationId,
+      messages,
+      setMessages,
+      showConnectionsNotice,
+      upsertEdgeInStore,
+    ]
   );
 
   const handleDismiss = useCallback((toolCallId: string) => {
@@ -596,13 +675,65 @@ export function ChatPanel() {
     setEdgeSuggestions((prev) => prev.filter((candidate) => edgeSuggestionKey(candidate) !== suggestionId));
   }, []);
 
-  const isLoading = status === 'streaming' || status === 'submitted' || isFetchingTranscript;
+  const handleCrystallizeSuccess = useCallback(
+    async (response: StartCrystallizeResponse) => {
+      skipNextLoadRef.current = false;
+      conversationIdRef.current = response.conversationId;
+      setCurrentConversationId(response.conversationId);
+      setActiveCrystallizeSession({
+        queueItemId: response.queueItemId,
+        status: response.mode,
+        failureReason: response.mode === 'awaiting_manual_paste' ? response.reason : undefined,
+      });
+      await refreshConversations();
+      clearCrystallizeIntent();
+    },
+    [clearCrystallizeIntent, refreshConversations, setCurrentConversationId]
+  );
+
+  const handleCrystallizeError = useCallback(
+    (message: string) => {
+      clearCrystallizeIntent();
+      setCrystallizeNotice(message);
+    },
+    [clearCrystallizeIntent]
+  );
+
+  const handleManualCrystallizeComplete = useCallback(async () => {
+    if (!currentConversationId) {
+      return;
+    }
+
+    await loadMessages(currentConversationId);
+  }, [currentConversationId, loadMessages]);
+
+  const isLoading = status === 'streaming' || status === 'submitted' || isFetchingTranscript || isCrystallizing;
+  const isManualPasteActive =
+    Boolean(currentConversationId) && activeCrystallizeSession?.status === 'awaiting_manual_paste';
 
   return (
     <section className="chat-panel flex h-full overflow-hidden border-r border-neural-gray-700 bg-neural-gray-900/30">
+      <CrystallizeBootstrap
+        pendingCrystallizeItemId={pendingCrystallizeItemId}
+        onStateChange={setIsCrystallizing}
+        onSuccess={handleCrystallizeSuccess}
+        onError={handleCrystallizeError}
+      />
       <SelectionToolbar />
       <div className="flex min-w-0 flex-1 flex-col relative">
         <div className="absolute inset-0 bg-gradient-to-b from-neural-dark/0 via-neural-dark/0 to-neural-dark/20 pointer-events-none" />
+
+        {isCrystallizing ? (
+          <div className="mx-5 mt-5 rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3 text-sm text-white/62 backdrop-blur-sm">
+            Preparing source…
+          </div>
+        ) : null}
+
+        {crystallizeNotice ? (
+          <div className="mx-5 mt-5 rounded-2xl border border-orange-400/15 bg-orange-500/[0.06] px-4 py-3 text-sm text-orange-300/85">
+            {crystallizeNotice}
+          </div>
+        ) : null}
 
         <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto scroll-smooth">
           <MessageList
@@ -614,6 +745,14 @@ export function ChatPanel() {
             addToolResult={handleAddToolOutput}
           />
         </div>
+
+        {isManualPasteActive && currentConversationId ? (
+          <CrystallizePasteComposer
+            conversationId={currentConversationId}
+            queueItemId={activeCrystallizeSession.queueItemId}
+            onComplete={handleManualCrystallizeComplete}
+          />
+        ) : null}
 
         {connectionNotice ? (
           <div className="mx-6 mb-4 rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white/70 flex items-center gap-2 backdrop-blur-md">
@@ -675,7 +814,7 @@ export function ChatPanel() {
           onSubmit={handleSend}
           isStreaming={status === 'streaming'}
           onStop={stop}
-          disabled={isLoading}
+          disabled={isLoading || isManualPasteActive}
         />
       </div>
     </section>

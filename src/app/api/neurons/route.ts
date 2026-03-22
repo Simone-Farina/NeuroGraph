@@ -3,6 +3,10 @@ import { z } from 'zod';
 
 import { createServerSupabaseClient } from '@/lib/auth/supabase';
 import { generateEmbedding } from '@/lib/ai/embeddings';
+import {
+  advanceQueueItemToMastered,
+  resolveCrystallizeQueueItemId,
+} from '@/lib/crystallize/provenance';
 import type { Database } from '@/types/database';
 
 type SimilarNeuronRow = {
@@ -326,8 +330,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    let masteredQueueItemId: string | undefined;
+
+    const crystallizeQueueItemId = await resolveCrystallizeQueueItemId(
+      supabase,
+      neuron.source_conversation_id
+    );
+
+    if (crystallizeQueueItemId) {
+      const masteryResult = await advanceQueueItemToMastered(supabase, crystallizeQueueItemId);
+      if (masteryResult === 'mastered' || masteryResult === 'already_mastered') {
+        masteredQueueItemId = crystallizeQueueItemId;
+      }
+    }
+
     return NextResponse.json(
-      { neuron, synapses: createdSynapses, synapse_suggestions: synapseSuggestions },
+      {
+        neuron,
+        synapses: createdSynapses,
+        synapse_suggestions: synapseSuggestions,
+        mastered_queue_item_id: masteredQueueItemId,
+      },
       { status: 201 }
     );
   } catch (error) {

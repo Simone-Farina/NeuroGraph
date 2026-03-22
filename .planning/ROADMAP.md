@@ -135,10 +135,14 @@ Plans:
   1. User can click "Crystallize" on a queue item with a URL and be taken to a new chat session pre-seeded with an AI summary of the article content — without manually pasting anything.
   2. When URL extraction fails (paywall, SPA, timeout), the system presents a manual paste area so the user can still Crystallize without abandoning the flow.
   3. When a Neuron is created from a Crystallize-initiated chat session, the originating queue item automatically transitions to "mastered" state — the user sees this reflected in the queue without any manual action.
-**Plans**: TBD
+**Plans:** 3 planned
+Plans:
+- [ ] 08-01-PLAN.md — Crystallize backend orchestration, extraction/summary helpers, and message-metadata provenance
+- [ ] 08-02-PLAN.md — Chat-side crystallize bootstrap, seeded-session loading, and embedded manual paste flow
+- [ ] 08-03-PLAN.md — Neurogenesis mastery handoff, queue refresh integration, and final human checkpoint
 
 ### Phase 9: UI Polish & Design System
-**Goal**: Elevate the entire app from functional to editorially refined — applying the critique findings across all existing surfaces so the Staging Area UI doesn't feel like it landed in a lesser product.
+**Goal**: Elevate the entire app from functional to editorially refined — applying the critique findings across all existing surfaces so the Staging Area UI doesn't feel like it landed in a lesser product. This phase also absorbs the remaining Phase 7 UI review follow-through: calmer typography scale, stronger semantic decay tokens, and a flatter editorial queue surface.
 **Depends on**: Phase 8 (all features functional before polish pass)
 **Requirements**: POLISH-01, POLISH-02, POLISH-03, POLISH-04, POLISH-05
 **Success Criteria** (what must be TRUE):
@@ -166,5 +170,5 @@ v1.1: 5 → 6 → 7 → 8 (strictly sequential; each phase depends on the previo
 | 5. Data Layer & Auth Foundation | 3/3 | Complete   | 2026-03-22 |
 | 6. Capture API & Key Management | 3/3 | Complete | 2026-03-22 |
 | 7. Queue Triage UI | 3/3 | Complete | 2026-03-22 |
-| 8. Crystallize Flow | 0/0 | Not started | - |
+| 8. Crystallize Flow | 0/3 | Planned | - |
 | 9. UI Polish & Design System | 0/0 | Not started | - |
