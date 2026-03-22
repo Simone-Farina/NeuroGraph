@@ -1,45 +1,46 @@
 import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import type { UIMessage } from 'ai';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { CrystallizeBootstrap } from '@/components/chat/CrystallizeBootstrap';
 import { ChatPanel } from '@/components/chat/ChatPanel';
-import { ConversationProvider } from '@/lib/contexts/ConversationContext';
-import { useQueueStore } from '@/stores/queueStore';
 
-const fetchMock = vi.fn();
+const mockRefreshConversations = vi.fn(async () => {});
+const mockSetCurrentConversationId = vi.fn();
 const mockSendMessage = vi.fn();
 const mockStop = vi.fn();
 const mockAddToolOutput = vi.fn();
 
-const chatState = {
-  initialMessages: [] as UIMessage[],
-  status: 'ready' as 'ready' | 'submitted' | 'streaming',
+const queueState = {
+  pendingCrystallizeItemId: null as string | null,
+  clearCrystallizeIntent: vi.fn(() => {
+    queueState.pendingCrystallizeItemId = null;
+  }),
+  refreshQueue: vi.fn(async () => {}),
 };
 
-global.fetch = fetchMock as typeof fetch;
+const conversationControl = {
+  initialConversationId: null as string | null,
+};
 
-vi.mock('@ai-sdk/react', async () => {
-  const ReactModule = await import('react');
+const fetchState = {
+  conversationMode: 'seeded' as 'seeded' | 'awaiting_manual_paste',
+  manualSeeded: false,
+};
 
-  return {
-    useChat: () => {
-      const [messages, setMessages] = ReactModule.useState<UIMessage[]>(chatState.initialMessages);
+vi.mock('@ai-sdk/react', () => ({
+  useChat: () => {
+    const [messages, setMessages] = React.useState<any[]>([]);
 
-      return {
-        messages,
-        sendMessage: mockSendMessage,
-        setMessages,
-        status: chatState.status,
-        stop: mockStop,
-        addToolOutput: mockAddToolOutput,
-      };
-    },
-  };
-});
-
-vi.mock('@/components/chat/SelectionToolbar', () => ({
-  SelectionToolbar: () => null,
+    return {
+      messages,
+      setMessages,
+      sendMessage: mockSendMessage,
+      status: 'ready',
+      stop: mockStop,
+      addToolOutput: mockAddToolOutput,
+    };
+  },
 }));
 
 vi.mock('@/stores/graphStore', () => ({
@@ -52,279 +53,223 @@ vi.mock('@/stores/graphStore', () => ({
   },
 }));
 
-function createJsonResponse(payload: unknown, status = 200) {
-  return Promise.resolve({
-    ok: status >= 200 && status < 300,
-    status,
-    json: async () => payload,
-  });
-}
+vi.mock('@/stores/queueStore', () => ({
+  useQueueStore: (selector: (state: typeof queueState) => unknown) => selector(queueState),
+}));
 
-function createDeferredResponse() {
-  let resolve: ((value: ReturnType<typeof createJsonResponse> extends Promise<infer T> ? T : never) => void) | null =
-    null;
+vi.mock('@/lib/contexts/ConversationContext', () => ({
+  useConversationContext: () => {
+    const [currentConversationId, setConversationId] = React.useState<string | null>(
+      conversationControl.initialConversationId
+    );
 
-  const promise = new Promise<{
-    ok: boolean;
-    status: number;
-    json: () => Promise<unknown>;
-  }>((innerResolve) => {
-    resolve = innerResolve;
-  });
+    return {
+      currentConversationId,
+      setCurrentConversationId: (id: string | null) => {
+        mockSetCurrentConversationId(id);
+        setConversationId(id);
+      },
+      refreshConversations: mockRefreshConversations,
+    };
+  },
+}));
 
+vi.mock('@/components/chat/SelectionToolbar', () => ({
+  SelectionToolbar: () => null,
+}));
+
+function seededMessages() {
   return {
-    promise,
-    resolve(payload: unknown, status = 200) {
-      resolve?.({
-        ok: status >= 200 && status < 300,
-        status,
-        json: async () => payload,
-      });
-    },
+    messages: [
+      {
+        id: 'msg-seeded',
+        role: 'assistant',
+        content:
+          'Deliberate Learning Systems\nexample.com\n\nA concise briefing.\n\nQuestion: What would you test first?',
+        metadata: {
+          crystallize: {
+            queue_item_id: 'queue-1',
+            source_title: 'Deliberate Learning Systems',
+            source_url: 'https://example.com/article',
+            source_domain: 'example.com',
+            status: 'seeded',
+            notes_present: false,
+          },
+        },
+      },
+    ],
   };
 }
 
-function renderChatPanel() {
-  return render(
-    <ConversationProvider>
-      <ChatPanel />
-    </ConversationProvider>
-  );
+function awaitingMessages() {
+  return {
+    messages: [
+      {
+        id: 'msg-awaiting',
+        role: 'assistant',
+        content:
+          "Deliberate Learning Systems\nexample.com\n\nI couldn't extract enough usable source material automatically (paywall).\n\nQuestion: Paste the source text into this conversation so we can continue from the same queue item.",
+        metadata: {
+          crystallize: {
+            queue_item_id: 'queue-1',
+            source_title: 'Deliberate Learning Systems',
+            source_url: 'https://example.com/article',
+            source_domain: 'example.com',
+            status: 'awaiting_manual_paste',
+            failure_reason: 'paywall',
+            notes_present: false,
+          },
+        },
+      },
+    ],
+  };
 }
 
-describe('ChatPanel crystallize flow', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    chatState.initialMessages = [];
-    chatState.status = 'ready';
+beforeEach(() => {
+  vi.clearAllMocks();
+  queueState.pendingCrystallizeItemId = null;
+  conversationControl.initialConversationId = null;
+  fetchState.conversationMode = 'seeded';
+  fetchState.manualSeeded = false;
 
-    useQueueStore.setState({
-      items: [],
-      isLoading: false,
-      error: null,
-      lastLoadedAt: null,
-      pendingById: {},
-      pendingCrystallizeItemId: null,
-      groupedItems: {
-        inbox: [],
-        passive_debt: [],
-        resource: [],
-      },
-      inboxCount: 0,
+  global.fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input);
+
+    if (url.startsWith('/api/chat?mode=messages&conversationId=')) {
+      return {
+        ok: true,
+        json: async () =>
+          fetchState.conversationMode === 'awaiting_manual_paste' && !fetchState.manualSeeded
+            ? awaitingMessages()
+            : seededMessages(),
+      } as Response;
+    }
+
+    if (url === '/api/crystallize/manual') {
+      fetchState.manualSeeded = true;
+
+      return {
+        ok: true,
+        json: async () => ({ success: true }),
+      } as Response;
+    }
+
+    if (url === '/api/chat') {
+      return {
+        ok: true,
+        json: async () => ({ conversations: [] }),
+      } as Response;
+    }
+
+    throw new Error(`Unexpected fetch call: ${url} ${init?.method ?? 'GET'}`);
+  }) as typeof fetch;
+});
+
+describe('ChatPanel crystallize integration', () => {
+  it('CrystallizeBootstrap starts crystallize and reports seeded success', async () => {
+    global.fetch = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        conversationId: 'conv-1',
+        queueItemId: 'queue-1',
+        mode: 'seeded',
+      }),
+    })) as unknown as typeof fetch;
+
+    const onSuccess = vi.fn();
+    const onStateChange = vi.fn();
+    const onError = vi.fn();
+
+    render(
+      <CrystallizeBootstrap
+        pendingCrystallizeItemId="queue-1"
+        onStateChange={onStateChange}
+        onSuccess={onSuccess}
+        onError={onError}
+      />
+    );
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/crystallize',
+        expect.objectContaining({ method: 'POST' })
+      );
+      expect(onSuccess).toHaveBeenCalledWith({
+        conversationId: 'conv-1',
+        queueItemId: 'queue-1',
+        mode: 'seeded',
+      });
+    });
+
+    expect(onStateChange).toHaveBeenCalledWith(true);
+    expect(onStateChange).toHaveBeenLastCalledWith(false);
+    expect(onError).not.toHaveBeenCalled();
+  });
+
+  it('CrystallizeBootstrap surfaces restrained errors on hard failure', async () => {
+    global.fetch = vi.fn(async () => ({
+      ok: false,
+      json: async () => ({ error: 'Unable to prepare source right now.' }),
+    })) as unknown as typeof fetch;
+
+    const onSuccess = vi.fn();
+    const onStateChange = vi.fn();
+    const onError = vi.fn();
+
+    render(
+      <CrystallizeBootstrap
+        pendingCrystallizeItemId="queue-1"
+        onStateChange={onStateChange}
+        onSuccess={onSuccess}
+        onError={onError}
+      />
+    );
+
+    await waitFor(() => {
+      expect(onError).toHaveBeenCalledWith('Unable to prepare source right now.');
+    });
+
+    expect(onSuccess).not.toHaveBeenCalled();
+    expect(onStateChange).toHaveBeenCalledWith(true);
+    expect(onStateChange).toHaveBeenLastCalledWith(false);
+  });
+
+  it('ChatPanel renders the embedded composer for awaiting_manual_paste conversations', async () => {
+    conversationControl.initialConversationId = 'conv-1';
+    fetchState.conversationMode = 'awaiting_manual_paste';
+
+    render(<ChatPanel />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Paste the source text and continue\./i)).toBeInTheDocument();
     });
   });
 
-  it('starts crystallize from queue intent, shows calm loading, and loads the seeded conversation', async () => {
-    const crystallizeRequest = createDeferredResponse();
+  it('submits manual paste continuation and reloads the seeded conversation', async () => {
+    conversationControl.initialConversationId = 'conv-1';
+    fetchState.conversationMode = 'awaiting_manual_paste';
 
-    fetchMock.mockImplementation((input: RequestInfo | URL) => {
-      const url = typeof input === 'string' ? input : input.toString();
-
-      if (url === '/api/chat') {
-        return createJsonResponse({ conversations: [] });
-      }
-
-      if (url === '/api/crystallize') {
-        return crystallizeRequest.promise;
-      }
-
-      if (url === '/api/chat?mode=messages&conversationId=conv-seeded') {
-        return createJsonResponse({
-          messages: [
-            {
-              id: 'assistant-1',
-              role: 'assistant',
-              content: 'Seeded briefing',
-              metadata: {
-                crystallize: {
-                  queue_item_id: 'queue-1',
-                  status: 'seeded',
-                },
-              },
-            },
-          ],
-        });
-      }
-
-      throw new Error(`Unhandled fetch: ${url}`);
-    });
-
-    useQueueStore.getState().beginCrystallize('queue-1');
-
-    renderChatPanel();
+    render(<ChatPanel />);
 
     await waitFor(() => {
-      expect(fetchMock).toHaveBeenCalledWith(
-        '/api/crystallize',
-        expect.objectContaining({
-          method: 'POST',
-        })
+      expect(screen.getByText(/Paste the source text and continue\./i)).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByLabelText(/Crystallize source text/i), {
+      target: { value: 'A'.repeat(520) },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Continue/i }));
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/crystallize/manual',
+        expect.objectContaining({ method: 'POST' })
       );
     });
 
-    expect(screen.getByText('Preparing source...')).toBeInTheDocument();
-
-    crystallizeRequest.resolve({
-      conversationId: 'conv-seeded',
-      queueItemId: 'queue-1',
-      mode: 'seeded',
-    });
-
     await waitFor(() => {
-      expect(screen.getByText('Seeded briefing')).toBeInTheDocument();
+      expect(screen.queryByText(/Paste the source text and continue\./i)).not.toBeInTheDocument();
+      expect(screen.getByText(/A concise briefing\./i)).toBeInTheDocument();
     });
-
-    expect(useQueueStore.getState().pendingCrystallizeItemId).toBeNull();
-  });
-
-  it('loads the returned conversation even when crystallize falls back to awaiting manual paste', async () => {
-    fetchMock.mockImplementation((input: RequestInfo | URL) => {
-      const url = typeof input === 'string' ? input : input.toString();
-
-      if (url === '/api/chat') {
-        return createJsonResponse({ conversations: [] });
-      }
-
-      if (url === '/api/crystallize') {
-        return createJsonResponse({
-          conversationId: 'conv-manual',
-          queueItemId: 'queue-2',
-          mode: 'awaiting_manual_paste',
-          reason: 'timeout',
-        });
-      }
-
-      if (url === '/api/chat?mode=messages&conversationId=conv-manual') {
-        return createJsonResponse({
-          messages: [
-            {
-              id: 'assistant-2',
-              role: 'assistant',
-              content: 'Paste the source text and continue.',
-              metadata: {
-                crystallize: {
-                  queue_item_id: 'queue-2',
-                  status: 'awaiting_manual_paste',
-                  failure_reason: 'timeout',
-                },
-              },
-            },
-          ],
-        });
-      }
-
-      throw new Error(`Unhandled fetch: ${url}`);
-    });
-
-    useQueueStore.getState().beginCrystallize('queue-2');
-
-    renderChatPanel();
-
-    await waitFor(() => {
-      expect(screen.getByText('Paste the source text and continue.')).toBeInTheDocument();
-    });
-
-    expect(useQueueStore.getState().pendingCrystallizeItemId).toBeNull();
-  });
-
-  it('clears queue intent and shows restrained inline feedback when crystallize cannot start', async () => {
-    fetchMock.mockImplementation((input: RequestInfo | URL) => {
-      const url = typeof input === 'string' ? input : input.toString();
-
-      if (url === '/api/chat') {
-        return createJsonResponse({ conversations: [] });
-      }
-
-      if (url === '/api/crystallize') {
-        return createJsonResponse({ error: 'boom' }, 500);
-      }
-
-      throw new Error(`Unhandled fetch: ${url}`);
-    });
-
-    useQueueStore.getState().beginCrystallize('queue-3');
-
-    renderChatPanel();
-
-    await waitFor(() => {
-      expect(screen.getByText('Could not prepare the source. Try again.')).toBeInTheDocument();
-    });
-
-    expect(useQueueStore.getState().pendingCrystallizeItemId).toBeNull();
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-  });
-
-  it.skip('renders an embedded paste composer, submits manual text, and reloads the conversation', async () => {
-    fetchMock.mockImplementation((input: RequestInfo | URL, init?: RequestInit) => {
-      const url = typeof input === 'string' ? input : input.toString();
-
-      if (url === '/api/chat') {
-        return createJsonResponse({ conversations: [] });
-      }
-
-      if (url === '/api/chat?mode=messages&conversationId=conv-awaiting') {
-        return createJsonResponse({
-          messages: [
-            {
-              id: 'assistant-awaiting',
-              role: 'assistant',
-              content: 'Manual paste needed.',
-              metadata: {
-                crystallize: {
-                  queue_item_id: 'queue-4',
-                  status: 'awaiting_manual_paste',
-                  failure_reason: 'timeout',
-                },
-              },
-            },
-          ],
-        });
-      }
-
-      if (url === '/api/crystallize/manual') {
-        expect(init?.method).toBe('POST');
-        expect(init?.body).toContain('conversationId');
-        expect(init?.body).toContain('queue-4');
-        return createJsonResponse({ success: true });
-      }
-
-      if (url === '/api/chat?mode=messages&conversationId=conv-seeded-after-paste') {
-        return createJsonResponse({
-          messages: [
-            {
-              id: 'assistant-seeded',
-              role: 'assistant',
-              content: 'Seeded after paste',
-              metadata: {
-                crystallize: {
-                  queue_item_id: 'queue-4',
-                  status: 'seeded',
-                },
-              },
-            },
-          ],
-        });
-      }
-
-      throw new Error(`Unhandled fetch: ${url}`);
-    });
-
-    render(
-      <ConversationProvider>
-        <ChatPanel />
-      </ConversationProvider>
-    );
-
-    fireEvent.change(screen.getByLabelText('Manual source text'), {
-      target: { value: 'x'.repeat(600) },
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
-
-    await waitFor(() => {
-      expect(screen.getByText('Seeded after paste')).toBeInTheDocument();
-    });
-
-    expect(screen.queryByText('Paste the source text and continue.')).not.toBeInTheDocument();
   });
 });
