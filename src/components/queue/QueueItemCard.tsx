@@ -18,14 +18,14 @@ type QueueItemCardProps = {
 
 function actionClassName(disabled = false, danger = false) {
   if (disabled) {
-    return 'text-[11px] text-white/20 cursor-not-allowed transition-colors';
+    return 'text-[12px] text-white/20 cursor-not-allowed transition-colors';
   }
 
   if (danger) {
-    return 'text-[11px] text-white/35 transition-colors hover:text-[color:rgba(194,107,84,0.95)]';
+    return 'text-[12px] text-semantic-terracotta transition-colors hover:text-semantic-terracotta/80';
   }
 
-  return 'text-[11px] text-white/35 transition-colors hover:text-white/75';
+  return 'text-[12px] text-white/40 transition-colors hover:text-white/80';
 }
 
 export function QueueItemCard({
@@ -42,7 +42,7 @@ export function QueueItemCard({
   const ageMeta = item.state === 'passive_debt' ? getQueueAgeMeta(item.created_at) : null;
   const ageClassName =
     ageMeta?.isRusty
-      ? 'text-[color:rgba(194,107,84,0.92)]'
+      ? 'text-semantic-terracotta'
       : 'text-white/30';
   const isPending = Boolean(pendingState);
 
@@ -84,10 +84,10 @@ export function QueueItemCard({
   };
 
   return (
-    <article className="rounded-xl border border-white/[0.05] bg-white/[0.02] px-4 py-4">
+    <article className="group relative border-b border-white/[0.04] py-6 last:border-0 hover:bg-white/[0.01] transition-colors rounded-lg -mx-4 px-4">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2 text-[11px] text-white/30">
+          <div className="flex flex-wrap items-center gap-3 text-[11px] font-medium tracking-wide uppercase text-white/30 mb-2">
             {item.source_domain ? <span>{item.source_domain}</span> : null}
             {item.estimated_read_time ? <span>{item.estimated_read_time} min read</span> : null}
             {ageMeta ? (
@@ -105,10 +105,10 @@ export function QueueItemCard({
             ) : null}
           </div>
 
-          <h3 className="mt-2 font-serif text-xl tracking-tight text-white/88">{item.title}</h3>
+          <h3 className="font-serif text-xl tracking-tight text-white/90">{item.title}</h3>
 
           {item.notes ? (
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/55">{item.notes}</p>
+            <p className="mt-2 max-w-3xl text-[15px] leading-relaxed text-white/60 font-serif">{item.notes}</p>
           ) : null}
 
           {item.url ? (
@@ -119,10 +119,10 @@ export function QueueItemCard({
               onClick={handleOpenUrl}
               aria-label={`Open ${item.title}`}
               aria-disabled={isPending ? 'true' : 'false'}
-              className={`mt-3 inline-flex items-center gap-2 text-sm transition-colors ${
+              className={`mt-3 inline-flex items-center gap-2 text-[13px] transition-colors ${
                 isPending
-                  ? 'pointer-events-none text-white/30'
-                  : 'text-white/52 hover:text-white/82'
+                  ? 'pointer-events-none text-white/20'
+                  : 'text-white/40 hover:text-white/70'
               }`}
             >
               <span className="truncate">{item.url}</span>
@@ -130,10 +130,10 @@ export function QueueItemCard({
           ) : null}
         </div>
 
-        {ageMeta?.isRusty ? <div className="h-full w-px bg-[color:rgba(194,107,84,0.38)]" /> : null}
+        {ageMeta?.isRusty ? <div className="absolute left-0 top-6 bottom-6 w-[2px] rounded-full bg-semantic-terracotta/40" /> : null}
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center gap-4">
+      <div className="mt-5 flex flex-wrap items-center gap-5 opacity-0 group-hover:opacity-100 transition-opacity focus-within:opacity-100">
         {showMarkPassiveDebt ? (
           <button
             type="button"
@@ -178,13 +178,13 @@ export function QueueItemCard({
       </div>
 
       {deleteArmed && !isPending ? (
-        <p className="mt-3 text-[11px] text-[color:rgba(194,107,84,0.88)]" aria-live="polite">
+        <p className="mt-3 text-[12px] text-semantic-terracotta" aria-live="polite">
           Second click deletes this item permanently.
         </p>
       ) : null}
 
       {errorMessage ? (
-        <p className="mt-3 text-[11px] text-[color:rgba(194,107,84,0.88)]" aria-live="polite">
+        <p className="mt-3 text-[12px] text-semantic-terracotta" aria-live="polite">
           {errorMessage}
         </p>
       ) : null}

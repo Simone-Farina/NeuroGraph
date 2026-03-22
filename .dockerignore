@@ -1,0 +1,11 @@
+node_modules
+.next
+.git
+.planning
+.sisyphus
+playwright-report
+test-results
+.next_log.txt
+tsconfig.tsbuildinfo
+npm-debug.log*
+.env.local

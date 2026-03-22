@@ -83,8 +83,8 @@ export function QueuePageClient() {
 
   if (isLoading && sections.every((section) => section.items.length === 0)) {
     return (
-      <div className="min-h-full px-6 py-10">
-        <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-white/25">
+      <div className="min-h-full px-6 py-10 md:px-12">
+        <p className="text-[13px] font-medium tracking-wide text-white/30 uppercase">
           Staging Area
         </p>
         <p className="mt-4 text-sm text-white/45">Gathering the queue...</p>
@@ -93,13 +93,13 @@ export function QueuePageClient() {
   }
 
   return (
-    <div className="min-h-full px-6 py-8">
-      <header className="mb-8 border-b border-white/5 pb-5">
-        <p className="font-mono text-[10px] uppercase tracking-[0.32em] text-white/25">
+    <div className="min-h-full px-6 py-8 md:px-12">
+      <header className="mb-10 pb-6 border-b border-white/[0.04]">
+        <p className="text-[11px] font-medium tracking-widest text-white/30 uppercase mb-2">
           Staging Area
         </p>
-        <h1 className="mt-3 font-serif text-3xl tracking-tight text-white/90">Queue</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/45">
+        <h1 className="font-serif text-3xl font-normal tracking-tight text-white/90">Queue</h1>
+        <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-white/45 font-serif">
           A calm index of what you have captured, what is quietly lingering, and what has been set aside.
         </p>
       </header>

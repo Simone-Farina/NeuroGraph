@@ -41,8 +41,13 @@ export function MessageList({
 }: MessageListProps) {
   if (!messages.length) {
     return (
-      <div className="flex h-full items-center justify-center px-8 text-center text-sm text-neural-light/50">
-        Start a conversation and NeuroGraph will help you turn ideas into durable knowledge.
+      <div className="flex h-full flex-col items-center justify-center px-8 text-center">
+        <h2 className="mb-4 font-serif text-3xl font-normal tracking-tight text-white/40">
+          A blank page.
+        </h2>
+        <p className="max-w-md font-serif text-[17px] leading-relaxed text-white/30">
+          Start a conversation. NeuroGraph will help you crystallize scattered ideas into durable, structured knowledge.
+        </p>
       </div>
     );
   }
@@ -52,93 +57,111 @@ export function MessageList({
   const showThinking = isLoading && messages.at(-1)?.role === 'user';
 
   return (
-    <div className="space-y-6 px-5 py-6">
+    <div className="space-y-4 px-8 py-8 md:px-12">
       {messages.map((message) => {
         const isUser = message.role === 'user';
 
         return (
           <div
             key={message.id}
-            className={`flex ${isUser ? 'justify-end' : 'justify-start'} ${isUser ? 'message-user' : 'message-assistant'}`}
+            className={`flex w-full ${isUser ? 'justify-end mb-8' : 'justify-start mb-12 mt-6'}`}
           >
-            <div className={`max-w-[85%] ${isUser ? 'ml-12' : 'mr-12'}`}>
-              <div className={`mb-2 flex items-center gap-2 ${isUser ? 'justify-end' : 'justify-start'}`}>
-                <span className="text-xs font-medium uppercase tracking-wider text-white/40">
-                  {isUser ? 'Explorer' : 'NeuroGraph'}
-                </span>
+            {isUser ? (
+              <div className="w-full max-w-[65%] pl-8 text-right">
+                <div className="mb-1 text-[10px] font-medium uppercase tracking-widest text-white/30">
+                  Explorer
+                </div>
+                {message.parts.map((part, index) => {
+                  if (part.type === 'text') {
+                    if (!part.text) return null;
+                    return (
+                      <div
+                        key={index}
+                        className="inline-block text-[15px] leading-relaxed text-white/50 font-sans transition-all duration-300"
+                      >
+                        {part.text}
+                      </div>
+                    );
+                  }
+                  return null;
+                })}
               </div>
+            ) : (
+              <div className="w-full max-w-4xl pr-4">
+                <div className="mb-5 flex items-center gap-4">
+                  <div className="h-[1px] w-6 bg-white/10" />
+                  <span className="text-[10px] font-medium uppercase tracking-widest text-white/30">
+                    NeuroGraph
+                  </span>
+                  <div className="h-[1px] flex-1 bg-gradient-to-r from-white/5 to-transparent" />
+                </div>
 
-              {message.parts.map((part, index) => {
-                if (part.type === 'text') {
-                  if (!part.text) return null;
-                  return (
-                    <div
-                      key={index}
-                      className={`rounded-2xl px-6 py-4 text-[15px] leading-relaxed shadow-sm font-serif ${isUser
-                          ? 'bg-white/[0.04] border border-white/10 text-white/90 rounded-br-sm'
-                          : 'bg-white/[0.02] border border-white/5 text-white/80 rounded-bl-sm markdown-content message-content'
-                        } transition-all duration-300`}
-                    >
-                      {isUser ? (
-                        part.text
-                      ) : (
+                {message.parts.map((part, index) => {
+                  if (part.type === 'text') {
+                    if (!part.text) return null;
+                    return (
+                      <div
+                        key={index}
+                        className="text-[17px] leading-[1.8] text-white/85 font-serif markdown-content transition-all duration-300"
+                      >
                         <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
                           {part.text}
                         </ReactMarkdown>
-                      )}
-                    </div>
-                  );
-                }
-
-                if (part.type.startsWith('tool-') && 'toolCallId' in part) {
-                  const toolName = part.type.replace(/^tool-/, '');
-                  const legacyToolName = `suggest_${'crys'}${'tallization'}`;
-                  const isSuggestionTool = toolName === legacyToolName || toolName === 'suggest_neurogenesis';
-
-                  if (isSuggestionTool) {
-                    const toolPart = part as {
-                      type: string;
-                      toolCallId: string;
-                      state: string;
-                      input: Record<string, unknown>;
-                    };
-
-                    const toolState: 'call' | 'result' =
-                      toolPart.state === 'output-available' ? 'result' : 'call';
-
-                    return (
-                      <NeurogenesisSuggestion
-                        key={toolPart.toolCallId}
-                        toolCallId={toolPart.toolCallId}
-                        input={toolPart.input as {
-                          title?: string;
-                          definition?: string;
-                          core_insight?: string;
-                          bloom_level?: string;
-                          related_neurons?: Array<{
-                            id: string;
-                            title?: string;
-                            relationship_type: 'PREREQUISITE' | 'RELATED' | 'BUILDS_ON';
-                          }>;
-                        }}
-                        state={toolPart.state}
-                        toolState={toolState}
-                        isProcessing={processingToolCalls?.has(toolPart.toolCallId)}
-                        onNeurogenesis={(force?: boolean) =>
-                          onNeurogenesis?.(toolPart.toolCallId, force) ?? Promise.resolve()
-                        }
-                        onDismiss={() => onDismiss?.(toolPart.toolCallId)}
-                        addResult={(result) =>
-                          addToolResult?.(toolPart.toolCallId, toolName, result)
-                        }
-                      />
+                      </div>
                     );
                   }
-                }
 
-                return null;
-              })}
-            </div>
+                  if (part.type.startsWith('tool-') && 'toolCallId' in part) {
+                    const toolName = part.type.replace(/^tool-/, '');
+                    const legacyToolName = `suggest_${'crys'}${'tallization'}`;
+                    const isSuggestionTool = toolName === legacyToolName || toolName === 'suggest_neurogenesis';
+
+                    if (isSuggestionTool) {
+                      const toolPart = part as {
+                        type: string;
+                        toolCallId: string;
+                        state: string;
+                        input: Record<string, unknown>;
+                      };
+
+                      const toolState: 'call' | 'result' =
+                        toolPart.state === 'output-available' ? 'result' : 'call';
+
+                      return (
+                        <div key={toolPart.toolCallId} className="my-8">
+                          <NeurogenesisSuggestion
+                            toolCallId={toolPart.toolCallId}
+                            input={toolPart.input as {
+                              title?: string;
+                              definition?: string;
+                              core_insight?: string;
+                              bloom_level?: string;
+                              related_neurons?: Array<{
+                                id: string;
+                                title?: string;
+                                relationship_type: 'PREREQUISITE' | 'RELATED' | 'BUILDS_ON';
+                              }>;
+                            }}
+                            state={toolPart.state}
+                            toolState={toolState}
+                            isProcessing={processingToolCalls?.has(toolPart.toolCallId)}
+                            onNeurogenesis={(force?: boolean) =>
+                              onNeurogenesis?.(toolPart.toolCallId, force) ?? Promise.resolve()
+                            }
+                            onDismiss={() => onDismiss?.(toolPart.toolCallId)}
+                            addResult={(result) =>
+                              addToolResult?.(toolPart.toolCallId, toolName, result)
+                            }
+                          />
+                        </div>
+                      );
+                    }
+                  }
+
+                  return null;
+                })}
+              </div>
+            )}
           </div>
         );
       })}

@@ -194,15 +194,14 @@ function GraphCanvas() {
 
   if (!flowNodes.length) {
     return (
-      <div className="flex h-full items-center justify-center p-8 text-center bg-[#0c0c0e] relative overflow-hidden">
+      <div className="flex h-full flex-col items-center justify-center p-8 text-center bg-[#0c0c0e] relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.02)_0%,_transparent_70%)]" />
-        <div className="relative z-10 max-w-sm">
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-white/5 bg-white/[0.02] text-2xl opacity-40">
-            🕸️
-          </div>
-          <h3 className="text-xl font-serif text-white/90 mb-3 tracking-tight">Neural Network Empty</h3>
-          <p className="text-[15px] font-serif text-white/60 leading-relaxed">
-            Start a conversation to generate neurons. Your network will grow organically as you learn.
+        <div className="relative z-10 max-w-md">
+          <h3 className="mb-4 font-serif text-3xl font-normal tracking-tight text-white/40">
+            An empty space.
+          </h3>
+          <p className="font-serif text-[17px] leading-relaxed text-white/30">
+            As you crystallize ideas in the chat, neurons will form here. Your cognitive network will grow naturally, mapping connections between the concepts you master.
           </p>
         </div>
       </div>

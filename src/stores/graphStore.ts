@@ -1,10 +1,13 @@
 import { create } from 'zustand';
 import type { Edge, Node } from '@xyflow/react';
 
+type ShellPreset = 'standard' | 'deep_read' | 'graph_zenith';
+
 type GraphStore = {
   nodes: Node[];
   edges: Edge[];
   leftPanelMode: 'chat' | 'neuron' | 'review';
+  shellPreset: ShellPreset;
   activeNeuronId: string | null;
   setGraph: (nodes: Node[], edges: Edge[]) => void;
   addNode: (node: Node) => void;
@@ -13,6 +16,7 @@ type GraphStore = {
   removeNode: (nodeId: string) => void;
   removeEdge: (edgeId: string) => void;
   updateNode: (nodeId: string, data: Partial<Node['data']>) => void;
+  setShellPreset: (preset: ShellPreset) => void;
   openNeuronDetail: (id: string) => void;
   openChat: () => void;
   openReview: () => void;
@@ -22,6 +26,7 @@ export const useGraphStore = create<GraphStore>((set) => ({
   nodes: [],
   edges: [],
   leftPanelMode: 'chat',
+  shellPreset: 'standard',
   activeNeuronId: null,
   setGraph: (nodes, edges) => set({ nodes, edges }),
   addNode: (node) =>
@@ -52,7 +57,8 @@ export const useGraphStore = create<GraphStore>((set) => ({
         node.id === nodeId ? { ...node, data: { ...node.data, ...data } } : node
       ),
     })),
-  openNeuronDetail: (id) => set({ leftPanelMode: 'neuron', activeNeuronId: id }),
-  openChat: () => set({ leftPanelMode: 'chat', activeNeuronId: null }),
-  openReview: () => set({ leftPanelMode: 'review', activeNeuronId: null }),
+  setShellPreset: (preset) => set({ shellPreset: preset }),
+  openNeuronDetail: (id) => set({ leftPanelMode: 'neuron', activeNeuronId: id, shellPreset: 'standard' }),
+  openChat: () => set({ leftPanelMode: 'chat', activeNeuronId: null, shellPreset: 'standard' }),
+  openReview: () => set({ leftPanelMode: 'review', activeNeuronId: null, shellPreset: 'deep_read' }),
 }));

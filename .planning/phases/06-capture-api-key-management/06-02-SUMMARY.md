@@ -89,6 +89,10 @@ None - implementation and verification matched the plan.
 ## Issues Encountered
 None in production code. The only gap found during resume was missing GSD documentation for an already-implemented and verified plan.
 
+## Post-Completion Validation
+- Physical-device iPhone Shortcut validation was completed on 2026-03-22 after the original Phase 6 closeout.
+- Confirmed behaviors: URL-only capture succeeds, duplicate URLs are rejected without inserting a second Inbox item, revoked keys return `unauthorized`, and successful captures land in Inbox as intended.
+
 ## User Setup Required
 
 None - no external service configuration required.

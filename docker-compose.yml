@@ -1,0 +1,25 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    container_name: neurograph-app
+    env_file:
+      - .env.local
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - neurograph_node_modules:/app/node_modules
+      - neurograph_next_cache:/app/.next
+    restart: unless-stopped
+
+volumes:
+  neurograph_node_modules:
+  neurograph_next_cache:
