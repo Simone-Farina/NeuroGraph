@@ -66,6 +66,32 @@ export type Message = {
   created_at: string;
 };
 
+export type QueueItemState = 'inbox' | 'passive_debt' | 'resource' | 'mastered';
+
+export type KnowledgeQueueItem = {
+  id: string;
+  user_id: string;
+  title: string;
+  url: string | null;
+  notes: string | null;
+  state: QueueItemState;
+  source_domain: string | null;
+  favicon_url: string | null;
+  estimated_read_time: number | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ApiKey = {
+  id: string;
+  user_id: string;
+  key_prefix: string;
+  key_hash: string;
+  created_at: string;
+  last_used_at: string | null;
+  revoked_at: string | null;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -140,6 +166,38 @@ export type Database = {
           created_at?: string;
         };
         Update: Partial<Message>;
+        Relationships: [];
+      };
+      knowledge_queue: {
+        Row: KnowledgeQueueItem;
+        Insert: {
+          id?: string;
+          user_id: string;
+          title: string;
+          url?: string | null;
+          notes?: string | null;
+          state?: QueueItemState;
+          source_domain?: string | null;
+          favicon_url?: string | null;
+          estimated_read_time?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<KnowledgeQueueItem>;
+        Relationships: [];
+      };
+      user_api_keys: {
+        Row: ApiKey;
+        Insert: {
+          id?: string;
+          user_id: string;
+          key_prefix: string;
+          key_hash: string;
+          created_at?: string;
+          last_used_at?: string | null;
+          revoked_at?: string | null;
+        };
+        Update: Partial<ApiKey>;
         Relationships: [];
       };
     };
