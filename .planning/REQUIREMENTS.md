@@ -20,8 +20,8 @@ Establish enterprise-grade, test-driven system prompts for the core NeuroGraph a
 
 ## 3. Chat Analyzer / Bouncer Agent
 - [ ] **BOUNCER-01**: The Bouncer prompt must enforce the "duplicate prevention" core value.
-- [ ] **BOUNCER-02**: `promptfoo` evaluations must exist showing the Bouncer rejecting near-identical inputs and suggesting appends instead.
-- [ ] **BOUNCER-03**: `promptfoo` evaluations must verify the Bouncer successfully extracts "Definition" and "Core Insight" from ambiguous human text.
+- [x] **BOUNCER-02**: `promptfoo` evaluations must exist showing the Bouncer rejecting near-identical inputs and suggesting appends instead.
+- [x] **BOUNCER-03**: `promptfoo` evaluations must verify the Bouncer successfully extracts "Definition" and "Core Insight" from ambiguous human text.
 
 ## 4. Socratic Chat Engine
 - [ ] **SOCRATES-01**: The Socratic Chat prompt must explicitly forbid the agent from just "giving the answer" and mandate a guiding, questioning tone.

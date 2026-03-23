@@ -38,7 +38,7 @@ Transform NeuroGraph's prompt layer into a first-class, test-driven subsystem. T
 - [x] **Phase 10: Promptfoo Evaluation Harness** - Install and wire promptfoo, evaluation directories, baseline runners, and reusable fixtures. (completed 2026-03-23)
 - [x] **Phase 11: DAG Manager Agent** - Prompt contract and evaluation suite for prerequisite/builds-on reasoning and cycle refusal. (completed 2026-03-23)
 - [x] **Phase 11.5: Horizon UI & DAG Wiring** - Ephemeral Architect route, graph-side target setting, ghost curriculum rendering, and left-panel briefing handoff. (completed 2026-03-23)
-- [ ] **Phase 12: Chat Analyzer / Bouncer Agent** - Prompt contract and evaluation suite for duplicate prevention and definition/insight extraction.
+- [x] **Phase 12: Chat Analyzer / Bouncer Agent** - Prompt contract and evaluation suite for duplicate prevention and definition/insight extraction. (completed 2026-03-23)
 - [ ] **Phase 13: Socratic Chat Engine** - Prompt contract and evaluation suite for coaching tone, multi-turn guidance, and deep-insight handoff.
 
 ---
@@ -225,10 +225,10 @@ Plans:
   1. The prompt preserves the duplicate-prevention principle and recommends append/merge behavior where appropriate.
   2. Evaluations show the agent rejects near-identical or structurally redundant candidate inputs.
   3. Evaluations show the agent can extract `Definition` and `Core Insight` from messy or partial user language.
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 Plans:
-- [ ] 12-01-PLAN.md — Bouncer prompt contract expansion, JSON schema extension, and heuristic provider extraction fields
-- [ ] 12-02-PLAN.md — Golden extraction cases, scored assertion logic, and full suite validation
+- [x] 12-01-PLAN.md — Bouncer prompt contract expansion, JSON schema extension, and heuristic provider extraction fields
+- [x] 12-02-PLAN.md — Golden extraction cases, scored assertion logic, and full suite validation
 
 ### Phase 13: Socratic Chat Engine
 **Goal**: Define and validate a Socratic coaching prompt that maintains guidance quality over multi-turn exchanges and knows when to propose Neurogenesis.
@@ -263,5 +263,5 @@ v1.2: 10 → 11 → 11.5 → 12 → 13
 | 10. Promptfoo Evaluation Harness | 3/3 | Complete | 2026-03-23 |
 | 11. DAG Manager Agent | 3/3 | Complete | 2026-03-23 |
 | 11.5. Horizon UI & DAG Wiring | 3/3 | Complete | 2026-03-23 |
-| 12. Chat Analyzer / Bouncer Agent | 0/0 | Not started | - |
+| 12. Chat Analyzer / Bouncer Agent | 2/2 | Complete   | 2026-03-23 |
 | 13. Socratic Chat Engine | 0/0 | Not started | - |

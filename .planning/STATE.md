@@ -1,14 +1,14 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.2
-milestone_name: Agent Intelligence
+milestone: v1.1
+milestone_name: Staging Area
 status: active
-last_updated: "2026-03-23T22:22:00Z"
+last_updated: "2026-03-23T22:30:12.786Z"
 progress:
-  total_phases: 5
-  completed_phases: 3
-  total_plans: 10
-  completed_plans: 10
+  total_phases: 13
+  completed_phases: 12
+  total_plans: 30
+  completed_plans: 32
 ---
 
 # Project State
@@ -18,9 +18,9 @@ Current execution state for get-shit-done.
 ## Current Phase
 
 - **phase**: Phase 12 — Chat Analyzer / Bouncer Agent
-- **plan**: 01 (complete)
-- **status**: Phase 12 Plan 01 complete — BOUNCER_SYSTEM_PROMPT expanded with extraction contract, 12-case golden suite, and updated heuristic fallback
-- **focus**: Phase 12 Plan 01 shipped; ready for human verification of eval suite
+- **plan**: 02 (complete)
+- **status**: Phase 12 Plan 02 complete — 13-case golden Bouncer suite with fragment-based scored extraction assertions; all 13 cases pass at 100% in offline/CI mode
+- **focus**: Phase 12 complete (BOUNCER-01, BOUNCER-02, BOUNCER-03 satisfied); ready for Phase 13 Socratic Chat Engine
 
 ## Progress
 
@@ -180,6 +180,13 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 - **12-01-threshold-assertions**: Extraction field assertions use scored threshold (0.8); duplicate-rejection assertions remain hard pass/fail (hybrid eval model maintained)
 - **12-01-heuristic-extraction**: Heuristic fallback derives `extracted_definition` from candidate text and `extracted_core_insight` from first sentence of definition; CI runs pass without API key
 
+### v1.2 Decisions (executed in 12-02)
+
+- **12-02-fragment-columns**: CSV uses `expected_definition_fragment`/`expected_insight_fragment` (keyword strings) instead of boolean `expected_has_definition`/`expected_has_insight` — fragment approach proves extraction content quality not just presence
+- **12-02-fragment-order**: For Gradient Descent case, `expected_definition_fragment` = "optimization" (in definition text) and `expected_insight_fragment` = "gradient" (insight prepends title); heuristic insight is always prefixed with the candidate title
+- **12-02-golden-suite-13cases**: Golden suite grows from 12 to 13 cases (8 new extraction cases replacing the Plan 01 draft; all 5 regression baselines preserved verbatim)
+- **12-02-assertion-5-guard**: Fragment assertion skips when both fragment columns are empty (returns true), so Memory Palace case and all append_to_existing cases pass cleanly without fragments
+
 ### v1.0 Performance
 
 | Phase | Plan | Duration | Tasks | Files |
@@ -213,11 +220,11 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 
 ## Session
 
-- **Last session**: 2026-03-23T22:22:00Z
-- **Stopped at**: Completed Phase 12 Plan 01 — Chat Analyzer / Bouncer Agent
+- **Last session**: 2026-03-23T22:28:40Z
+- **Stopped at**: Completed Phase 12 Plan 02 — Chat Analyzer / Bouncer Agent (eval suite complete)
 
 ## Session Continuity
 
-- **Last resumed**: 2026-03-23T22:22:00Z
-- **Resume point**: Phase 12 Plan 01 complete; awaiting human verification of expanded bouncer eval suite
-- **Next action**: Run `npm run eval:bouncer` to validate the expanded 12-case suite, then proceed to next Phase 12 plans
+- **Last resumed**: 2026-03-23T22:28:40Z
+- **Resume point**: Phase 12 complete — BOUNCER-01, BOUNCER-02, BOUNCER-03 all satisfied; 13-case golden suite passes 100%
+- **Next action**: Proceed to Phase 13 Socratic Chat Engine
