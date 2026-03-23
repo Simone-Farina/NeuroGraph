@@ -25,8 +25,8 @@ Establish enterprise-grade, test-driven system prompts for the core NeuroGraph a
 
 ## 4. Socratic Chat Engine
 - [x] **SOCRATES-01**: The Socratic Chat prompt must explicitly forbid the agent from just "giving the answer" and mandate a guiding, questioning tone.
-- [ ] **SOCRATES-02**: `promptfoo` evaluations must exist testing the Socratic engine against multiple simulated user chat turns to ensure it maintains the coaching persona.
-- [ ] **SOCRATES-03**: The Socratic Engine must recognize when the user has reached a "Deep Insight" and successfully propose Neurogenesis.
+- [x] **SOCRATES-02**: `promptfoo` evaluations must exist testing the Socratic engine against multiple simulated user chat turns to ensure it maintains the coaching persona.
+- [x] **SOCRATES-03**: The Socratic Engine must recognize when the user has reached a "Deep Insight" and successfully propose Neurogenesis.
 
 ---
 

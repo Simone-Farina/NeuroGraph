@@ -39,7 +39,7 @@ Transform NeuroGraph's prompt layer into a first-class, test-driven subsystem. T
 - [x] **Phase 11: DAG Manager Agent** - Prompt contract and evaluation suite for prerequisite/builds-on reasoning and cycle refusal. (completed 2026-03-23)
 - [x] **Phase 11.5: Horizon UI & DAG Wiring** - Ephemeral Architect route, graph-side target setting, ghost curriculum rendering, and left-panel briefing handoff. (completed 2026-03-23)
 - [x] **Phase 12: Chat Analyzer / Bouncer Agent** - Prompt contract and evaluation suite for duplicate prevention and definition/insight extraction. (completed 2026-03-23)
-- [ ] **Phase 13: Socratic Chat Engine** - Prompt contract and evaluation suite for coaching tone, multi-turn guidance, and deep-insight handoff.
+- [x] **Phase 13: Socratic Chat Engine** - Prompt contract and evaluation suite for coaching tone, multi-turn guidance, and deep-insight handoff. (completed 2026-03-23)
 
 ---
 
@@ -68,7 +68,7 @@ Transform NeuroGraph's prompt layer into a first-class, test-driven subsystem. T
 **Plans**: 2 plans
 Plans:
 - [x] 13-01-PLAN.md — Socratic prompt rewrite, conversationalist provider, and multi-turn prompt template
-- [ ] 13-02-PLAN.md — Golden multi-turn evaluation suite and full suite validation
+- [x] 13-02-PLAN.md — Golden multi-turn evaluation suite and full suite validation
 
 ### Phase 3: Rigorous Retention
 **Goal**: Add memory decay mechanics directly into the UI state of the graph.
@@ -81,7 +81,7 @@ Plans:
   2. Visually, if a foundational node "rusts" (falls below retention threshold), its distinct descendant nodes change border/glow color to indicate unstable foundations.
 **Plans**: 2 plans
 Plans:
-- [ ] 13-01-PLAN.md — Socratic prompt rewrite, conversationalist provider, and multi-turn prompt template
+- [x] 13-01-PLAN.md — Socratic prompt rewrite, conversationalist provider, and multi-turn prompt template
 - [ ] 13-02-PLAN.md — Golden multi-turn evaluation suite and full suite validation
 
 ### Phase 4: Advanced AI Markdown Editor
@@ -273,4 +273,4 @@ v1.2: 10 → 11 → 11.5 → 12 → 13
 | 11. DAG Manager Agent | 3/3 | Complete | 2026-03-23 |
 | 11.5. Horizon UI & DAG Wiring | 3/3 | Complete | 2026-03-23 |
 | 12. Chat Analyzer / Bouncer Agent | 2/2 | Complete    | 2026-03-23 |
-| 13. Socratic Chat Engine | 1/2 | In Progress|  |
+| 13. Socratic Chat Engine | 2/2 | Complete   | 2026-03-23 |

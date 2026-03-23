@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Staging Area
 status: Executing Phase 13
-last_updated: "2026-03-23T23:25:39.015Z"
+last_updated: "2026-03-23T23:32:57.760Z"
 progress:
   total_phases: 14
-  completed_phases: 12
+  completed_phases: 13
   total_plans: 32
-  completed_plans: 33
+  completed_plans: 34
 ---
 
 # Project State
@@ -194,6 +194,12 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 - **12-02-golden-suite-13cases**: Golden suite grows from 12 to 13 cases (8 new extraction cases replacing the Plan 01 draft; all 5 regression baselines preserved verbatim)
 - **12-02-assertion-5-guard**: Fragment assertion skips when both fragment columns are empty (returns true), so Memory Palace case and all append_to_existing cases pass cleanly without fragments
 
+### v1.2 Decisions (executed in 13-02)
+
+- **13-02-case-distribution**: 4 Socratic tone + 3 Neurogenesis trigger + 2 no-trigger + 1 edge case = 10 golden conversationalist cases
+- **13-02-trigger-signals**: Neurogenesis trigger cases use causal reasoning phrases ("I realized", "because", "I designed") matching BLOOM_ANALYZE_SIGNALS in provider heuristic
+- **13-02-no-trigger-signals**: No-trigger cases use direct questions ending with '?' (BLOOM_QUESTION_EXEMPTION rule prevents false positives)
+
 ### v1.0 Performance
 
 | Phase | Plan | Duration | Tasks | Files |
@@ -228,10 +234,10 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 ## Session
 
 - **Last session**: 2026-03-24T00:00:00Z
-- **Stopped at**: Completed Phase 13 Plan 01 — CHAT_SYSTEM_PROMPT rewrite and conversationalist provider created
+- **Stopped at**: Completed 13-02-PLAN.md — golden conversationalist eval suite (10 cases, 100% pass, no regressions across bouncer/architect/conversationalist)
 
 ## Session Continuity
 
 - **Last resumed**: 2026-03-24T00:00:00Z
-- **Resume point**: Phase 13 Plan 02 — build golden conversationalist eval suite (multi-turn YAML cases, SOCRATES-02/03 assertions)
-- **Next action**: Proceed to Phase 13 Socratic Chat Engine
+- **Resume point**: Phase 13 complete — all SOCRATES-01/02/03 requirements satisfied
+- **Next action**: Phase 13 closeout; advance to next milestone phase
