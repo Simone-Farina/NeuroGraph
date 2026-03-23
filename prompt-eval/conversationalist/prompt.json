@@ -1,0 +1,12 @@
+[
+  {%- for msg in messages %}
+  {
+    "role": "{{ msg.role }}",
+    "content": {{ msg.content | dump }}
+  },
+  {%- endfor %}
+  {
+    "role": "user",
+    "content": {{ final_user_message | dump }}
+  }
+]
