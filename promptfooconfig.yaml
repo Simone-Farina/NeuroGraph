@@ -1,0 +1,21 @@
+description: NeuroGraph Phase 10 baseline prompt-eval harness
+prompts:
+  - file://prompt-eval/bouncer/prompt.txt
+providers:
+  - exec:node prompt-eval/shared/neurograph-bouncer-provider.mjs
+defaultTest:
+  assert:
+    - type: is-json
+      value: file://prompt-eval/shared/bouncer-response.schema.json
+    - type: javascript
+      value: |
+        const result = JSON.parse(output);
+        return result.decision === context.vars.expected_decision;
+    - type: javascript
+      value: |
+        const result = JSON.parse(output);
+        if (context.vars.expected_match_title) {
+          return result.match_title === context.vars.expected_match_title;
+        }
+        return result.match_title === null;
+tests: prompt-eval/bouncer/cases.csv

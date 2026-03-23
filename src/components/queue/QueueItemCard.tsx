@@ -119,7 +119,7 @@ export function QueueItemCard({
               onClick={handleOpenUrl}
               aria-label={`Open ${item.title}`}
               aria-disabled={isPending ? 'true' : 'false'}
-              className={`mt-3 inline-flex items-center gap-2 text-[13px] transition-colors ${
+              className={`mt-3 inline-flex items-center gap-2 text-[13px] transition-colors max-w-full ${
                 isPending
                   ? 'pointer-events-none text-white/20'
                   : 'text-white/40 hover:text-white/70'

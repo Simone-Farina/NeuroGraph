@@ -63,6 +63,34 @@ NeuroGraph is a Next.js app for turning conversations into connected knowledge n
    npm run dev
    ```
 
+## Prompt Eval
+
+Phase 10 adds a local `promptfoo` harness for agent evaluation.
+
+- `promptfoo` is installed as a project dev dependency only. Do not install it globally.
+- The dedicated eval workspace lives in `prompt-eval/`.
+- The first real Golden suite is `prompt-eval/bouncer/`.
+
+Run the harness with:
+
+```bash
+npm run eval:all
+```
+
+Focused loops:
+
+```bash
+npm run eval:bouncer
+npm run eval:architect
+npm run eval:conversationalist
+```
+
+Notes:
+
+- The Bouncer suite uses the local provider script in `prompt-eval/shared/` and reuses the runtime Bouncer prompt contract from `src/lib/ai/prompts.ts`.
+- If real AI provider keys are present, the Bouncer eval uses the evaluator model path. If not, it falls back to a deterministic heuristic so the harness still runs locally.
+- `architect` and `conversationalist` are scaffolds in Phase 10. Their real suites land in later phases.
+
 ## Run With Docker Compose
 
 1. Configure the local environment file:

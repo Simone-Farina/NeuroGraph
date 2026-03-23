@@ -1,14 +1,14 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: Staging Area
-status: unknown
-last_updated: "2026-03-23T09:03:00.754Z"
+milestone: v1.2
+milestone_name: Agent Intelligence
+status: active
+last_updated: "2026-03-23T14:30:51Z"
 progress:
-  total_phases: 7
-  completed_phases: 6
-  total_plans: 17
-  completed_plans: 18
+  total_phases: 4
+  completed_phases: 1
+  total_plans: 3
+  completed_plans: 3
 ---
 
 # Project State
@@ -17,21 +17,30 @@ Current execution state for get-shit-done.
 
 ## Current Phase
 
-- **phase**: Phase 9 — UI Polish & Design System
-- **plan**: 03/03
-- **status**: complete (human verification pending on visuals)
-- **focus**: Milestone v1.1 finalized
+- **phase**: Phase 11 — DAG Manager Agent
+- **plan**: discussion
+- **status**: Phase 10 is approved and complete; the prompt-eval harness is now the milestone baseline
+- **focus**: Discuss Phase 11 DAG Manager agent scope, contract, and eval strategy
 
 ## Progress
 
-[██████████] 100% (5/5 milestone phases complete, 17/17 planned items executed)
+[███░░░░░░░] 25% (1/4 milestone phases complete, 3/3 planned items executed)
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-22)
+See: .planning/PROJECT.md (updated 2026-03-23)
 
 **Core value**: The system enforces "Active Extraction" and rigorous retention over passive reading; users only create nodes when they reach a "Deep Insight," and the AI acts as a bouncer to prevent hallucinated or disconnected knowledge graphs.
-**Current focus**: Milestone v1.1 — Staging Area & Cognitive Funnel
+**Current focus**: Milestone v1.2 — Agent Intelligence
+
+## Milestone v1.2 Phase Map
+
+| Phase | Name | Requirements | Status |
+|-------|------|--------------|--------|
+| 10 | Promptfoo Evaluation Harness | TEST-01, TEST-02, TEST-03 | Complete |
+| 11 | DAG Manager Agent | DAG-01, DAG-02, DAG-03 | Not started |
+| 12 | Chat Analyzer / Bouncer Agent | BOUNCER-01, BOUNCER-02, BOUNCER-03 | Not started |
+| 13 | Socratic Chat Engine | SOCRATES-01, SOCRATES-02, SOCRATES-03 | Not started |
 
 ## Milestone v1.1 Phase Map
 
@@ -140,6 +149,18 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 - **09-02-editorial-workspace**: Assistant messages render as editorial prose rather than chat bubbles. Queue and empty states aligned with editorial design language.
 - **09-03-unified-motion**: Refined framer-motion presets across the shell. Review layout shifted to monochrome and subtle structural styling instead of game-like coloring.
 
+### v1.2 Decisions (milestone start)
+
+- **10-milestone-origin**: Milestone v1.2 was started from the promoted promptfoo/agents note rather than a separate discuss-milestone artifact.
+- **10-agent-intelligence-scope**: The milestone focuses on test-driven prompt engineering first, not on broader agent runtime orchestration.
+- **10-phase-order**: Evaluation infrastructure comes first, then DAG Manager, then Bouncer, then Socratic Chat Engine.
+- **10-local-install-only**: `promptfoo` must be installed strictly as a local dev dependency in `package.json`; no global install is allowed.
+- **10-prompt-eval-root**: The canonical prompt evaluation workspace is `prompt-eval/` with per-agent directories for `bouncer`, `architect`, and `conversationalist`.
+- **10-runner-canon**: The harness command surface is explicit in `package.json`: `eval:all` plus targeted per-agent scripts.
+- **10-hybrid-eval-model**: Structural integrity checks are hard pass/fail; softer pedagogical quality uses scored thresholds. Phase 10 proves the hard-fail pattern first on the Bouncer.
+- **10-golden-casuistry**: Phase 10 uses a small hand-curated golden dataset, starting with five brutal Bouncer edge cases rather than broad synthetic coverage.
+- **10-approved-closeout**: Human verification passed on 2026-03-23. The local promptfoo install, Golden Bouncer suite, docs, and scaffold suites are accepted as the milestone baseline.
+
 ### v1.0 Performance
 
 | Phase | Plan | Duration | Tasks | Files |
@@ -173,11 +194,11 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 
 ## Session
 
-- **Last session**: 2026-03-23T12:00:00Z
-- **Stopped at**: Completed 09-VERIFICATION.md
+- **Last session**: 2026-03-23T14:30:51Z
+- **Stopped at**: Closed Phase 10 after human approval; Phase 11 is now the active next discussion target
 
 ## Session Continuity
 
-- **Last resumed**: 2026-03-23T12:00:00Z
-- **Resume point**: Phase 9 verification complete. Ready to close out milestone.
-- **Next action**: Deploy to develop + main for final visual test
+- **Last resumed**: 2026-03-23T14:30:51Z
+- **Resume point**: Discuss Phase 11 DAG Manager agent and turn prompt-eval infrastructure into a strict DAG eval suite
+- **Next action**: run `$gsd-discuss-phase 11`

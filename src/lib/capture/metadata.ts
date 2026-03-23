@@ -48,7 +48,7 @@ export async function extractHeadMetadata(url: string): Promise<{
   try {
     const response = await fetch(url, {
       signal: AbortSignal.timeout(3000),
-      headers: { 'User-Agent': 'NeuroGraph/1.0' },
+      headers: { 'User-Agent': 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)' },
     });
 
     const fullText = await response.text();
