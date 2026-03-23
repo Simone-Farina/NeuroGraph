@@ -78,18 +78,13 @@ export function NeurogenesisSuggestion({
   if (isSuccess || state === 'output-available') {
     const title = input?.title ?? 'Neuron';
     return (
-      <div className="neurogenesis-suggestion my-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5 flex items-center gap-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/[0.04] border border-white/10 text-lg">
-          <span className="text-white/50 mb-0.5">●</span>
-        </span>
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium uppercase tracking-wider text-white/40 mb-1">
-            Neuron Synapsed
-          </p>
-          <p className="text-[15px] font-serif text-white/90 truncate">
-            &quot;{title}&quot; added to your Neural Network.
-          </p>
-        </div>
+      <div className="neurogenesis-suggestion my-8 pl-5 border-l-2 border-emerald-700/30 animate-in fade-in duration-500">
+        <p className="text-[10px] font-medium uppercase tracking-widest text-emerald-500/50 mb-2">
+          Knowledge Consolidated
+        </p>
+        <p className="text-[15px] font-serif text-white/70">
+          The concept <span className="text-white/90">"{title}"</span> has been permanently etched into your knowledge graph.
+        </p>
       </div>
     );
   }
@@ -98,13 +93,11 @@ export function NeurogenesisSuggestion({
 
   if (!isInputComplete) {
     return (
-      <div className="neurogenesis-suggestion my-4 rounded-2xl border border-white/5 bg-white/[0.02] p-6 shadow-sm">
-        <div className="flex items-center gap-3">
-          <span className="h-1.5 w-1.5 rounded-full bg-white/40 animate-pulse" />
-          <p className="text-xs font-medium uppercase tracking-wider text-white/40">
-            {input?.title ? `Synthesizing "${input.title}"...` : 'Synthesizing Neuron...'}
-          </p>
-        </div>
+      <div className="neurogenesis-suggestion my-8 pl-5 border-l border-amber-500/20">
+        <p className="text-[14px] font-serif italic text-white/40 flex items-center gap-3">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500/40 animate-pulse" />
+          {input?.title ? `Crystallizing "${input.title}"...` : 'Synthesizing new neuron...'}
+        </p>
       </div>
     );
   }
@@ -116,53 +109,43 @@ export function NeurogenesisSuggestion({
   const isDisabled = isGenerating || isProcessing;
 
   return (
-    <div className="neurogenesis-suggestion my-6 rounded-2xl border border-white/10 bg-white/[0.03] p-6 shadow-xl transition-all duration-300 hover:border-white/20 group">
-      <div className="mb-6 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="h-1.5 w-1.5 rounded-full bg-white/40 ring-4 ring-white/5" />
-          <h3 className="text-xs font-medium uppercase tracking-wider text-white/40">Insight Detected</h3>
-        </div>
-        <span className="rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-white/50">
+    <div className="neurogenesis-suggestion my-10 pl-5 border-l-2 border-white/10 group transition-colors hover:border-white/20">
+      <div className="mb-5 flex items-center justify-between">
+        <h3 className="text-[10px] font-medium uppercase tracking-widest text-amber-500/60">Candidate Neuron</h3>
+        <span className="text-[10px] font-medium uppercase tracking-widest text-white/30">
           {bloomLevel}
         </span>
       </div>
 
       <div className="space-y-3">
-        <p className="text-xl font-serif font-medium text-white/90 leading-tight">{title}</p>
+        <h4 className="text-2xl font-serif text-white/90 leading-tight">{title}</h4>
         <p className="text-[15px] font-serif leading-relaxed text-white/70">{definition}</p>
       </div>
 
       {coreInsight && (
-        <div className="mt-6 rounded-xl border border-white/10 bg-white/[0.02] px-5 py-4">
-          <p className="text-[15px] font-serif leading-relaxed text-white/60 italic">
+        <div className="mt-5 pt-5 border-t border-white/5">
+          <p className="text-[14px] font-serif leading-relaxed text-white/50 italic">
             &quot;{coreInsight}&quot;
           </p>
         </div>
       )}
 
-      <div className="mt-8 flex items-center gap-3">
+      <div className="mt-8 flex items-center gap-5">
         <button
           type="button"
           onClick={() => void handleGenerate()}
           disabled={isDisabled}
-          className="flex-1 rounded-xl bg-white/90 px-6 py-3 text-sm font-medium text-black transition-all hover:bg-white active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
+          className="bg-white/90 hover:bg-white text-black px-5 py-2.5 text-[12px] font-semibold uppercase tracking-wider transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {isDisabled ? (
-            <span className="flex items-center justify-center gap-2">
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-black/20 border-t-black" />
-              Processing...
-            </span>
-          ) : (
-            'Commit to Network'
-          )}
+          {isDisabled ? 'Committing...' : 'Commit to Graph'}
         </button>
         <button
           type="button"
           onClick={onDismiss}
           disabled={isDisabled}
-          className="rounded-xl border border-white/10 bg-transparent px-6 py-3 text-sm font-medium text-white/70 transition-all hover:bg-white/5 hover:text-white disabled:opacity-40"
+          className="text-[12px] font-medium uppercase tracking-wider text-white/30 hover:text-white/70 transition-colors disabled:opacity-40"
         >
-          Dismiss
+          Discard
         </button>
       </div>
     </div>
