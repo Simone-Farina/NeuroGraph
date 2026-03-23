@@ -8,14 +8,15 @@ import { useQueueStore } from '@/stores/queueStore';
 export function QueueBootstrap() {
   const { user, loading } = useAuth();
   const refreshQueue = useQueueStore((state) => state.refreshQueue);
+  const userId = user?.id ?? null;
 
   useEffect(() => {
-    if (loading || !user) return;
+    if (loading || !userId) return;
     void refreshQueue();
-  }, [loading, refreshQueue, user?.id]);
+  }, [loading, refreshQueue, userId]);
 
   useEffect(() => {
-    if (loading || !user) return;
+    if (loading || !userId) return;
 
     const handleFocus = () => {
       void refreshQueue();
@@ -34,7 +35,7 @@ export function QueueBootstrap() {
       window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [loading, refreshQueue, user?.id]);
+  }, [loading, refreshQueue, userId]);
 
   return null;
 }
