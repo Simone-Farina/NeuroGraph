@@ -75,6 +75,43 @@ function jaccardSimilarity(left, right) {
   return union === 0 ? 0 : intersection / union;
 }
 
+function extractDefinition(candidateTitle, candidateDefinition) {
+  // Return the candidate definition if it is already self-contained and within limit.
+  // Otherwise truncate to 280 chars at a word boundary.
+  const raw = candidateDefinition || candidateTitle;
+  const trimmed = raw.trim();
+  if (trimmed.length <= 280) {
+    return trimmed;
+  }
+
+  const truncated = trimmed.slice(0, 280);
+  const lastSpace = truncated.lastIndexOf(' ');
+  return lastSpace > 200 ? truncated.slice(0, lastSpace) + '...' : truncated.slice(0, 277) + '...';
+}
+
+function extractCoreInsight(candidateTitle, candidateDefinition) {
+  // Derive a core insight from the definition by extracting the most concrete clause.
+  // For the heuristic, we distill: "Understanding [title] means knowing [key phrase from definition]."
+  const definition = (candidateDefinition || '').trim();
+  const title = (candidateTitle || '').trim();
+
+  if (!definition) {
+    return `Understanding ${title} is essential for building durable knowledge in this domain.`;
+  }
+
+  // Use the first sentence as the core insight base (up to 280 chars).
+  const firstSentence = definition.split(/[.!?]/)[0].trim();
+  const insight = firstSentence.length > 30 ? firstSentence : definition;
+  const base = `${title}: ${insight}`;
+  if (base.length <= 280) {
+    return base;
+  }
+
+  const truncated = base.slice(0, 280);
+  const lastSpace = truncated.lastIndexOf(' ');
+  return lastSpace > 200 ? truncated.slice(0, lastSpace) + '...' : truncated.slice(0, 277) + '...';
+}
+
 function heuristicDecision(promptText, vars) {
   const existingTitle = vars.existing_title ?? '';
   const existingAliases = vars.existing_aliases ?? '';
@@ -112,7 +149,7 @@ function heuristicDecision(promptText, vars) {
       ? 'append_to_existing'
       : 'allow_new';
 
-  return {
+  const base = {
     decision,
     confidence: decision === 'append_to_existing' ? 0.91 : 0.84,
     match_title: decision === 'append_to_existing' ? existingTitle : null,
@@ -121,6 +158,13 @@ function heuristicDecision(promptText, vars) {
         ? 'The candidate overlaps the existing neuron closely enough that it should deepen the same concept.'
         : 'The candidate is distinct enough to justify a separate neuron.',
   };
+
+  if (decision === 'allow_new') {
+    base.extracted_definition = extractDefinition(candidateTitle, candidateDefinition);
+    base.extracted_core_insight = extractCoreInsight(candidateTitle, candidateDefinition);
+  }
+
+  return base;
 }
 
 function hasKeyFor(provider) {
@@ -199,6 +243,16 @@ async function main() {
       match_title: parsed.match_title ?? null,
       rationale: parsed.rationale ?? 'No rationale returned.',
     };
+
+    // Attach extraction fields for allow_new decisions only.
+    if (parsed.decision === 'allow_new') {
+      if (typeof parsed.extracted_definition === 'string' && parsed.extracted_definition.trim().length > 0) {
+        normalized.extracted_definition = parsed.extracted_definition.trim().slice(0, 280);
+      }
+      if (typeof parsed.extracted_core_insight === 'string' && parsed.extracted_core_insight.trim().length > 0) {
+        normalized.extracted_core_insight = parsed.extracted_core_insight.trim().slice(0, 280);
+      }
+    }
 
     process.stdout.write(JSON.stringify(normalized));
   } catch (error) {

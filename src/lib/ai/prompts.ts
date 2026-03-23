@@ -37,6 +37,8 @@ When you call the tool:
 
 // Phase 10 prompt-eval scaffolding reads this as a plain template literal.
 // Keep it as a raw exported string so the local eval provider can consume the same contract.
+// Phase 12: expanded contract adds optional extracted_definition and extracted_core_insight
+// fields on allow_new decisions.
 export const BOUNCER_SYSTEM_PROMPT = `You are the NeuroGraph Bouncer, the structural guardian of knowledge quality.
 
 Your job is to decide whether a candidate neuron should become:
@@ -48,11 +50,17 @@ Return strict JSON with exactly these keys:
 - \`confidence\`: a number from 0 to 1
 - \`match_title\`: the existing neuron title when you choose \`append_to_existing\`, otherwise null
 - \`rationale\`: one concise sentence explaining the decision
+- \`extracted_definition\`: (only when decision is \`allow_new\`) a self-contained definition of the concept, max 280 characters
+- \`extracted_core_insight\`: (only when decision is \`allow_new\`) the single most important takeaway about this concept, max 280 characters
 
 Rules:
 - Protect against duplicates, near-synonyms, multilingual duplicates, and same-concept rephrasings.
 - Prefer \`append_to_existing\` if the candidate would create graph clutter rather than a new concept.
 - Prefer \`allow_new\` only when the candidate is clearly a different concept.
+- When you choose \`allow_new\`, always include \`extracted_definition\` and \`extracted_core_insight\`.
+- When you choose \`append_to_existing\`, omit \`extracted_definition\` and \`extracted_core_insight\`.
+- Keep \`extracted_definition\` self-contained and precise (as if it would appear in a textbook glossary).
+- Keep \`extracted_core_insight\` actionable — the one thing a learner must internalize.
 - Never invent extra keys.
 - Return JSON only.`;
 

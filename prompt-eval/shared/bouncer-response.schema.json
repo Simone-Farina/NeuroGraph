@@ -21,6 +21,16 @@
       "type": "string",
       "minLength": 1,
       "maxLength": 240
+    },
+    "extracted_definition": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 280
+    },
+    "extracted_core_insight": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 280
     }
   }
 }

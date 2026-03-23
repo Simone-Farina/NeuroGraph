@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Agent Intelligence
 status: active
-last_updated: "2026-03-23T21:12:34Z"
+last_updated: "2026-03-23T22:22:00Z"
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 9
-  completed_plans: 9
+  total_plans: 10
+  completed_plans: 10
 ---
 
 # Project State
@@ -18,13 +18,13 @@ Current execution state for get-shit-done.
 ## Current Phase
 
 - **phase**: Phase 12 — Chat Analyzer / Bouncer Agent
-- **plan**: discussion
-- **status**: Phase 11.5 is approved and complete; the Architect is now wired into the product shell as an ephemeral Horizon layer
-- **focus**: Discuss Phase 12 Chat Analyzer / Bouncer scope, runtime boundary, and eval strategy
+- **plan**: 01 (complete)
+- **status**: Phase 12 Plan 01 complete — BOUNCER_SYSTEM_PROMPT expanded with extraction contract, 12-case golden suite, and updated heuristic fallback
+- **focus**: Phase 12 Plan 01 shipped; ready for human verification of eval suite
 
 ## Progress
 
-[██████░░░░] 60% (3/5 milestone phases complete, 9/9 planned items executed)
+[██████████] 100% (3/5 milestone phases complete, 10/10 planned items executed)
 
 ## Project Reference
 
@@ -172,6 +172,14 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 - **11.5-ghost-briefing**: Clicking a ghost node opens a left-panel briefing mode showing the generated definition and a `Start Learning (Crystallize)` handoff into chat.
 - **11.5-approved-closeout**: Human verification passed on 2026-03-23. Horizon target setting, ghost-node preview, briefing mode, chat seeding, and ephemeral refresh behavior all matched the intended flow.
 
+### v1.2 Decisions (executed in 12-01)
+
+- **12-01-bouncer-extraction**: BOUNCER_SYSTEM_PROMPT expanded with `extracted_definition` and `extracted_core_insight` fields; present only on `allow_new` decisions, absent on `append_to_existing`
+- **12-01-schema-backward-compat**: bouncer-response.schema.json updated to accept optional extraction fields while keeping `additionalProperties: false`; existing eval cases remain passing
+- **12-01-golden-suite-12cases**: Golden suite grows from 5 to 12 cases (7 extraction cases; all 5 duplicate-detection baselines preserved as regression)
+- **12-01-threshold-assertions**: Extraction field assertions use scored threshold (0.8); duplicate-rejection assertions remain hard pass/fail (hybrid eval model maintained)
+- **12-01-heuristic-extraction**: Heuristic fallback derives `extracted_definition` from candidate text and `extracted_core_insight` from first sentence of definition; CI runs pass without API key
+
 ### v1.0 Performance
 
 | Phase | Plan | Duration | Tasks | Files |
@@ -205,11 +213,11 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 
 ## Session
 
-- **Last session**: 2026-03-23T21:12:34Z
-- **Stopped at**: Closed and approved Phase 11.5 after shipping the Horizon UI to `main`
+- **Last session**: 2026-03-23T22:22:00Z
+- **Stopped at**: Completed Phase 12 Plan 01 — Chat Analyzer / Bouncer Agent
 
 ## Session Continuity
 
-- **Last resumed**: 2026-03-23T21:12:34Z
-- **Resume point**: Discuss Phase 12 Chat Analyzer / Bouncer Agent now that Horizon runtime wiring is complete
-- **Next action**: run `$gsd-discuss-phase 12`
+- **Last resumed**: 2026-03-23T22:22:00Z
+- **Resume point**: Phase 12 Plan 01 complete; awaiting human verification of expanded bouncer eval suite
+- **Next action**: Run `npm run eval:bouncer` to validate the expanded 12-case suite, then proceed to next Phase 12 plans
