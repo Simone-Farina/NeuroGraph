@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Agent Intelligence
 status: active
-last_updated: "2026-03-23T14:30:51Z"
+last_updated: "2026-03-23T15:23:32Z"
 progress:
-  total_phases: 4
-  completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
+  total_phases: 5
+  completed_phases: 2
+  total_plans: 9
+  completed_plans: 6
 ---
 
 # Project State
@@ -17,14 +17,14 @@ Current execution state for get-shit-done.
 
 ## Current Phase
 
-- **phase**: Phase 11 — DAG Manager Agent
-- **plan**: discussion
-- **status**: Phase 10 is approved and complete; the prompt-eval harness is now the milestone baseline
-- **focus**: Discuss Phase 11 DAG Manager agent scope, contract, and eval strategy
+- **phase**: Phase 11.5 — Horizon UI & DAG Wiring
+- **plan**: execute-ready
+- **status**: Phase 11 is approved and complete; Phase 11.5 is inserted and planned as the runtime bridge from Architect evals into the product shell
+- **focus**: Execute the ephemeral `/api/architect` route, GraphPanel target CTA, ghost-node rendering, and briefing-to-chat handoff
 
 ## Progress
 
-[███░░░░░░░] 25% (1/4 milestone phases complete, 3/3 planned items executed)
+[████░░░░░░] 40% (2/5 milestone phases complete, 6/9 planned items executed)
 
 ## Project Reference
 
@@ -38,7 +38,8 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 | Phase | Name | Requirements | Status |
 |-------|------|--------------|--------|
 | 10 | Promptfoo Evaluation Harness | TEST-01, TEST-02, TEST-03 | Complete |
-| 11 | DAG Manager Agent | DAG-01, DAG-02, DAG-03 | Not started |
+| 11 | DAG Manager Agent | DAG-01, DAG-02, DAG-03 | Complete |
+| 11.5 | Horizon UI & DAG Wiring | HORIZON-01, HORIZON-02, HORIZON-03 | Planned |
 | 12 | Chat Analyzer / Bouncer Agent | BOUNCER-01, BOUNCER-02, BOUNCER-03 | Not started |
 | 13 | Socratic Chat Engine | SOCRATES-01, SOCRATES-02, SOCRATES-03 | Not started |
 
@@ -160,6 +161,15 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 - **10-hybrid-eval-model**: Structural integrity checks are hard pass/fail; softer pedagogical quality uses scored thresholds. Phase 10 proves the hard-fail pattern first on the Bouncer.
 - **10-golden-casuistry**: Phase 10 uses a small hand-curated golden dataset, starting with five brutal Bouncer edge cases rather than broad synthetic coverage.
 - **10-approved-closeout**: Human verification passed on 2026-03-23. The local promptfoo install, Golden Bouncer suite, docs, and scaffold suites are accepted as the milestone baseline.
+- **11-architect-schema**: The Architect response contract is a strict schema with `isValid`, optional `refusalReason`, `nodes`, and `synapses`; invalid outputs must return empty node and synapse arrays.
+- **11-architect-enums**: Architect synapse types are locked to the DB-backed enum semantics `PREREQUISITE`, `RELATED`, and `BUILDS_ON`; the model must not invent relation labels.
+- **11-cycle-refusal**: Cycle detection must end in explicit structured refusal, never silent AI repair.
+- **11-golden-architect-suite**: The Architect eval baseline is eight hand-curated cases: three valid curricula, three cycle traps, and two `PREREQUISITE` vs `BUILDS_ON` boundary cases.
+- **11-runtime-light**: Phase 11 stops at prompt contract plus eval rigor. No product route or graph wiring belongs in that phase.
+- **11.5-inserted-phase**: Horizon UI & DAG Wiring is inserted as Phase 11.5 so the product bridge lands before the Bouncer without corrupting the roadmap sequence.
+- **11.5-ephemeral-draft**: `/api/architect` returns an authenticated draft path to frontend state only. Supabase writes stay forbidden until a later explicit commit flow exists.
+- **11.5-graph-trigger**: The target-setting trigger lives in GraphPanel chrome as `Set Learning Target`, not as a chat command.
+- **11.5-ghost-briefing**: Clicking a ghost node opens a left-panel briefing mode showing the generated definition and a `Start Learning (Crystallize)` handoff into chat.
 
 ### v1.0 Performance
 
@@ -194,11 +204,11 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 
 ## Session
 
-- **Last session**: 2026-03-23T14:30:51Z
-- **Stopped at**: Closed Phase 10 after human approval; Phase 11 is now the active next discussion target
+- **Last session**: 2026-03-23T15:23:32Z
+- **Stopped at**: Closed Phase 11 Architect work, merged it to `main`, and inserted/planned Phase 11.5 as the next runtime bridge
 
 ## Session Continuity
 
-- **Last resumed**: 2026-03-23T14:30:51Z
-- **Resume point**: Discuss Phase 11 DAG Manager agent and turn prompt-eval infrastructure into a strict DAG eval suite
-- **Next action**: run `$gsd-discuss-phase 11`
+- **Last resumed**: 2026-03-23T15:23:32Z
+- **Resume point**: Execute Phase 11.5 Horizon UI & DAG Wiring using the new ephemeral Architect route and ghost-node shell plan
+- **Next action**: run `$gsd-execute-phase 11.5`

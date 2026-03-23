@@ -36,7 +36,8 @@ Transform NeuroGraph’s prompt layer into a first-class, test-driven subsystem.
 ### Phases
 
 - [x] **Phase 10: Promptfoo Evaluation Harness** - Install and wire promptfoo, evaluation directories, baseline runners, and reusable fixtures. (completed 2026-03-23)
-- [ ] **Phase 11: DAG Manager Agent** - Prompt contract and evaluation suite for prerequisite/builds-on reasoning and cycle refusal.
+- [x] **Phase 11: DAG Manager Agent** - Prompt contract and evaluation suite for prerequisite/builds-on reasoning and cycle refusal. (completed 2026-03-23)
+- [ ] **Phase 11.5: Horizon UI & DAG Wiring** - Ephemeral Architect route, graph-side target setting, ghost curriculum rendering, and left-panel briefing handoff.
 - [ ] **Phase 12: Chat Analyzer / Bouncer Agent** - Prompt contract and evaluation suite for duplicate prevention and definition/insight extraction.
 - [ ] **Phase 13: Socratic Chat Engine** - Prompt contract and evaluation suite for coaching tone, multi-turn guidance, and deep-insight handoff.
 
@@ -193,10 +194,28 @@ Plans:
 **Depends on**: Phase 10
 **Requirements**: DAG-01, DAG-02, DAG-03
 **Success Criteria** (what must be TRUE):
-  1. The DAG Manager prompt explicitly distinguishes `prerequisite` from `builds_on` relationships and outputs a predictable schema.
-  2. Prompt evaluations prove the DAG Manager refuses cyclical dependency proposals.
-  3. Prompt evaluations prove the output stays valid JSON aligned with NeuroGraph’s expected structure.
-**Plans**: TBD
+  1. The DAG Manager prompt outputs a strict schema with `isValid`, optional `refusalReason`, `nodes`, and `synapses`.
+  2. Relationship semantics are locked to the database enum set: `PREREQUISITE`, `RELATED`, and `BUILDS_ON`.
+  3. Prompt evaluations prove the DAG Manager refuses cyclical dependency proposals and keeps output aligned with NeuroGraph’s expected JSON contract.
+**Plans**: 3/3 plans executed
+Plans:
+- [x] 11-01-PLAN.md — Architect prompt contract, strict Zod schema, and local DAG invariant enforcement
+- [x] 11-02-PLAN.md — Golden Architect promptfoo suite with valid curricula, cycle traps, and relation-boundary cases
+- [x] 11-03-PLAN.md — Validation closeout, local workflow sync, and runtime-light handoff into Horizon wiring
+
+### Phase 11.5: Horizon UI & DAG Wiring
+**Goal**: Wire the approved Architect contract into the product as an ephemeral Horizon layer so users can set a learning target, preview a ghost curriculum, and bridge a ghost concept into chat without polluting the persistent graph.
+**Depends on**: Phase 11, Phase 9
+**Requirements**: HORIZON-01, HORIZON-02, HORIZON-03
+**Success Criteria** (what must be TRUE):
+  1. `/api/architect` returns a strict Architect draft to frontend state without writing any nodes or synapses to Supabase.
+  2. The Graph panel exposes a graph-side `Set Learning Target` trigger and renders the returned draft as muted `ghostNeuron` nodes with Fog of War styling.
+  3. Clicking a ghost node opens a left-panel briefing mode with the generated definition and a `Start Learning (Crystallize)` CTA that seeds a fresh chat session for that concept.
+**Plans**: 0/3 plans executed
+Plans:
+- [ ] 11.5-01-PLAN.md — Authenticated `/api/architect` route, ephemeral Horizon store state, and strict response mapping
+- [ ] 11.5-02-PLAN.md — GraphPanel target CTA, ghostNeuron React Flow node, and low-anxiety Fog of War styling
+- [ ] 11.5-03-PLAN.md — Left-panel briefing mode, ghost-to-chat seed handoff, and final human checkpoint
 
 ### Phase 12: Chat Analyzer / Bouncer Agent
 **Goal**: Define and validate a Chat Analyzer / Bouncer prompt that protects graph quality by rejecting duplicates and extracting structured insight from ambiguous user text.
@@ -225,6 +244,7 @@ Plans:
 **Execution Order:**
 v1.0: 1 → 4 (out of order; 2 and 3 remain pending)
 v1.1: 5 → 6 → 7 → 8 (strictly sequential; each phase depends on the previous)
+v1.2: 10 → 11 → 11.5 → 12 → 13
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -238,6 +258,7 @@ v1.1: 5 → 6 → 7 → 8 (strictly sequential; each phase depends on the previo
 | 8. Crystallize Flow | 3/3 | Complete | 2026-03-22 |
 | 9. UI Polish & Design System | 3/3 | Complete | 2026-03-23 |
 | 10. Promptfoo Evaluation Harness | 3/3 | Complete | 2026-03-23 |
-| 11. DAG Manager Agent | 0/0 | Not started | - |
+| 11. DAG Manager Agent | 3/3 | Complete | 2026-03-23 |
+| 11.5. Horizon UI & DAG Wiring | 0/3 | Planned | - |
 | 12. Chat Analyzer / Bouncer Agent | 0/0 | Not started | - |
 | 13. Socratic Chat Engine | 0/0 | Not started | - |

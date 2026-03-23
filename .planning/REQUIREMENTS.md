@@ -4,14 +4,19 @@
 Establish enterprise-grade, test-driven system prompts for the core NeuroGraph agents using `promptfoo` to ensure rigorous evaluation and reliability.
 
 ## 1. Test-Driven Prompt Engineering Infrastructure
-- [ ] **TEST-01**: The system must have `promptfoo` installed and configured as a testing dependency.
-- [ ] **TEST-02**: A dedicated root directory structure at `prompt-eval/` must exist to isolate agent evaluation suites from runtime code.
-- [ ] **TEST-03**: There must be at least one baseline test script/command to run the full prompt evaluation suite locally.
+- [x] **TEST-01**: The system must have `promptfoo` installed and configured as a testing dependency.
+- [x] **TEST-02**: A dedicated root directory structure at `prompt-eval/` must exist to isolate agent evaluation suites from runtime code.
+- [x] **TEST-03**: There must be at least one baseline test script/command to run the full prompt evaluation suite locally.
 
 ## 2. DAG Manager Agent
-- [ ] **DAG-01**: The DAG Manager prompt must explicitly enforce structured evaluation of "prerequisites" vs "builds-on" relationships.
-- [ ] **DAG-02**: `promptfoo` evaluations must exist to prove the DAG Manager refuses cyclical dependencies.
-- [ ] **DAG-03**: `promptfoo` evaluations must exist to verify the DAG Manager outputs correctly structured JSON matching the system schema.
+- [x] **DAG-01**: The DAG Manager prompt must explicitly enforce structured evaluation of "prerequisites" vs "builds-on" relationships.
+- [x] **DAG-02**: `promptfoo` evaluations must exist to prove the DAG Manager refuses cyclical dependencies.
+- [x] **DAG-03**: `promptfoo` evaluations must exist to verify the DAG Manager outputs correctly structured JSON matching the system schema.
+
+## 2.5 Horizon UI & DAG Wiring
+- [ ] **HORIZON-01**: The app must expose an authenticated `/api/architect` route that returns an ephemeral strict JSON curriculum draft to frontend state without writing nodes or synapses to Supabase.
+- [ ] **HORIZON-02**: The Graph panel must provide a `Set Learning Target` trigger and render Architect output as low-anxiety `ghostNeuron` nodes with Fog of War styling.
+- [ ] **HORIZON-03**: Clicking a ghost node must open a left-panel briefing mode with the generated definition and a `Start Learning (Crystallize)` handoff that seeds a fresh chat session.
 
 ## 3. Chat Analyzer / Bouncer Agent
 - [ ] **BOUNCER-01**: The Bouncer prompt must enforce the "duplicate prevention" core value.
@@ -37,12 +42,15 @@ Establish enterprise-grade, test-driven system prompts for the core NeuroGraph a
 
 | Requirement | Description | Phase | Status |
 |-------------|-------------|-------|--------|
-| TEST-01 | promptfoo installed | Phase 10 | Pending |
-| TEST-02 | Evaluation structure | Phase 10 | Pending |
-| TEST-03 | Baseline runner | Phase 10 | Pending |
-| DAG-01 | DAG Manager prompt logic | Phase 11 | Pending |
-| DAG-02 | DAG Manager cyclical testing | Phase 11 | Pending |
-| DAG-03 | DAG Manager JSON testing | Phase 11 | Pending |
+| TEST-01 | promptfoo installed | Phase 10 | Complete |
+| TEST-02 | Evaluation structure | Phase 10 | Complete |
+| TEST-03 | Baseline runner | Phase 10 | Complete |
+| DAG-01 | DAG Manager prompt logic | Phase 11 | Complete |
+| DAG-02 | DAG Manager cyclical testing | Phase 11 | Complete |
+| DAG-03 | DAG Manager JSON testing | Phase 11 | Complete |
+| HORIZON-01 | Ephemeral Architect route | Phase 11.5 | Pending |
+| HORIZON-02 | Ghost path graph rendering | Phase 11.5 | Pending |
+| HORIZON-03 | Ghost briefing to chat handoff | Phase 11.5 | Pending |
 | BOUNCER-01 | Bouncer duplicate logic | Phase 12 | Pending |
 | BOUNCER-02 | Bouncer duplicate testing | Phase 12 | Pending |
 | BOUNCER-03 | Bouncer extraction testing | Phase 12 | Pending |

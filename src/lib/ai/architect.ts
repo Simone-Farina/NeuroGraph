@@ -190,4 +190,26 @@ export const architectResponseSchema = z
     }
   });
 
+export function buildArchitectPrompt(target: string) {
+  return `Target topic: ${target}
+
+Design a concise learning blueprint for this target.
+
+Instructions:
+- Create between 4 and 8 nodes total.
+- Include the target topic itself as one of the nodes.
+- Prefer prerequisite structure over flat brainstorming.
+- Use RELATED only for true lateral bridges.
+- Keep definitions concise, concrete, and high-signal.
+- If the request cannot be represented without a pedagogical paradox or cycle, refuse explicitly.
+
+Return JSON only.`;
+}
+
+export function createGhostNodeId(title: string) {
+  return `ghost:${encodeURIComponent(title)}`;
+}
+
+export type ArchitectNode = z.infer<typeof architectNodeSchema>;
+export type ArchitectSynapse = z.infer<typeof architectSynapseSchema>;
 export type ArchitectResponse = z.infer<typeof architectResponseSchema>;
