@@ -1,11 +1,33 @@
-description: Phase 10 conversationalist scaffold only
+description: NeuroGraph Golden Conversationalist suite
 prompts:
-  - |
-    Phase 10 conversationalist scaffold. This suite is intentionally a placeholder until Socratic scoring is implemented.
+  - file://prompt.json
 providers:
-  - echo
-tests:
-  - description: Conversationalist scaffold exists
-    assert:
-      - type: contains
-        value: Phase 10 conversationalist scaffold
+  - exec:node ../shared/neurograph-conversationalist-provider.mjs
+defaultTest:
+  assert:
+    - type: javascript
+      value: |
+        // Scored Socratic tone assertion (D-07, D-08)
+        // Threshold > 0.8 for coaching quality
+        const result = JSON.parse(output);
+        const score = result.socratic_score;
+        return { pass: score >= 0.8, score, reason: `Socratic tone score: ${score.toFixed(2)}` };
+    - type: javascript
+      value: |
+        // Hard pass/fail Neurogenesis assertion (D-09)
+        // Checks neurogenesis_triggered matches expected_neurogenesis
+        const result = JSON.parse(output);
+        const expected = context.vars.expected_neurogenesis;
+        if (expected === true) {
+          return result.neurogenesis_triggered === true
+            ? { pass: true, score: 1, reason: 'Neurogenesis correctly triggered' }
+            : { pass: false, score: 0, reason: 'Neurogenesis should have triggered but did not' };
+        }
+        if (expected === false) {
+          return result.neurogenesis_triggered === false
+            ? { pass: true, score: 1, reason: 'Neurogenesis correctly withheld' }
+            : { pass: false, score: 0, reason: 'Neurogenesis triggered when it should not have' };
+        }
+        // If expected_neurogenesis not set, skip this assertion
+        return { pass: true, score: 1, reason: 'No neurogenesis expectation set' };
+tests: cases.yaml
