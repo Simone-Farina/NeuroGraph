@@ -65,7 +65,10 @@ Transform NeuroGraph's prompt layer into a first-class, test-driven subsystem. T
 **Success Criteria** (what must be TRUE):
   1. React Flow auto-layouts nodes strictly top-to-bottom and entirely rejects cyclical edge connections.
   2. Users can generate target curricula that appear as locked/blurred "Ghost" Nodes until their prerequisites are fulfilled.
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 13-01-PLAN.md — Socratic prompt rewrite, conversationalist provider, and multi-turn prompt template
+- [ ] 13-02-PLAN.md — Golden multi-turn evaluation suite and full suite validation
 
 ### Phase 3: Rigorous Retention
 **Goal**: Add memory decay mechanics directly into the UI state of the graph.
@@ -76,7 +79,10 @@ Transform NeuroGraph's prompt layer into a first-class, test-driven subsystem. T
 **Success Criteria** (what must be TRUE):
   1. Neurons carry FSRS-6 memory state data updated via an active recall review session.
   2. Visually, if a foundational node "rusts" (falls below retention threshold), its distinct descendant nodes change border/glow color to indicate unstable foundations.
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 13-01-PLAN.md — Socratic prompt rewrite, conversationalist provider, and multi-turn prompt template
+- [ ] 13-02-PLAN.md — Golden multi-turn evaluation suite and full suite validation
 
 ### Phase 4: Advanced AI Markdown Editor
 **Goal**: Replace the rigid field-based editor with a tactile, AI-assisted WYSIWYG writing surface that conforms to the Danish Computation aesthetic.
@@ -238,7 +244,10 @@ Plans:
   1. The prompt maintains a questioning, coaching posture instead of immediately giving the answer.
   2. Multi-turn evaluations show the coaching tone stays consistent over several turns.
   3. The engine can recognize when the user has reached a sufficiently strong insight to propose Neurogenesis.
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 13-01-PLAN.md — Socratic prompt rewrite, conversationalist provider, and multi-turn prompt template
+- [ ] 13-02-PLAN.md — Golden multi-turn evaluation suite and full suite validation
 
 ---
 
@@ -264,4 +273,4 @@ v1.2: 10 → 11 → 11.5 → 12 → 13
 | 11. DAG Manager Agent | 3/3 | Complete | 2026-03-23 |
 | 11.5. Horizon UI & DAG Wiring | 3/3 | Complete | 2026-03-23 |
 | 12. Chat Analyzer / Bouncer Agent | 2/2 | Complete    | 2026-03-23 |
-| 13. Socratic Chat Engine | 0/0 | Not started | - |
+| 13. Socratic Chat Engine | 0/2 | In progress | - |
