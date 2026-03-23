@@ -78,4 +78,4 @@ The system enforces "Active Extraction" and rigorous retention over passive read
 | AI Isolation from Queue | Queue items invisible to chat AI. Only surfaced on explicit Crystallize. Keeps Socratic process intentional. | — Pending |
 
 ---
-*Last updated: 2026-03-22 — Milestone v1.1 Staging Area started*
+*Last updated: 2026-03-23 — Milestone v1.2 Agent Intelligence started from the promoted promptfoo/agents note*

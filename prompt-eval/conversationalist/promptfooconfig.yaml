@@ -1,0 +1,11 @@
+description: Phase 10 conversationalist scaffold only
+prompts:
+  - |
+    Phase 10 conversationalist scaffold. This suite is intentionally a placeholder until Socratic scoring is implemented.
+providers:
+  - echo
+tests:
+  - description: Conversationalist scaffold exists
+    assert:
+      - type: contains
+        value: Phase 10 conversationalist scaffold

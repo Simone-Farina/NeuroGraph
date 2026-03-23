@@ -1,0 +1,11 @@
+description: Phase 10 architect scaffold only
+prompts:
+  - |
+    Phase 11 Architect eval scaffold. This suite is intentionally a placeholder until DAG validation is implemented.
+providers:
+  - echo
+tests:
+  - description: Architect scaffold exists
+    assert:
+      - type: contains
+        value: Phase 11 Architect eval scaffold

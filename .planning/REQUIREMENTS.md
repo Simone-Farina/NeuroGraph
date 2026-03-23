@@ -5,7 +5,7 @@ Establish enterprise-grade, test-driven system prompts for the core NeuroGraph a
 
 ## 1. Test-Driven Prompt Engineering Infrastructure
 - [ ] **TEST-01**: The system must have `promptfoo` installed and configured as a testing dependency.
-- [ ] **TEST-02**: A dedicated directory structure (`tests/prompts/` or similar) must exist to isolate agent evaluation suites.
+- [ ] **TEST-02**: A dedicated root directory structure at `prompt-eval/` must exist to isolate agent evaluation suites from runtime code.
 - [ ] **TEST-03**: There must be at least one baseline test script/command to run the full prompt evaluation suite locally.
 
 ## 2. DAG Manager Agent
@@ -37,15 +37,15 @@ Establish enterprise-grade, test-driven system prompts for the core NeuroGraph a
 
 | Requirement | Description | Phase | Status |
 |-------------|-------------|-------|--------|
-| TEST-01 | promptfoo installed | TBD | Pending |
-| TEST-02 | Evaluation structure | TBD | Pending |
-| TEST-03 | Baseline runner | TBD | Pending |
-| DAG-01 | DAG Manager prompt logic | TBD | Pending |
-| DAG-02 | DAG Manager cyclical testing | TBD | Pending |
-| DAG-03 | DAG Manager JSON testing | TBD | Pending |
-| BOUNCER-01 | Bouncer duplicate logic | TBD | Pending |
-| BOUNCER-02 | Bouncer duplicate testing | TBD | Pending |
-| BOUNCER-03 | Bouncer extraction testing | TBD | Pending |
-| SOCRATES-01 | Socratic tone logic | TBD | Pending |
-| SOCRATES-02 | Socratic multi-turn testing | TBD | Pending |
-| SOCRATES-03 | Socratic insight detection | TBD | Pending |
+| TEST-01 | promptfoo installed | Phase 10 | Pending |
+| TEST-02 | Evaluation structure | Phase 10 | Pending |
+| TEST-03 | Baseline runner | Phase 10 | Pending |
+| DAG-01 | DAG Manager prompt logic | Phase 11 | Pending |
+| DAG-02 | DAG Manager cyclical testing | Phase 11 | Pending |
+| DAG-03 | DAG Manager JSON testing | Phase 11 | Pending |
+| BOUNCER-01 | Bouncer duplicate logic | Phase 12 | Pending |
+| BOUNCER-02 | Bouncer duplicate testing | Phase 12 | Pending |
+| BOUNCER-03 | Bouncer extraction testing | Phase 12 | Pending |
+| SOCRATES-01 | Socratic tone logic | Phase 13 | Pending |
+| SOCRATES-02 | Socratic multi-turn testing | Phase 13 | Pending |
+| SOCRATES-03 | Socratic insight detection | Phase 13 | Pending |

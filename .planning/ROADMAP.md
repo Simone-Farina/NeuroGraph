@@ -25,7 +25,20 @@ Introduce a cognitive funnel that catches chaotic real-world inputs (URLs, ideas
 - [x] **Phase 6: Capture API & Key Management** - Bearer-token capture endpoint, key generation/revocation API routes. (completed 2026-03-22)
 - [x] **Phase 7: Queue Triage UI** - Staging Area page, state transitions, aging indicators, sidebar badge. (completed 2026-03-22)
 - [x] **Phase 8: Crystallize Flow** - URL extraction, AI summarization, Socratic chat handoff, mastered state auto-advance. (completed 2026-03-22)
-- [ ] **Phase 9: UI Polish & Design System** - Editorial chat, dynamic layout, motion language, review page redesign, empty states.
+- [x] **Phase 9: UI Polish & Design System** - Editorial chat, dynamic layout, motion language, review page redesign, empty states. (completed 2026-03-23)
+
+---
+
+## Milestone v1.2: Agent Intelligence
+
+Transform NeuroGraph’s prompt layer into a first-class, test-driven subsystem. This milestone establishes promptfoo-based evaluation infrastructure and production-grade prompt contracts for the core agents that govern structure, duplicate prevention, and Socratic guidance.
+
+### Phases
+
+- [x] **Phase 10: Promptfoo Evaluation Harness** - Install and wire promptfoo, evaluation directories, baseline runners, and reusable fixtures. (completed 2026-03-23)
+- [ ] **Phase 11: DAG Manager Agent** - Prompt contract and evaluation suite for prerequisite/builds-on reasoning and cycle refusal.
+- [ ] **Phase 12: Chat Analyzer / Bouncer Agent** - Prompt contract and evaluation suite for duplicate prevention and definition/insight extraction.
+- [ ] **Phase 13: Socratic Chat Engine** - Prompt contract and evaluation suite for coaching tone, multi-turn guidance, and deep-insight handoff.
 
 ---
 
@@ -153,9 +166,57 @@ Plans:
   5. Panel transitions use intentional motion (micro-scale + fade, staggered list entries) — no binary cuts between states.
 **Plans**: 3 planned
 Plans:
-- [ ] 09-01-PLAN.md — Shell preset state, dynamic panel layout, and curated conversation-history grouping
-- [ ] 09-02-PLAN.md — Editorial chat presentation, empty-state redesign, and Phase 7 queue polish follow-through
-- [ ] 09-03-PLAN.md — Monochrome review surface, motion-language unification, and final human checkpoint
+- [x] 09-01-PLAN.md — Shell preset state, dynamic panel layout, and curated conversation-history grouping
+- [x] 09-02-PLAN.md — Editorial chat presentation, empty-state redesign, and Phase 7 queue polish follow-through
+- [x] 09-03-PLAN.md — Monochrome review surface, motion-language unification, and final human checkpoint
+
+---
+
+## Phase Details (v1.2)
+
+### Phase 10: Promptfoo Evaluation Harness
+**Goal**: Create a reliable local evaluation harness for prompt development so NeuroGraph’s agent behavior is tested instead of guessed.
+**Depends on**: Phase 9
+**Requirements**: TEST-01, TEST-02, TEST-03
+**Success Criteria** (what must be TRUE):
+  1. `promptfoo` is installed and configured in the repo with a stable project structure for agent evals.
+  2. The repository contains a dedicated prompt-evaluation directory and reusable fixtures for future agent suites.
+  3. A single local command can run the baseline evaluation suite end-to-end.
+**Plans**: 3/3 plans executed
+Plans:
+- [x] 10-01-PLAN.md — Local promptfoo dependency, canonical package scripts, and root `prompt-eval/` workspace
+- [x] 10-02-PLAN.md — First Golden Bouncer suite with five curated cases and deterministic hard-fail assertions
+- [x] 10-03-PLAN.md — Prompt-eval docs, suite stubs, full validation pass, and execution handoff
+
+### Phase 11: DAG Manager Agent
+**Goal**: Define and validate a production-grade DAG Manager prompt that reasons about prerequisite structures without allowing cyclical or malformed graph suggestions.
+**Depends on**: Phase 10
+**Requirements**: DAG-01, DAG-02, DAG-03
+**Success Criteria** (what must be TRUE):
+  1. The DAG Manager prompt explicitly distinguishes `prerequisite` from `builds_on` relationships and outputs a predictable schema.
+  2. Prompt evaluations prove the DAG Manager refuses cyclical dependency proposals.
+  3. Prompt evaluations prove the output stays valid JSON aligned with NeuroGraph’s expected structure.
+**Plans**: TBD
+
+### Phase 12: Chat Analyzer / Bouncer Agent
+**Goal**: Define and validate a Chat Analyzer / Bouncer prompt that protects graph quality by rejecting duplicates and extracting structured insight from ambiguous user text.
+**Depends on**: Phase 10
+**Requirements**: BOUNCER-01, BOUNCER-02, BOUNCER-03
+**Success Criteria** (what must be TRUE):
+  1. The prompt preserves the duplicate-prevention principle and recommends append/merge behavior where appropriate.
+  2. Evaluations show the agent rejects near-identical or structurally redundant candidate inputs.
+  3. Evaluations show the agent can extract `Definition` and `Core Insight` from messy or partial user language.
+**Plans**: TBD
+
+### Phase 13: Socratic Chat Engine
+**Goal**: Define and validate a Socratic coaching prompt that maintains guidance quality over multi-turn exchanges and knows when to propose Neurogenesis.
+**Depends on**: Phase 10
+**Requirements**: SOCRATES-01, SOCRATES-02, SOCRATES-03
+**Success Criteria** (what must be TRUE):
+  1. The prompt maintains a questioning, coaching posture instead of immediately giving the answer.
+  2. Multi-turn evaluations show the coaching tone stays consistent over several turns.
+  3. The engine can recognize when the user has reached a sufficiently strong insight to propose Neurogenesis.
+**Plans**: TBD
 
 ---
 
@@ -176,3 +237,7 @@ v1.1: 5 → 6 → 7 → 8 (strictly sequential; each phase depends on the previo
 | 7. Queue Triage UI | 3/3 | Complete | 2026-03-22 |
 | 8. Crystallize Flow | 3/3 | Complete | 2026-03-22 |
 | 9. UI Polish & Design System | 3/3 | Complete | 2026-03-23 |
+| 10. Promptfoo Evaluation Harness | 3/3 | Complete | 2026-03-23 |
+| 11. DAG Manager Agent | 0/0 | Not started | - |
+| 12. Chat Analyzer / Bouncer Agent | 0/0 | Not started | - |
+| 13. Socratic Chat Engine | 0/0 | Not started | - |

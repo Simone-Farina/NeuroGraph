@@ -1,0 +1,12 @@
+Review the candidate neuron against the existing neuron and decide whether NeuroGraph should create a new node or append to the existing one.
+
+Existing neuron:
+- title: {{existing_title}}
+- aliases: {{existing_aliases}}
+- definition: {{existing_definition}}
+
+Candidate neuron:
+- title: {{candidate_title}}
+- definition: {{candidate_definition}}
+
+Respond using the exact JSON contract from the system prompt.
