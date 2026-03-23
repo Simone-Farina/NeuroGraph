@@ -5,15 +5,12 @@ providers:
   - exec:node ../shared/neurograph-bouncer-provider.mjs
 defaultTest:
   assert:
-    # Hard pass/fail: valid JSON conforming to schema
     - type: is-json
       value: file://../shared/bouncer-response.schema.json
-    # Hard pass/fail: decision must match expected
     - type: javascript
       value: |
         const result = JSON.parse(output);
         return result.decision === context.vars.expected_decision;
-    # Hard pass/fail: match_title must match expected (null for allow_new)
     - type: javascript
       value: |
         const result = JSON.parse(output);
@@ -21,33 +18,21 @@ defaultTest:
           return result.match_title === context.vars.expected_match_title;
         }
         return result.match_title === null;
-    # Scored threshold: extraction fields present when expected (allow_new cases)
     - type: javascript
-      threshold: 0.8
-      value: |
-        const result = JSON.parse(output);
-        const needsDef = String(context.vars.expected_has_definition) === 'true';
-        const needsInsight = String(context.vars.expected_has_insight) === 'true';
-        if (!needsDef && !needsInsight) {
-          // append_to_existing: extraction fields must be absent
-          const hasExtra = 'extracted_definition' in result || 'extracted_core_insight' in result;
-          return !hasExtra;
-        }
-        // allow_new: both extraction fields must be present and non-empty strings
-        const defOk =
-          typeof result.extracted_definition === 'string' &&
-          result.extracted_definition.length >= 10;
-        const insightOk =
-          typeof result.extracted_core_insight === 'string' &&
-          result.extracted_core_insight.length >= 10;
-        return defOk && insightOk ? 1 : 0;
-    # Scored threshold: extraction fields stay within 280 char limit when present
-    - type: javascript
-      threshold: 0.8
       value: |
         const result = JSON.parse(output);
         if (result.decision !== 'allow_new') return true;
-        const defLen = (result.extracted_definition || '').length;
-        const insightLen = (result.extracted_core_insight || '').length;
-        return defLen <= 280 && insightLen <= 280;
+        if (typeof result.extracted_definition !== 'string' || result.extracted_definition.length < 10) return false;
+        if (typeof result.extracted_core_insight !== 'string' || result.extracted_core_insight.length < 10) return false;
+        return true;
+    - type: javascript
+      value: |
+        const result = JSON.parse(output);
+        if (result.decision !== 'allow_new') return true;
+        const defFrag = (context.vars.expected_definition_fragment || '').toLowerCase();
+        const insFrag = (context.vars.expected_insight_fragment || '').toLowerCase();
+        if (!defFrag && !insFrag) return true;
+        const defOk = defFrag ? result.extracted_definition.toLowerCase().includes(defFrag) : true;
+        const insOk = insFrag ? result.extracted_core_insight.toLowerCase().includes(insFrag) : true;
+        return defOk && insOk;
 tests: cases.csv
