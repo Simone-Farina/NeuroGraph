@@ -15,6 +15,7 @@ The system enforces "Active Extraction" and rigorous retention over passive read
 **Target features:**
 - Setup promptfoo testing infrastructure for LLM evaluations
 - Define and test the DAG Manager Agent (Prerequisite evaluation and structure enforcement)
+- Wire the Architect into an ephemeral Horizon UI with ghost nodes and target-setting flow
 - Define and test the Chat Analyzer / Bouncer Agent (Duplicate prevention and insight extraction)
 - Define and test the Socratic Chat Engine (Guiding user to insights)
 
@@ -78,4 +79,4 @@ The system enforces "Active Extraction" and rigorous retention over passive read
 | AI Isolation from Queue | Queue items invisible to chat AI. Only surfaced on explicit Crystallize. Keeps Socratic process intentional. | — Pending |
 
 ---
-*Last updated: 2026-03-23 — Milestone v1.2 Agent Intelligence started from the promoted promptfoo/agents note*
+*Last updated: 2026-03-23 — Phase 11 complete, with Phase 11.5 inserted to wire the Architect into the product before the Bouncer phase*

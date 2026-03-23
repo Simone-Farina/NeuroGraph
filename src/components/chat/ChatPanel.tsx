@@ -181,6 +181,8 @@ export function ChatPanel() {
   const { currentConversationId, setCurrentConversationId, refreshConversations } = useConversationContext();
   const pendingCrystallizeItemId = useQueueStore((state) => state.pendingCrystallizeItemId);
   const clearCrystallizeIntent = useQueueStore((state) => state.clearCrystallizeIntent);
+  const pendingHorizonSeed = useGraphStore((state) => state.pendingHorizonSeed);
+  const clearHorizonLearningIntent = useGraphStore((state) => state.clearHorizonLearningIntent);
   const [input, setInput] = useState('');
   const [isFetchingTranscript, setIsFetchingTranscript] = useState(false);
   const [isCrystallizing, setIsCrystallizing] = useState(false);
@@ -360,6 +362,41 @@ export function ChatPanel() {
       refreshConversations();
     }
   }, [messages.length, currentConversationId, refreshConversations]);
+
+  useEffect(() => {
+    if (!pendingHorizonSeed || status !== 'ready' || isFetchingTranscript || isCrystallizing) {
+      return;
+    }
+
+    const newConversationId = crypto.randomUUID();
+    const seedText = `I want to master ${pendingHorizonSeed.title}.
+
+Working definition:
+${pendingHorizonSeed.definition}
+
+Let's break it down. Start by asking me one focused question.`;
+
+    skipNextLoadRef.current = true;
+    conversationIdRef.current = newConversationId;
+    setCurrentConversationId(newConversationId);
+    setMessages([]);
+    setEdgeSuggestions([]);
+    setConnectionNotice(null);
+    setCrystallizeNotice(null);
+    setActiveCrystallizeSession(null);
+    sendMessage({ text: seedText });
+    setInput('');
+    clearHorizonLearningIntent();
+  }, [
+    clearHorizonLearningIntent,
+    isCrystallizing,
+    isFetchingTranscript,
+    pendingHorizonSeed,
+    sendMessage,
+    setCurrentConversationId,
+    setMessages,
+    status,
+  ]);
 
   useEffect(() => {
     if (scrollRef.current) {
