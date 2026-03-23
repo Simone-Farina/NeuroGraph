@@ -1,11 +1,82 @@
-description: Phase 10 architect scaffold only
+description: Phase 11 Architect Golden suite
 prompts:
-  - |
-    Phase 11 Architect eval scaffold. This suite is intentionally a placeholder until DAG validation is implemented.
+  - file://prompt.txt
 providers:
-  - echo
-tests:
-  - description: Architect scaffold exists
-    assert:
-      - type: contains
-        value: Phase 11 Architect eval scaffold
+  - exec:node ../shared/neurograph-architect-provider.mjs
+defaultTest:
+  assert:
+    - type: is-json
+      value: file://../shared/architect-response.schema.json
+    - type: javascript
+      value: |
+        const result = JSON.parse(output);
+        return String(result.isValid) === String(context.vars.expected_is_valid);
+    - type: javascript
+      value: |
+        const result = JSON.parse(output);
+        const titles = new Set(result.nodes.map((node) => node.title));
+        return result.synapses.every(
+          (synapse) => titles.has(synapse.sourceTitle) && titles.has(synapse.targetTitle)
+        );
+    - type: javascript
+      value: |
+        const result = JSON.parse(output);
+        if (String(context.vars.expected_is_valid) !== 'false') {
+          return !Object.prototype.hasOwnProperty.call(result, 'refusalReason');
+        }
+        return (
+          typeof result.refusalReason === 'string' &&
+          result.refusalReason.length > 0 &&
+          result.nodes.length === 0 &&
+          result.synapses.length === 0
+        );
+    - type: javascript
+      value: |
+        const result = JSON.parse(output);
+        const required = context.vars.required_synapse;
+        if (!required) return true;
+        const [sourceTitle, targetTitle, type] = required.split('|');
+        return result.synapses.some(
+          (synapse) =>
+            synapse.sourceTitle === sourceTitle &&
+            synapse.targetTitle === targetTitle &&
+            synapse.type === type
+        );
+    - type: javascript
+      value: |
+        const result = JSON.parse(output);
+        const fragment = (context.vars.expected_refusal_fragment || '').toLowerCase();
+        if (String(context.vars.expected_is_valid) === 'false') {
+          return fragment ? result.refusalReason.toLowerCase().includes(fragment) : true;
+        }
+
+        const adjacency = new Map();
+        for (const synapse of result.synapses) {
+          if (synapse.type === 'RELATED') continue;
+          const next = adjacency.get(synapse.sourceTitle) || [];
+          next.push(synapse.targetTitle);
+          adjacency.set(synapse.sourceTitle, next);
+        }
+
+        const visited = new Set();
+        const visiting = new Set();
+
+        const hasCycle = (node) => {
+          if (visiting.has(node)) return true;
+          if (visited.has(node)) return false;
+
+          visiting.add(node);
+          for (const next of adjacency.get(node) || []) {
+            if (hasCycle(next)) return true;
+          }
+          visiting.delete(node);
+          visited.add(node);
+          return false;
+        };
+
+        for (const node of adjacency.keys()) {
+          if (hasCycle(node)) return false;
+        }
+
+        return true;
+tests: cases.csv
