@@ -184,7 +184,7 @@ export async function POST(request: NextRequest) {
 
     const { ragContext, ragCatalog } = await getRelevantContext(latestUserText, user.id, supabase);
 
-    const systemPrompt = `${CHAT_SYSTEM_PROMPT}${ragContext}\n\n## Existing Neuron Catalog\nUse this catalog to populate related_neurons when suggesting neurogenesis.\nOnly use ids from this list:\n${ragCatalog}`;
+    const systemPrompt = `${CHAT_SYSTEM_PROMPT}${ragContext}\n\n## Existing Neuron Catalog\nThe following neurons already exist in the user's graph. The Epistemological Inquisitor will determine prerequisite connections automatically — you do not need to suggest them.\n${ragCatalog}`;
 
     const model = getModelForRole('chat');
 
