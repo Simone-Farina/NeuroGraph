@@ -31,7 +31,7 @@ Introduce a cognitive funnel that catches chaotic real-world inputs (URLs, ideas
 
 ## Milestone v1.2: Agent Intelligence
 
-Transform NeuroGraph’s prompt layer into a first-class, test-driven subsystem. This milestone establishes promptfoo-based evaluation infrastructure and production-grade prompt contracts for the core agents that govern structure, duplicate prevention, and Socratic guidance.
+Transform NeuroGraph's prompt layer into a first-class, test-driven subsystem. This milestone establishes promptfoo-based evaluation infrastructure and production-grade prompt contracts for the core agents that govern structure, duplicate prevention, and Socratic guidance.
 
 ### Phases
 
@@ -176,7 +176,7 @@ Plans:
 ## Phase Details (v1.2)
 
 ### Phase 10: Promptfoo Evaluation Harness
-**Goal**: Create a reliable local evaluation harness for prompt development so NeuroGraph’s agent behavior is tested instead of guessed.
+**Goal**: Create a reliable local evaluation harness for prompt development so NeuroGraph's agent behavior is tested instead of guessed.
 **Depends on**: Phase 9
 **Requirements**: TEST-01, TEST-02, TEST-03
 **Success Criteria** (what must be TRUE):
@@ -196,7 +196,7 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. The DAG Manager prompt outputs a strict schema with `isValid`, optional `refusalReason`, `nodes`, and `synapses`.
   2. Relationship semantics are locked to the database enum set: `PREREQUISITE`, `RELATED`, and `BUILDS_ON`.
-  3. Prompt evaluations prove the DAG Manager refuses cyclical dependency proposals and keeps output aligned with NeuroGraph’s expected JSON contract.
+  3. Prompt evaluations prove the DAG Manager refuses cyclical dependency proposals and keeps output aligned with NeuroGraph's expected JSON contract.
 **Plans**: 3/3 plans executed
 Plans:
 - [x] 11-01-PLAN.md — Architect prompt contract, strict Zod schema, and local DAG invariant enforcement
@@ -225,7 +225,10 @@ Plans:
   1. The prompt preserves the duplicate-prevention principle and recommends append/merge behavior where appropriate.
   2. Evaluations show the agent rejects near-identical or structurally redundant candidate inputs.
   3. Evaluations show the agent can extract `Definition` and `Core Insight` from messy or partial user language.
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 12-01-PLAN.md — Bouncer prompt contract expansion, JSON schema extension, and heuristic provider extraction fields
+- [ ] 12-02-PLAN.md — Golden extraction cases, scored assertion logic, and full suite validation
 
 ### Phase 13: Socratic Chat Engine
 **Goal**: Define and validate a Socratic coaching prompt that maintains guidance quality over multi-turn exchanges and knows when to propose Neurogenesis.
