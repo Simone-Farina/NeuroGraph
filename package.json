@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "eval:all": "promptfoo eval",
+    "eval:all": "npm run eval:bouncer && npm run eval:architect && npm run eval:conversationalist",
     "eval:bouncer": "promptfoo eval -c prompt-eval/bouncer/promptfooconfig.yaml",
     "eval:architect": "promptfoo eval -c prompt-eval/architect/promptfooconfig.yaml",
     "eval:conversationalist": "promptfoo eval -c prompt-eval/conversationalist/promptfooconfig.yaml",

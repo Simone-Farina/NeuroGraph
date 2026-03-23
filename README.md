@@ -89,7 +89,9 @@ Notes:
 
 - The Bouncer suite uses the local provider script in `prompt-eval/shared/` and reuses the runtime Bouncer prompt contract from `src/lib/ai/prompts.ts`.
 - If real AI provider keys are present, the Bouncer eval uses the evaluator model path. If not, it falls back to a deterministic heuristic so the harness still runs locally.
-- `architect` and `conversationalist` are scaffolds in Phase 10. Their real suites land in later phases.
+- The Architect suite uses the local provider script in `prompt-eval/shared/` and reuses the runtime Architect prompt contract from `src/lib/ai/prompts.ts`.
+- The Architect provider prefers `AI_MODEL_NEUROGENESIS_HEAVY` and falls back to a deterministic heuristic when model keys are unavailable.
+- `conversationalist` remains an honest scaffold until the Socratic contract lands.
 
 ## Run With Docker Compose
 

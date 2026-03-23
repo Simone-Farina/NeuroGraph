@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["isValid", "nodes", "synapses"],
+  "properties": {
+    "isValid": {
+      "type": "boolean"
+    },
+    "refusalReason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["title", "definition", "bloom_level"],
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "definition": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 280
+          },
+          "bloom_level": {
+            "type": "string",
+            "enum": ["Remember", "Understand", "Apply", "Analyze", "Evaluate", "Create"]
+          }
+        }
+      }
+    },
+    "synapses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sourceTitle", "targetTitle", "type"],
+        "properties": {
+          "sourceTitle": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "targetTitle": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "type": {
+            "type": "string",
+            "enum": ["PREREQUISITE", "RELATED", "BUILDS_ON"]
+          }
+        }
+      }
+    }
+  }
+}

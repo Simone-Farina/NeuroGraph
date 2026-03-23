@@ -1,0 +1,16 @@
+Design a minimal NeuroGraph curriculum for this target topic.
+
+Target topic:
+{{target_topic}}
+
+Candidate concepts:
+{{concepts}}
+
+Requested dependency constraints to honor only if they are logically and pedagogically valid:
+{{constraints}}
+
+Instructions:
+- Use the exact concept titles when possible.
+- Distinguish PREREQUISITE, BUILDS_ON, and RELATED exactly as defined in the system prompt.
+- If the request creates a dependency cycle or pedagogical paradox, refuse explicitly instead of repairing it.
+- Return JSON only.
