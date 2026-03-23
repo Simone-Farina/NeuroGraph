@@ -99,17 +99,17 @@ function extractCoreInsight(candidateTitle, candidateDefinition) {
     return `Understanding ${title} is essential for building durable knowledge in this domain.`;
   }
 
-  // Use the first sentence as the core insight base (up to 280 chars).
+  // Use the first sentence as the core insight base (up to 500 chars).
   const firstSentence = definition.split(/[.!?]/)[0].trim();
   const insight = firstSentence.length > 30 ? firstSentence : definition;
   const base = `${title}: ${insight}`;
-  if (base.length <= 280) {
+  if (base.length <= 500) {
     return base;
   }
 
-  const truncated = base.slice(0, 280);
+  const truncated = base.slice(0, 500);
   const lastSpace = truncated.lastIndexOf(' ');
-  return lastSpace > 200 ? truncated.slice(0, lastSpace) + '...' : truncated.slice(0, 277) + '...';
+  return lastSpace > 400 ? truncated.slice(0, lastSpace) + '...' : truncated.slice(0, 497) + '...';
 }
 
 function heuristicDecision(promptText, vars) {
@@ -233,7 +233,7 @@ async function main() {
       system: systemPrompt,
       prompt,
       temperature: 0,
-      maxOutputTokens: 220,
+      maxOutputTokens: 400,
     });
 
     const parsed = JSON.parse(stripCodeFences(text));
@@ -250,7 +250,7 @@ async function main() {
         normalized.extracted_definition = parsed.extracted_definition.trim().slice(0, 280);
       }
       if (typeof parsed.extracted_core_insight === 'string' && parsed.extracted_core_insight.trim().length > 0) {
-        normalized.extracted_core_insight = parsed.extracted_core_insight.trim().slice(0, 280);
+        normalized.extracted_core_insight = parsed.extracted_core_insight.trim().slice(0, 500);
       }
     }
 
