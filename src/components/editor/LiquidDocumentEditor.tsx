@@ -201,7 +201,7 @@ export function LiquidDocumentEditor({
     setExtractedMeta(null);
     setExtractionState('idle');
     setAiOutput(null);
-  }, [neuron.id]);
+  }, [neuron.id, neuron.title]);
 
   useEffect(() => {
     if (!editor) return;

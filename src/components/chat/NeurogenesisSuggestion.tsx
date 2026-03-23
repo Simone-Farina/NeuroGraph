@@ -83,7 +83,7 @@ export function NeurogenesisSuggestion({
           Knowledge Consolidated
         </p>
         <p className="text-[15px] font-serif text-white/70">
-          The concept <span className="text-white/90">"{title}"</span> has been permanently etched into your knowledge graph.
+          The concept <span className="text-white/90">&ldquo;{title}&rdquo;</span> has been permanently etched into your knowledge graph.
         </p>
       </div>
     );
