@@ -24,7 +24,7 @@ Establish enterprise-grade, test-driven system prompts for the core NeuroGraph a
 - [x] **BOUNCER-03**: `promptfoo` evaluations must verify the Bouncer successfully extracts "Definition" and "Core Insight" from ambiguous human text.
 
 ## 4. Socratic Chat Engine
-- [ ] **SOCRATES-01**: The Socratic Chat prompt must explicitly forbid the agent from just "giving the answer" and mandate a guiding, questioning tone.
+- [x] **SOCRATES-01**: The Socratic Chat prompt must explicitly forbid the agent from just "giving the answer" and mandate a guiding, questioning tone.
 - [ ] **SOCRATES-02**: `promptfoo` evaluations must exist testing the Socratic engine against multiple simulated user chat turns to ensure it maintains the coaching persona.
 - [ ] **SOCRATES-03**: The Socratic Engine must recognize when the user has reached a "Deep Insight" and successfully propose Neurogenesis.
 

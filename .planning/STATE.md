@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Staging Area
-status: Milestone complete
-last_updated: "2026-03-23T22:37:12.571Z"
+status: Executing Phase 13
+last_updated: "2026-03-23T23:25:39.015Z"
 progress:
-  total_phases: 13
+  total_phases: 14
   completed_phases: 12
-  total_plans: 30
-  completed_plans: 32
+  total_plans: 32
+  completed_plans: 33
 ---
 
 # Project State
@@ -17,10 +17,10 @@ Current execution state for get-shit-done.
 
 ## Current Phase
 
-- **phase**: Phase 12 — Chat Analyzer / Bouncer Agent
-- **plan**: 02 (complete)
-- **status**: Phase 12 Plan 02 complete — 13-case golden Bouncer suite with fragment-based scored extraction assertions; all 13 cases pass at 100% in offline/CI mode
-- **focus**: Phase 12 complete (BOUNCER-01, BOUNCER-02, BOUNCER-03 satisfied); ready for Phase 13 Socratic Chat Engine
+- **phase**: Phase 13 — Socratic Chat Engine
+- **plan**: 01 (complete)
+- **status**: Phase 13 Plan 01 complete — CHAT_SYSTEM_PROMPT rewritten with Socratic directives and Bloom-gated neurogenesis; conversationalist provider and multi-turn prompt template created
+- **focus**: Phase 13 Plan 02 — golden conversationalist eval suite (multi-turn YAML cases, SOCRATES-02/03 assertions)
 
 ## Progress
 
@@ -180,6 +180,13 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 - **12-01-threshold-assertions**: Extraction field assertions use scored threshold (0.8); duplicate-rejection assertions remain hard pass/fail (hybrid eval model maintained)
 - **12-01-heuristic-extraction**: Heuristic fallback derives `extracted_definition` from candidate text and `extracted_core_insight` from first sentence of definition; CI runs pass without API key
 
+### v1.2 Decisions (executed in 13-01)
+
+- **13-01-bloom-gate**: Neurogenesis policy tightened to Bloom Analyze/Evaluate/Create only — removes liberal "fire at least once per conversation" mandate; prompt now gates tool calls on demonstrated analytical depth
+- **13-01-socratic-directive**: CHAT_SYSTEM_PROMPT now explicitly forbids giving direct answers and mandates question-led guidance as first-class behavior directive
+- **13-01-heuristic-neurogenesis**: Conversationalist heuristic provider outputs `neurogenesis_triggered` via `detectsAnalyzeLevel(finalMessage)` so offline/live assertions are consistent at the assertion level
+- **13-01-backtick-regex**: Provider uses backtick+semicolon terminator (`\`;\`) for CHAT_SYSTEM_PROMPT regex to avoid early match on `\`` escaped backticks inside template literal
+
 ### v1.2 Decisions (executed in 12-02)
 
 - **12-02-fragment-columns**: CSV uses `expected_definition_fragment`/`expected_insight_fragment` (keyword strings) instead of boolean `expected_has_definition`/`expected_has_insight` — fragment approach proves extraction content quality not just presence
@@ -220,11 +227,11 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 
 ## Session
 
-- **Last session**: 2026-03-23T22:28:40Z
-- **Stopped at**: Completed Phase 12 Plan 02 — Chat Analyzer / Bouncer Agent (eval suite complete)
+- **Last session**: 2026-03-24T00:00:00Z
+- **Stopped at**: Completed Phase 13 Plan 01 — CHAT_SYSTEM_PROMPT rewrite and conversationalist provider created
 
 ## Session Continuity
 
-- **Last resumed**: 2026-03-23T22:28:40Z
-- **Resume point**: Phase 12 complete — BOUNCER-01, BOUNCER-02, BOUNCER-03 all satisfied; 13-case golden suite passes 100%
+- **Last resumed**: 2026-03-24T00:00:00Z
+- **Resume point**: Phase 13 Plan 02 — build golden conversationalist eval suite (multi-turn YAML cases, SOCRATES-02/03 assertions)
 - **Next action**: Proceed to Phase 13 Socratic Chat Engine
