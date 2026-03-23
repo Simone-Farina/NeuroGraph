@@ -31,8 +31,7 @@ When you call the tool:
 - Write a clear \`definition\` (max 280 chars, self-contained).
 - Capture the \`core_insight\` (the key takeaway from this discussion).
 - Choose the best \`bloom_level\`.
-- If an existing neuron catalog is provided, include up to 3 \`related_neurons\` with exact ids from that catalog.
-- Use \`relationship_type\` = \`RELATED\` unless a directional relation is clearly justified (\`PREREQUISITE\` or \`BUILDS_ON\`).
+- Do NOT suggest \`related_neurons\`. The graph topology is handled by the Epistemological Inquisitor — a strict LLM evaluator that determines true prerequisites. You focus on content quality only.
 - Continue your response naturally after calling the tool - do NOT stop or ask for permission.
 `;
 

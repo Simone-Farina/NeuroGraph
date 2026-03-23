@@ -545,7 +545,6 @@ Let's break it down. Start by asking me one focused question.`;
             bloom_level: input.bloom_level,
             source_conversation_id: currentConversationId,
             source_message_ids: sourceMessageIds,
-            related_neurons: input.related_neurons ?? [],
           }),
         });
 

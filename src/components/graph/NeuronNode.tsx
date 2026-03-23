@@ -160,11 +160,7 @@ export function NeuronNode({ id, data, selected }: NodeProps<NeuronFlowNode>) {
       <div
         className={`group relative w-52 rounded-2xl border px-5 py-4 transition-all duration-300 ${ghost.container}`}
       >
-        <Handle
-          type="target"
-          position={Position.Left}
-          className="!h-3 !w-3 !border-2 !border-neural-dark !bg-white/10"
-        />
+        <Handle type="target" position={Position.Left} className="!opacity-0 !w-0 !h-0" />
 
         <div className="flex items-center justify-between mb-3">
           <p className={`text-[10px] font-medium uppercase tracking-wider ${ghost.label}`}>
@@ -183,11 +179,7 @@ export function NeuronNode({ id, data, selected }: NodeProps<NeuronFlowNode>) {
           </p>
         )}
 
-        <Handle
-          type="source"
-          position={Position.Right}
-          className="!h-3 !w-3 !border-2 !border-neural-dark !bg-white/10"
-        />
+        <Handle type="source" position={Position.Right} className="!opacity-0 !w-0 !h-0" />
       </div>
     );
   }
@@ -258,11 +250,7 @@ export function NeuronNode({ id, data, selected }: NodeProps<NeuronFlowNode>) {
         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
       </button>
 
-      <Handle
-        type="target"
-        position={Position.Left}
-        className={`!h-3.5 !w-3.5 !border-2 !border-neural-dark transition-colors duration-300 ${styles.handle}`}
-      />
+      <Handle type="target" position={Position.Left} className="!opacity-0 !w-0 !h-0" />
 
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-1.5">
@@ -283,11 +271,7 @@ export function NeuronNode({ id, data, selected }: NodeProps<NeuronFlowNode>) {
         />
       </div>
 
-      <Handle
-        type="source"
-        position={Position.Right}
-        className={`!h-3.5 !w-3.5 !border-2 !border-neural-dark transition-colors duration-300 ${styles.handle}`}
-      />
+      <Handle type="source" position={Position.Right} className="!opacity-0 !w-0 !h-0" />
     </div>
   );
 }
