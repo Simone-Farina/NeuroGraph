@@ -78,6 +78,10 @@ User request: Help me improve or understand this selected passage.`;
       system: systemPrompt,
       prompt,
       maxOutputTokens: 600,
+      abortSignal: AbortSignal.timeout(30_000),  // 30s — slash commands should be fast
+      onError: ({ error }) => {
+        console.error('[neurons/ai-action] Stream error:', error);
+      },
     });
 
     return result.toTextStreamResponse();
