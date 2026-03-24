@@ -8,19 +8,9 @@ NeuroGraph 2.0 is a MicroSaaS platform for Active Generative Mastery. It is a co
 
 The system enforces "Active Extraction" and rigorous retention over passive reading; users only create nodes when they reach a "Deep Insight," and the AI acts as a bouncer to prevent hallucinated or disconnected knowledge graphs.
 
-## Current Milestone: v1.3 QA Refinement
-
-**Goal:** Fix bugs, UX frictions, and broken core features discovered during hands-on testing. Pure bug-fix milestone — no new features.
-
-**Target fixes:**
-- Architect API schema error (refusalReason required field)
-- Bloom-gated Neurogenesis not enforced at runtime
-- DAG agent not creating prerequisite connections
-- Layout, UI, and security issues from QA testing
-
 ## Current State
 
-**Shipped:** v1.2 Agent Intelligence (2026-03-24)
+**Shipped:** v1.3 QA Refinement (2026-03-24)
 **Codebase:** ~19,100 LOC TypeScript/TSX
 **Tech Stack:** Next.js 14, React Flow, Zustand, Vercel AI SDK v6, Supabase (pgvector), TipTap v3, ts-fsrs, promptfoo
 **Eval Suite:** 31 golden cases (bouncer 13 + architect 8 + conversationalist 10) — 100% pass
@@ -114,4 +104,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-24 — Milestone v1.3 QA Refinement started*
+*Last updated: 2026-03-24 after v1.3 milestone*

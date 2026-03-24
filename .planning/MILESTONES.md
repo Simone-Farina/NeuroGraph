@@ -1,5 +1,18 @@
 # Milestones
 
+## v1.3 QA Refinement (Shipped: 2026-03-24)
+
+**Phases completed:** 2 phases, 4 plans, 6 tasks
+
+**Key accomplishments:**
+
+- 1. [Rule 1 - Bug] UUID test fixture was not RFC-compliant
+- Server-side Bloom gate (422 for shallow non-ghost neurons) + restricted tool enum + widened vector search params (0.15/10) + legacy RELATED edge cleanup migration
+- Three surgical UI fixes: review layout reset on unmount, rehydrated neurogenesis spinner resolution, and React Flow Handle visibility override via inline style
+- Editorial redesign of Set Learning Target HUD to dark rectangular card language (BUG-05), plus ng_
+
+---
+
 ## v1.2 Agent Intelligence (Shipped: 2026-03-24)
 
 **Phases completed:** 14 phases, 33 plans, 35 tasks
