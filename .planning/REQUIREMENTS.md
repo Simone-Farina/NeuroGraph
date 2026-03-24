@@ -1,0 +1,53 @@
+# Requirements: NeuroGraph v1.4 QA Refinement II
+
+**Defined:** 2026-03-24
+**Core Value:** The system enforces "Active Extraction" and rigorous retention over passive reading; users only create nodes when they reach a "Deep Insight," and the AI acts as a bouncer to prevent hallucinated or disconnected knowledge graphs.
+
+## v1.4 Requirements
+
+Bug fixes and UX frictions from QA round 2.
+
+### AI Agent Quality (CRITICAL)
+
+- [ ] **AGENT-01**: The Socratic agent must actually teach — share knowledge, provide context, offer new perspectives, challenge with counterexamples — while maintaining its questioning stance. Not a question-parrot.
+- [ ] **AGENT-02**: The Socratic agent must build on the user's answers with new information before asking the next question — each response deepens understanding, not just redirects.
+
+### Crystallize Flow
+
+- [ ] **CRYST-04**: Crystallize paste fallback state (banner + paste box) is cleared when switching to a different chat conversation — state is session-scoped, not global.
+
+### Horizon UI
+
+- [ ] **HORIZON-04**: "Set Learning Target" button container is compact by default and expands dynamically only when the input field is shown.
+- [ ] **HORIZON-05**: Ghost node layout is readable after Horizon generation — no overlapping labels or stacked nodes.
+- [ ] **HORIZON-06**: Chat panel does not collapse when ghost nodes render — shell preset transition does not fire prematurely.
+- [ ] **HORIZON-07**: The "TARGET X" label is removed from below the Learning Target controls.
+
+## Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| New features | v1.4 is strictly bug-fix/refinement |
+| LLM Bouncer production wiring | Deferred to v1.5+ |
+| Canvas Mode | Deferred to v1.5+ |
+
+## Traceability
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| AGENT-01 | TBD | Pending |
+| AGENT-02 | TBD | Pending |
+| CRYST-04 | TBD | Pending |
+| HORIZON-04 | TBD | Pending |
+| HORIZON-05 | TBD | Pending |
+| HORIZON-06 | TBD | Pending |
+| HORIZON-07 | TBD | Pending |
+
+**Coverage:**
+- v1.4 requirements: 7 total
+- Mapped to phases: 0
+- Unmapped: 7
+
+---
+*Requirements defined: 2026-03-24*
+*Last updated: 2026-03-24 after QA round 2*
