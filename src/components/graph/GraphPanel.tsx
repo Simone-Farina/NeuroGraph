@@ -69,6 +69,104 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
   return { nodes: layoutedNodes, edges };
 };
 
+type HorizonControlsProps = {
+  isTargetOpen: boolean;
+  targetInput: string;
+  isHorizonLoading: boolean;
+  horizonTarget: string | null;
+  horizonError: string | null;
+  hasGhostNodes: boolean;
+  onOpenTarget: () => void;
+  onCloseTarget: () => void;
+  onTargetInputChange: (value: string) => void;
+  onSubmit: () => void;
+  onClearDraft: () => void;
+};
+
+function HorizonControls({
+  isTargetOpen,
+  targetInput,
+  isHorizonLoading,
+  horizonTarget,
+  horizonError,
+  hasGhostNodes,
+  onOpenTarget,
+  onCloseTarget,
+  onTargetInputChange,
+  onSubmit,
+  onClearDraft,
+}: HorizonControlsProps) {
+  return (
+    <div className="rounded-2xl border border-white/5 bg-neural-dark/80 p-3 backdrop-blur-xl">
+      <div className="flex flex-wrap items-center gap-2">
+        {!isTargetOpen ? (
+          <button
+            type="button"
+            onClick={onOpenTarget}
+            className="rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-2 font-serif text-sm text-white/60 transition hover:border-white/[0.15] hover:bg-white/[0.06] hover:text-white/80"
+          >
+            Set Learning Target
+          </button>
+        ) : (
+          <>
+            <input
+              aria-label="Learning target"
+              value={targetInput}
+              onChange={(event) => onTargetInputChange(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  onSubmit();
+                }
+              }}
+              placeholder="Vector Databases"
+              className="min-w-0 flex-1 rounded-xl border border-white/5 bg-white/[0.03] px-4 py-2 text-sm text-white/80 outline-none placeholder:text-white/24 focus:border-white/[0.12]"
+            />
+            <button
+              type="button"
+              onClick={onSubmit}
+              className="rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-2 font-serif text-sm text-white/60 transition hover:border-white/[0.15] hover:bg-white/[0.06] hover:text-white/80"
+            >
+              {isHorizonLoading ? 'Thinking…' : 'Generate'}
+            </button>
+            <button
+              type="button"
+              onClick={onCloseTarget}
+              className="rounded-xl border border-white/[0.05] px-3 py-2 font-serif text-sm text-white/40 transition hover:border-white/[0.08] hover:text-white/60"
+            >
+              Cancel
+            </button>
+          </>
+        )}
+
+        {hasGhostNodes ? (
+          <button
+            type="button"
+            onClick={onClearDraft}
+            className="rounded-xl border border-white/[0.05] px-3 py-2 font-serif text-sm text-white/40 transition hover:border-white/[0.08] hover:text-white/60"
+          >
+            Clear Draft
+          </button>
+        ) : null}
+      </div>
+
+      {(horizonTarget || horizonError) && (
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.18em]">
+          {horizonTarget ? (
+            <span className="rounded-xl border border-white/[0.05] bg-white/[0.02] px-3 py-1 font-serif text-white/34">
+              Target {horizonTarget}
+            </span>
+          ) : null}
+          {horizonError ? (
+            <span className="rounded-xl border border-orange-400/16 bg-orange-500/[0.08] px-3 py-1 font-serif text-orange-300/82">
+              {horizonError}
+            </span>
+          ) : null}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function GraphCanvas() {
   const nodes = useGraphStore((state) => state.nodes);
   const edges = useGraphStore((state) => state.edges);
@@ -328,48 +426,19 @@ function GraphCanvas() {
           </p>
         </div>
         <div className="absolute left-5 top-5 z-20 w-[min(420px,calc(100%-2.5rem))]">
-          <div className="rounded-[24px] border border-white/7 bg-neural-dark/75 p-3 backdrop-blur-xl">
-            <div className="flex flex-wrap items-center gap-2">
-              {!isTargetOpen ? (
-                <button
-                  type="button"
-                  onClick={() => setIsTargetOpen(true)}
-                  className="rounded-full border border-white/12 bg-white/[0.05] px-4 py-2 text-sm text-white/78 transition hover:border-white/20 hover:bg-white/[0.08]"
-                >
-                  Set Learning Target
-                </button>
-              ) : (
-                <>
-                  <input
-                    aria-label="Learning target"
-                    value={targetInput}
-                    onChange={(event) => setTargetInput(event.target.value)}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter') {
-                        void handleTargetSubmit();
-                      }
-                    }}
-                    placeholder="Vector Databases"
-                    className="min-w-0 flex-1 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-white/84 outline-none placeholder:text-white/24 focus:border-white/18"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => void handleTargetSubmit()}
-                    className="rounded-full border border-white/12 bg-white/[0.06] px-4 py-2 text-sm text-white/82 transition hover:border-white/20"
-                  >
-                    Generate
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsTargetOpen(false)}
-                    className="rounded-full border border-white/8 px-3 py-2 text-sm text-white/46 transition hover:text-white/76"
-                  >
-                    Cancel
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
+          <HorizonControls
+            isTargetOpen={isTargetOpen}
+            targetInput={targetInput}
+            isHorizonLoading={isHorizonLoading}
+            horizonTarget={horizonTarget}
+            horizonError={horizonError}
+            hasGhostNodes={ghostNodes.length > 0}
+            onOpenTarget={() => setIsTargetOpen(true)}
+            onCloseTarget={() => setIsTargetOpen(false)}
+            onTargetInputChange={setTargetInput}
+            onSubmit={() => void handleTargetSubmit()}
+            onClearDraft={clearHorizonDraft}
+          />
         </div>
       </div>
     );
@@ -378,72 +447,20 @@ function GraphCanvas() {
   return (
     <>
       <div className="pointer-events-none absolute left-5 top-5 z-20 w-[min(460px,calc(100%-2.5rem))]">
-        <div className="pointer-events-auto rounded-[24px] border border-white/7 bg-neural-dark/72 p-3 backdrop-blur-xl">
-          <div className="flex flex-wrap items-center gap-2">
-            {!isTargetOpen ? (
-              <button
-                type="button"
-                onClick={() => setIsTargetOpen(true)}
-                className="rounded-full border border-white/12 bg-white/[0.05] px-4 py-2 text-sm text-white/78 transition hover:border-white/20 hover:bg-white/[0.08]"
-              >
-                Set Learning Target
-              </button>
-            ) : (
-              <>
-                <input
-                  aria-label="Learning target"
-                  value={targetInput}
-                  onChange={(event) => setTargetInput(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter') {
-                      void handleTargetSubmit();
-                    }
-                  }}
-                  placeholder="Vector Databases"
-                  className="min-w-0 flex-1 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-white/84 outline-none placeholder:text-white/24 focus:border-white/18"
-                />
-                <button
-                  type="button"
-                  onClick={() => void handleTargetSubmit()}
-                  className="rounded-full border border-white/12 bg-white/[0.06] px-4 py-2 text-sm text-white/82 transition hover:border-white/20"
-                >
-                  {isHorizonLoading ? 'Thinking…' : 'Generate'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsTargetOpen(false)}
-                  className="rounded-full border border-white/8 px-3 py-2 text-sm text-white/46 transition hover:text-white/76"
-                >
-                  Cancel
-                </button>
-              </>
-            )}
-
-            {ghostNodes.length > 0 ? (
-              <button
-                type="button"
-                onClick={clearHorizonDraft}
-                className="rounded-full border border-white/8 px-3 py-2 text-sm text-white/46 transition hover:text-white/76"
-              >
-                Clear Draft
-              </button>
-            ) : null}
-          </div>
-
-          {(horizonTarget || horizonError) && (
-            <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.18em]">
-              {horizonTarget ? (
-                <span className="rounded-full border border-white/8 bg-white/[0.02] px-3 py-1 text-white/34">
-                  Target {horizonTarget}
-                </span>
-              ) : null}
-              {horizonError ? (
-                <span className="rounded-full border border-orange-400/16 bg-orange-500/[0.08] px-3 py-1 text-orange-300/82">
-                  {horizonError}
-                </span>
-              ) : null}
-            </div>
-          )}
+        <div className="pointer-events-auto">
+          <HorizonControls
+            isTargetOpen={isTargetOpen}
+            targetInput={targetInput}
+            isHorizonLoading={isHorizonLoading}
+            horizonTarget={horizonTarget}
+            horizonError={horizonError}
+            hasGhostNodes={ghostNodes.length > 0}
+            onOpenTarget={() => setIsTargetOpen(true)}
+            onCloseTarget={() => setIsTargetOpen(false)}
+            onTargetInputChange={setTargetInput}
+            onSubmit={() => void handleTargetSubmit()}
+            onClearDraft={clearHorizonDraft}
+          />
         </div>
       </div>
 
