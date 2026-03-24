@@ -147,7 +147,7 @@ Plans:
 | 15. UI/UX Polish & Security | v1.3 | 2/2 | Complete | 2026-03-24 |
 | 16. Socratic Agent Redesign | v1.4 | 2/2 | Complete | 2026-03-24 |
 | 17. Horizon & Crystallize UI Fixes | v1.4 | 2/2 | Complete | 2026-03-24 |
-| 18. AI Reliability | v2.0 | 2/2 | Complete   | 2026-03-24 |
+| 18. AI Reliability | v2.0 | 2/2 | Complete    | 2026-03-24 |
 | 19. Enterprise Prompt Engineering | v2.0 | 0/? | Not started | - |
 | 20. Editor Reliability | v2.0 | 0/? | Not started | - |
 | 21. Graph Performance & Bloom UI | v2.0 | 0/? | Not started | - |
