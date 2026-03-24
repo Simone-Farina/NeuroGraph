@@ -173,15 +173,15 @@ export function LiquidDocumentEditor({
 
   const triggerExtraction = useCallback(async () => {
     if (!editor) return;
-    const content = editor.getText().trim();
-    if (!title.trim() || content.length < 40) return;
+    const textContent = editor.getText().trim();
+    if (!title.trim() || textContent.length < 40) return;
 
     setExtractionState('extracting');
     try {
       const response = await fetch('/api/neurons/extract', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, content }),
+        body: JSON.stringify({ title, content: editor.getHTML() }),
       });
 
       if (!response.ok) {
@@ -199,28 +199,27 @@ export function LiquidDocumentEditor({
     }
   }, [editor, title]);
 
-  // Sync neuron data when it changes externally
+  // Sync neuron data when the neuron ID changes (switching neurons)
+  // Keyed on neuron.id only — an ID change always means a different neuron,
+  // so stale content must be discarded regardless of focus state.
+  // setContent(_, false) prevents emitting an update event, which would
+  // trigger setIsDirty(true) and the 2.5s extraction debounce.
   useEffect(() => {
+    if (!editor) return;
+    editor.commands.setContent(neuron.content || '', { emitUpdate: false });
     setTitle(neuron.title || '');
     setIsDirty(false);
     setExtractedMeta(null);
     setExtractionState('idle');
     setAiOutput(null);
-  }, [neuron.id, neuron.title]);
-
-  useEffect(() => {
-    if (!editor) return;
-    if (!editor.isFocused) {
-      editor.commands.setContent(neuron.content || '');
-    }
-  }, [neuron.content, editor]);
+  }, [neuron.id, editor]);
 
   const handleSave = useCallback(async () => {
     if (!editor) return;
 
     await onSave({
       title,
-      content: editor.getHTML(),
+      content: JSON.stringify(editor.getJSON()),
       definition: extractedMeta?.definition,
       core_insight: extractedMeta?.core_insight,
       bloom_level: extractedMeta?.bloom_level || neuron.bloom_level,
