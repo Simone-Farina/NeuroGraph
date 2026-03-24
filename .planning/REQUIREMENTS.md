@@ -15,10 +15,10 @@ Bug fixes and UX frictions discovered during hands-on QA testing.
 
 ### UI/Layout Bugs
 
-- [ ] **BUG-04**: Review panel width resets to standard layout when switching back to Chat mode — shell preset transitions work correctly in both directions
+- [x] **BUG-04**: Review panel width resets to standard layout when switching back to Chat mode — shell preset transitions work correctly in both directions
 - [ ] **BUG-05**: "Set Learning Target" UI matches the app's editorial design language — no jarring white pill buttons or inconsistent border styles
-- [ ] **BUG-06**: Previously synthesized neurons show as resolved neuron cards in chat history, not stuck "Synthesizing new neuron..." indicators
-- [ ] **BUG-07**: No visible Handle dots on neuron nodes — graph is fully clean read-only topology
+- [x] **BUG-06**: Previously synthesized neurons show as resolved neuron cards in chat history, not stuck "Synthesizing new neuron..." indicators
+- [x] **BUG-07**: No visible Handle dots on neuron nodes — graph is fully clean read-only topology
 
 ### Security/UX
 
@@ -40,10 +40,10 @@ Bug fixes and UX frictions discovered during hands-on QA testing.
 | BUG-01 | Phase 14 | Complete |
 | BUG-02 | Phase 14 | Complete |
 | BUG-03 | Phase 14 | Complete |
-| BUG-04 | Phase 15 | Pending |
+| BUG-04 | Phase 15 | Complete |
 | BUG-05 | Phase 15 | Pending |
-| BUG-06 | Phase 15 | Pending |
-| BUG-07 | Phase 15 | Pending |
+| BUG-06 | Phase 15 | Complete |
+| BUG-07 | Phase 15 | Complete |
 | BUG-08 | Phase 15 | Pending |
 
 **Coverage:**

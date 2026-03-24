@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: QA Refinement
-status: Ready to plan
-stopped_at: Completed 14-backend-ai-correctness/14-02-PLAN.md
-last_updated: "2026-03-24T16:25:50.206Z"
+status: Ready to execute
+stopped_at: Completed 15-01-PLAN.md
+last_updated: "2026-03-24T16:51:49.518Z"
 progress:
   total_phases: 2
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 4
+  completed_plans: 3
 ---
 
 # Project State
@@ -23,8 +23,8 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 
 ## Current Position
 
-Phase: 15
-Plan: Not started
+Phase: 15 (ui-ux-polish-security) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -45,6 +45,7 @@ Plan: Not started
 *Updated after each plan completion*
 | Phase 14-backend-ai-correctness P01 | 2min | 2 tasks | 4 files |
 | Phase 14-backend-ai-correctness P02 | 8min | 2 tasks | 5 files |
+| Phase 15-ui-ux-polish-security P01 | 12min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -61,6 +62,9 @@ Recent decisions affecting current work:
 - [Phase 14-backend-ai-correctness]: 14-02-bloom-gate: NEUROGENESIS_BLOOM_THRESHOLD gate in POST /api/neurons fires after safeParse, returns 422 for Remember/Understand/Apply on non-ghost neurons; ghost nodes bypass via is_ghost check
 - [Phase 14-backend-ai-correctness]: 14-02-vector-widening: find_similar_neurons match_threshold 0.3→0.15, match_count 5→10 to give inferPrerequisites more prerequisite candidates
 - [Phase 14-backend-ai-correctness]: 14-02-migration-idempotent: Legacy RELATED+ai_suggested=true edges cleaned by idempotent SQL migration; user-created RELATED edges (ai_suggested=false) preserved
+- [Phase 15-01]: useEffect cleanup for setShellPreset: sidebar Link navigation bypasses openChat(), so cleanup must live in the layout effect itself
+- [Phase 15-01]: input-available maps to result in toolState derivation: only rehydrated messages from loadMessages have this state; fresh streaming calls use partial-call
+- [Phase 15-01]: style={{ display: 'none' }} on Handle elements: guarantees invisibility despite React Flow CSS specificity
 
 ### Pending Todos
 
@@ -72,6 +76,6 @@ None at roadmap creation.
 
 ## Session Continuity
 
-Last session: 2026-03-24T16:20:05.605Z
-Stopped at: Completed 14-backend-ai-correctness/14-02-PLAN.md
+Last session: 2026-03-24T16:51:49.515Z
+Stopped at: Completed 15-01-PLAN.md
 Resume file: None

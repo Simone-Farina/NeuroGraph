@@ -81,7 +81,7 @@ Plans:
   5. The API key in the sidebar is masked after its initial one-time reveal — only visible at the moment of generation
 **Plans**: 2 plans
 Plans:
-- [ ] 15-01-PLAN.md — Fix layout reset, Handle dots, and stuck neurogenesis spinners (BUG-04, BUG-06, BUG-07)
+- [x] 15-01-PLAN.md — Fix layout reset, Handle dots, and stuck neurogenesis spinners (BUG-04, BUG-06, BUG-07)
 - [ ] 15-02-PLAN.md — Redesign Learning Target UI and add API key masking (BUG-05, BUG-08)
 **UI hint**: yes
 
@@ -106,4 +106,4 @@ Plans:
 | 12. Chat Analyzer / Bouncer Agent | v1.2 | 2/2 | Complete | 2026-03-23 |
 | 13. Socratic Chat Engine | v1.2 | 2/2 | Complete | 2026-03-24 |
 | 14. Backend AI Correctness | v1.3 | 2/2 | Complete    | 2026-03-24 |
-| 15. UI/UX Polish & Security | v1.3 | 0/2 | Not started | - |
+| 15. UI/UX Polish & Security | v1.3 | 1/2 | In Progress|  |
