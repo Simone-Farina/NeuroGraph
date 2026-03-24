@@ -1,5 +1,20 @@
 # Milestones
 
+## v2.0 MVP Core Stability (Shipped: 2026-03-24)
+
+**Phases completed:** 4 phases, 7 plans, 15 tasks
+
+**Key accomplishments:**
+
+- onError callbacks and AbortSignal timeouts added to both streamText call sites, eliminating silent mid-stream provider failures in /api/chat (60s) and /api/neurons/ai-action (30s)
+- Khanmigo-proven calibration patterns added to CHAT_SYSTEM_PROMPT, comprehension-test heuristic with 4 boundary examples in inferPrerequisites, and Kahn's topological sort cycle detection added to architect.ts superRefine
+- Expanded promptfoo eval suite from 34 to 42 cases with behavioral assertions for all 4 Khanmigo patterns and judge model pinned to gpt-4o-2024-08-06 across all three configs
+- Race-free TipTap neuron content sync via single neuron.id-keyed effect, and lossless JSON serialization replacing HTML in all save paths
+- React.memo applied to NeuronNode, GhostNeuronNode, and SynapseEdge, plus onlyRenderVisibleElements enabled on ReactFlow to prevent cascading re-renders and cull off-screen DOM nodes at scale.
+- Real-time 6-segment Bloom cognitive depth meter added to chat interface using client-side keyword analysis of user messages — zero API calls, ambient editorial aesthetic
+
+---
+
 ## v1.4 QA Refinement II (Shipped: 2026-03-24)
 
 **Phases completed:** 2 phases, 4 plans, 4 tasks
