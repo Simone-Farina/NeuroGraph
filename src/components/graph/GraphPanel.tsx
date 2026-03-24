@@ -35,16 +35,18 @@ const edgeTypes = {
   synapseEdge: SynapseEdge,
 };
 
-const nodeWidth = 200;
+const nodeWidth = 220;
 const nodeHeight = 80;
+const ghostNodeHeight = 200;
 
 const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
   const dagreGraph = new dagre.graphlib.Graph();
   dagreGraph.setDefaultEdgeLabel(() => ({}));
-  dagreGraph.setGraph({ rankdir: 'LR', nodesep: 60, ranksep: 120 });
+  dagreGraph.setGraph({ rankdir: 'TB', nodesep: 80, ranksep: 140 });
 
   nodes.forEach((node) => {
-    dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
+    const height = node.type === 'ghostNeuron' ? ghostNodeHeight : nodeHeight;
+    dagreGraph.setNode(node.id, { width: nodeWidth, height });
   });
 
   edges.forEach((edge) => {
@@ -55,13 +57,14 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
 
   const layoutedNodes = nodes.map((node) => {
     const nodeWithPosition = dagreGraph.node(node.id);
+    const height = node.type === 'ghostNeuron' ? ghostNodeHeight : nodeHeight;
     return {
       ...node,
-      targetPosition: Position.Left,
-      sourcePosition: Position.Right,
+      targetPosition: Position.Top,
+      sourcePosition: Position.Bottom,
       position: {
         x: nodeWithPosition.x - nodeWidth / 2,
-        y: nodeWithPosition.y - nodeHeight / 2,
+        y: nodeWithPosition.y - height / 2,
       },
     };
   });
@@ -166,6 +169,7 @@ function GraphCanvas() {
   const setHorizonDraft = useGraphStore((state) => state.setHorizonDraft);
   const setHorizonError = useGraphStore((state) => state.setHorizonError);
   const clearHorizonDraft = useGraphStore((state) => state.clearHorizonDraft);
+  const setShellPreset = useGraphStore((state) => state.setShellPreset);
   const updateNode = useGraphStore((state) => state.updateNode);
   const openNeuronDetail = useGraphStore((state) => state.openNeuronDetail);
   const openGhostBriefing = useGraphStore((state) => state.openGhostBriefing);
@@ -385,6 +389,8 @@ function GraphCanvas() {
       setHorizonDraft(payload.target || target, payload.draft);
       setTargetInput('');
       setIsTargetOpen(false);
+      // Delay shell preset transition to let dagre layout and React Flow render first
+      setTimeout(() => setShellPreset('graph_zenith' as any), 300);
     } catch (error) {
       setHorizonError(
         error instanceof Error ? error.message : 'Unable to generate a learning path right now.'

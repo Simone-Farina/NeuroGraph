@@ -169,7 +169,8 @@ export const useGraphStore = create<GraphStore>((set) => ({
         activeGhostNodeId: null,
         pendingHorizonSeed: null,
         leftPanelMode: 'chat',
-        shellPreset: 'graph_zenith' as ShellPreset,
+        // shellPreset NOT set here — GraphPanel delays the transition
+        // by 300ms to let dagre layout and React Flow render first
       };
     }),
   setHorizonError: (error) =>

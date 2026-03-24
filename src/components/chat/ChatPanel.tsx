@@ -341,6 +341,8 @@ export function ChatPanel() {
     // Must be unconditional — skipNextLoadRef guard would otherwise
     // let paste banner bleed into the newly-selected conversation.
     setActiveCrystallizeSession(null);
+    setIsCrystallizing(false);
+    setCrystallizeNotice(null);
 
     if (!currentConversationId) {
       setMessages([]);

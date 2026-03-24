@@ -13,11 +13,7 @@ export function GhostNeuronNode({ data, selected }: NodeProps<GhostNeuronFlowNod
         selected ? 'border-white/26 bg-white/[0.05]' : 'opacity-65 hover:opacity-90'
       }`}
     >
-      <Handle
-        type="target"
-        position={Position.Top}
-        className="!h-3 !w-3 !border !border-white/10 !bg-white/12"
-      />
+      <Handle type="target" position={Position.Top} style={{ display: 'none' }} />
 
       <div className="mb-3 flex items-center justify-between">
         <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-white/28">
@@ -36,11 +32,7 @@ export function GhostNeuronNode({ data, selected }: NodeProps<GhostNeuronFlowNod
         <span>Click to Brief</span>
       </div>
 
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        className="!h-3 !w-3 !border !border-white/10 !bg-white/12"
-      />
+      <Handle type="source" position={Position.Bottom} style={{ display: 'none' }} />
     </div>
   );
 }
