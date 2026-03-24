@@ -99,7 +99,11 @@ Plans:
   2. The DAG agent's `inferPrerequisites` refuses to link two nodes when removing one does not make the other incomprehensible (comprehension test boundary)
   3. Server-side Kahn's algorithm rejects a cyclic prerequisite chain even when the LLM prompt compliance fails
   4. The promptfoo eval suite passes 42+ cases (up from 34), including multi-turn neurogenesis priming and Bloom distribution behavioral assertions
-**Plans**: TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 19-01-PLAN.md — Khanmigo prompt patterns + comprehension test heuristic + Kahn's algorithm (PROMPT-01, PROMPT-02, PROMPT-03)
+- [ ] 19-02-PLAN.md — Eval suite expansion to 42+ cases with behavioral assertions (PROMPT-04)
 
 ### Phase 20: Editor Reliability
 **Goal**: The TipTap editor displays correct neuron content on every navigation event, regardless of focus state, and all editor components share a single serialization format
@@ -148,6 +152,6 @@ Plans:
 | 16. Socratic Agent Redesign | v1.4 | 2/2 | Complete | 2026-03-24 |
 | 17. Horizon & Crystallize UI Fixes | v1.4 | 2/2 | Complete | 2026-03-24 |
 | 18. AI Reliability | v2.0 | 2/2 | Complete    | 2026-03-24 |
-| 19. Enterprise Prompt Engineering | v2.0 | 0/? | Not started | - |
+| 19. Enterprise Prompt Engineering | v2.0 | 0/2 | Not started | - |
 | 20. Editor Reliability | v2.0 | 0/? | Not started | - |
 | 21. Graph Performance & Bloom UI | v2.0 | 0/? | Not started | - |
