@@ -2,13 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: MVP Core Stability
-status: active
-last_updated: "2026-03-24T21:00:00.000Z"
+status: Ready to execute
+stopped_at: Completed 18-02-PLAN.md
+last_updated: "2026-03-24T21:05:51.986Z"
 progress:
   total_phases: 4
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 2
+  completed_plans: 1
 ---
 
 # Project State
@@ -22,16 +23,13 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 
 ## Current Position
 
-Phase: 18 of 21 (AI Reliability)
-Plan: 0 of ? in current phase
-Status: Ready to plan
-Last activity: 2026-03-24 — v2.0 roadmap created (Phases 18-21)
-
-Progress: [░░░░░░░░░░] 0%
+Phase: 18 (ai-reliability) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
 **Velocity:**
+
 - Total plans completed: 0 (v2.0)
 - Average duration: —
 - Total execution time: —
@@ -43,10 +41,12 @@ Progress: [░░░░░░░░░░] 0%
 | - | - | - | - |
 
 **Recent Trend:**
+
 - Last 5 plans: —
 - Trend: —
 
 *Updated after each plan completion*
+| Phase 18-ai-reliability P02 | 8min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -59,6 +59,9 @@ Recent decisions affecting current work:
 - [v2.0 Roadmap]: PROMPT-04 (eval suite expansion) is in Phase 19 alongside prompt changes — evals must be written before prompts are changed, not after
 - [v2.0 Roadmap]: Phase 20 (Editor) ordered after Phase 18 because editor content feeds AI calls; stable AI layer makes editor validation meaningful
 - [v2.0 Roadmap]: Phase 21 (Graph + Bloom UI) is last — React-side changes depend on stable editor data and are the only phases touching UI components
+- [Phase 18-ai-reliability]: onError is the ONLY reliable surface for mid-stream AI SDK errors — outer try/catch does not catch them (per GitHub issue #4726)
+- [Phase 18-ai-reliability]: maxRetries: 1 on chat (not 0 or 2) — interactive streaming needs 1 retry for transient errors, but more adds dead silence
+- [Phase 18-ai-reliability]: 60s timeout for chat, 30s for ai-action — proportional to expected generation length
 
 ### Pending Todos
 
@@ -71,6 +74,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-24
-Stopped at: v2.0 roadmap created — ready to plan Phase 18
+Last session: 2026-03-24T21:05:51.984Z
+Stopped at: Completed 18-02-PLAN.md
 Resume file: None
