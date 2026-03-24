@@ -47,7 +47,7 @@
 
 **Milestone Goal:** Fix 8 bugs and UX frictions discovered during hands-on QA testing. No new features.
 
-- [ ] **Phase 14: Backend AI Correctness** - Fix Architect schema error, enforce Bloom gate at runtime, repair DAG prerequisite wiring
+- [x] **Phase 14: Backend AI Correctness** - Fix Architect schema error, enforce Bloom gate at runtime, repair DAG prerequisite wiring (completed 2026-03-24)
 - [ ] **Phase 15: UI/UX Polish & Security** - Fix layout resets, design inconsistencies, stuck neuron indicators, handle dots, and API key masking
 
 ---
@@ -66,7 +66,7 @@
 **Plans**: 2 plans
 Plans:
 - [x] 14-01-PLAN.md — Fix OpenAI structured output schema errors (.optional() to .nullable())
-- [ ] 14-02-PLAN.md — Enforce Bloom gate, widen DAG search, clean legacy edges
+- [x] 14-02-PLAN.md — Enforce Bloom gate, widen DAG search, clean legacy edges
 **UI hint**: no
 
 ### Phase 15: UI/UX Polish & Security
@@ -102,5 +102,5 @@ Plans:
 | 11.5. Horizon UI & DAG Wiring | v1.2 | 3/3 | Complete | 2026-03-23 |
 | 12. Chat Analyzer / Bouncer Agent | v1.2 | 2/2 | Complete | 2026-03-23 |
 | 13. Socratic Chat Engine | v1.2 | 2/2 | Complete | 2026-03-24 |
-| 14. Backend AI Correctness | v1.3 | 1/2 | In Progress|  |
+| 14. Backend AI Correctness | v1.3 | 2/2 | Complete   | 2026-03-24 |
 | 15. UI/UX Polish & Security | v1.3 | 0/? | Not started | - |
