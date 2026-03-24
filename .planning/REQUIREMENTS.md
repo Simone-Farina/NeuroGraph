@@ -9,8 +9,8 @@ Bug fixes and UX frictions from QA round 2.
 
 ### AI Agent Quality (CRITICAL)
 
-- [ ] **AGENT-01**: The Socratic agent must actually teach — share knowledge, provide context, offer new perspectives, challenge with counterexamples — while maintaining its questioning stance. Not a question-parrot.
-- [ ] **AGENT-02**: The Socratic agent must build on the user's answers with new information before asking the next question — each response deepens understanding, not just redirects.
+- [x] **AGENT-01**: The Socratic agent must actually teach — share knowledge, provide context, offer new perspectives, challenge with counterexamples — while maintaining its questioning stance. Not a question-parrot.
+- [x] **AGENT-02**: The Socratic agent must build on the user's answers with new information before asking the next question — each response deepens understanding, not just redirects.
 
 ### Crystallize Flow
 
@@ -35,8 +35,8 @@ Bug fixes and UX frictions from QA round 2.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AGENT-01 | Phase 16 | Pending |
-| AGENT-02 | Phase 16 | Pending |
+| AGENT-01 | Phase 16 | Complete |
+| AGENT-02 | Phase 16 | Complete |
 | CRYST-04 | Phase 17 | Pending |
 | HORIZON-04 | Phase 17 | Pending |
 | HORIZON-05 | Phase 17 | Pending |

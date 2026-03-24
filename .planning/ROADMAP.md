@@ -77,7 +77,7 @@
 **Plans**: 2 plans
 
 Plans:
-- [ ] 16-01-PLAN.md — Rewrite CHAT_SYSTEM_PROMPT and update scoreSocraticTone heuristic
+- [x] 16-01-PLAN.md — Rewrite CHAT_SYSTEM_PROMPT and update scoreSocraticTone heuristic
 - [ ] 16-02-PLAN.md — Add teach-then-ask golden cases and verify full eval suite
 
 ### Phase 17: Horizon & Crystallize UI Fixes
@@ -115,5 +115,5 @@ Plans:
 | 13. Socratic Chat Engine | v1.2 | 2/2 | Complete | 2026-03-24 |
 | 14. Backend AI Correctness | v1.3 | 2/2 | Complete | 2026-03-24 |
 | 15. UI/UX Polish & Security | v1.3 | 2/2 | Complete | 2026-03-24 |
-| 16. Socratic Agent Redesign | v1.4 | 0/2 | In progress | - |
+| 16. Socratic Agent Redesign | v1.4 | 1/2 | In Progress|  |
 | 17. Horizon & Crystallize UI Fixes | v1.4 | 0/TBD | Not started | - |
