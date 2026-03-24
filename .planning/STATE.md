@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: MVP Core Stability
-status: Ready to plan
-stopped_at: Completed 19-02-PLAN.md
-last_updated: "2026-03-24T21:39:38.739Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 20-01-PLAN.md
+last_updated: "2026-03-24T21:47:37.588Z"
 progress:
   total_phases: 4
-  completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
+  completed_phases: 3
+  total_plans: 5
+  completed_plans: 5
 ---
 
 # Project State
@@ -23,8 +23,8 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 
 ## Current Position
 
-Phase: 20
-Plan: Not started
+Phase: 20 (editor-reliability) — EXECUTING
+Plan: 1 of 1
 
 ## Performance Metrics
 
@@ -50,6 +50,7 @@ Plan: Not started
 | Phase 18 P01 | 10m | 2 tasks | 6 files |
 | Phase 19-enterprise-prompt-engineering P01 | 15min | 3 tasks | 3 files |
 | Phase 19 P02 | 2min | 2 tasks | 5 files |
+| Phase 20-editor-reliability P01 | 7min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -72,6 +73,9 @@ Recent decisions affecting current work:
 - [Phase 19-enterprise-prompt-engineering]: 19-01-comprehension-test: Binary 'NEVER encountered A — can B still be understood?' replaces subjective prerequisite judgment in inferPrerequisites
 - [Phase 19]: 19-02-judge-model-pin: Judge model pinned as comment (not llm-rubric provider) — configs use heuristic-only assertions; pin documents intended model without requiring live API calls
 - [Phase 19]: 19-02-behavioral-assertions: Per-case javascript assert blocks validate Khanmigo patterns; default assertions handle Socratic tone and neurogenesis; custom asserts check specific behaviors
+- [Phase 20-editor-reliability]: 20-01-single-effect-neuron-id: Single effect keyed on [neuron.id, editor] replaces dual effects; focus guard is wrong when ID changes
+- [Phase 20-editor-reliability]: 20-01-getjson-canonical: JSON.stringify(getJSON()) is canonical save format replacing getHTML()
+- [Phase 20-editor-reliability]: 20-01-emit-update-false: TipTap v3 setContent uses {emitUpdate:false} options object (not boolean) to suppress dirty/extraction triggers on programmatic sync
 
 ### Pending Todos
 
@@ -84,6 +88,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-24T21:28:49.807Z
-Stopped at: Completed 19-02-PLAN.md
+Last session: 2026-03-24T21:47:37.586Z
+Stopped at: Completed 20-01-PLAN.md
 Resume file: None

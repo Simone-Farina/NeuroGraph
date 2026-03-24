@@ -15,15 +15,15 @@ Production hardening of all core features. No new features — make existing one
 
 ### Enterprise Prompt Engineering
 
-- [ ] **PROMPT-01**: CHAT_SYSTEM_PROMPT includes Khanmigo-inspired patterns: calibrated difficulty (assume confusion is unknown), mistake handling (ask how they got there), Goldilocks edge tracking (simplify/escalate based on engagement), and meta-questioning (surface assumptions)
-- [ ] **PROMPT-02**: inferPrerequisites prompt uses the "comprehension test" heuristic ("If removing A makes B incomprehensible, A is a prerequisite") with 4 boundary examples covering PREREQUISITE, BUILDS_ON, RELATED, and no-connection scenarios
-- [ ] **PROMPT-03**: Server-side Kahn's algorithm cycle validation runs after LLM DAG output — structural safety net independent of prompt compliance
-- [ ] **PROMPT-04**: promptfoo eval suite expanded with behavioral assertions: mistake handling, calibrated difficulty, meta-questioning, multi-turn neurogenesis priming. Suite grows from 34 to 42+ cases
+- [x] **PROMPT-01**: CHAT_SYSTEM_PROMPT includes Khanmigo-inspired patterns: calibrated difficulty (assume confusion is unknown), mistake handling (ask how they got there), Goldilocks edge tracking (simplify/escalate based on engagement), and meta-questioning (surface assumptions)
+- [x] **PROMPT-02**: inferPrerequisites prompt uses the "comprehension test" heuristic ("If removing A makes B incomprehensible, A is a prerequisite") with 4 boundary examples covering PREREQUISITE, BUILDS_ON, RELATED, and no-connection scenarios
+- [x] **PROMPT-03**: Server-side Kahn's algorithm cycle validation runs after LLM DAG output — structural safety net independent of prompt compliance
+- [x] **PROMPT-04**: promptfoo eval suite expanded with behavioral assertions: mistake handling, calibrated difficulty, meta-questioning, multi-turn neurogenesis priming. Suite grows from 34 to 42+ cases
 
 ### Editor Reliability
 
-- [ ] **EDITOR-01**: TipTap content sync race on neuron switch is fixed — `editor.commands.setContent` is called when `neuron.id` changes, not just when state vars reset
-- [ ] **EDITOR-02**: TipTap serialization standardized to `getJSON()` across all editor components — no mixed HTML/text formats
+- [x] **EDITOR-01**: TipTap content sync race on neuron switch is fixed — `editor.commands.setContent` is called when `neuron.id` changes, not just when state vars reset
+- [x] **EDITOR-02**: TipTap serialization standardized to `getJSON()` across all editor components — no mixed HTML/text formats
 
 ### Graph Performance
 
@@ -51,12 +51,12 @@ Production hardening of all core features. No new features — make existing one
 | AI-01 | Phase 18 | Complete |
 | AI-02 | Phase 18 | Complete |
 | AI-03 | Phase 18 | Complete |
-| PROMPT-01 | Phase 19 | Pending |
-| PROMPT-02 | Phase 19 | Pending |
-| PROMPT-03 | Phase 19 | Pending |
-| PROMPT-04 | Phase 19 | Pending |
-| EDITOR-01 | Phase 20 | Pending |
-| EDITOR-02 | Phase 20 | Pending |
+| PROMPT-01 | Phase 19 | Complete |
+| PROMPT-02 | Phase 19 | Complete |
+| PROMPT-03 | Phase 19 | Complete |
+| PROMPT-04 | Phase 19 | Complete |
+| EDITOR-01 | Phase 20 | Complete |
+| EDITOR-02 | Phase 20 | Complete |
 | GRAPH-01 | Phase 21 | Pending |
 | GRAPH-02 | Phase 21 | Pending |
 | BLOOM-01 | Phase 21 | Pending |
