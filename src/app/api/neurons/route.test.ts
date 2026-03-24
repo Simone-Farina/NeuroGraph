@@ -75,7 +75,7 @@ describe('POST /api/neurons', () => {
       title: 'Test Neuron',
       definition: 'A test definition that is long enough.',
       core_insight: 'A core insight that is long enough to pass validation.',
-      bloom_level: 'Remember',
+      bloom_level: 'Analyze',
       source_conversation_id: '123e4567-e89b-12d3-a456-426614174000',
       source_message_ids: [
         '123e4567-e89b-12d3-a456-426614174001',
