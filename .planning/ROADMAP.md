@@ -93,7 +93,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 17-01-PLAN.md — Crystallize state reset, compact HorizonControls, TARGET label removal
+- [x] 17-01-PLAN.md — Crystallize state reset, compact HorizonControls, TARGET label removal
 - [ ] 17-02-PLAN.md — Ghost node dagre layout fix and shell preset timing decouple
 
 ---
@@ -119,4 +119,4 @@ Plans:
 | 14. Backend AI Correctness | v1.3 | 2/2 | Complete | 2026-03-24 |
 | 15. UI/UX Polish & Security | v1.3 | 2/2 | Complete | 2026-03-24 |
 | 16. Socratic Agent Redesign | v1.4 | 1/2 | Complete    | 2026-03-24 |
-| 17. Horizon & Crystallize UI Fixes | v1.4 | 0/2 | Not started | - |
+| 17. Horizon & Crystallize UI Fixes | v1.4 | 1/2 | In Progress|  |

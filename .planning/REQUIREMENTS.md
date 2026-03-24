@@ -14,14 +14,14 @@ Bug fixes and UX frictions from QA round 2.
 
 ### Crystallize Flow
 
-- [ ] **CRYST-04**: Crystallize paste fallback state (banner + paste box) is cleared when switching to a different chat conversation — state is session-scoped, not global.
+- [x] **CRYST-04**: Crystallize paste fallback state (banner + paste box) is cleared when switching to a different chat conversation — state is session-scoped, not global.
 
 ### Horizon UI
 
-- [ ] **HORIZON-04**: "Set Learning Target" button container is compact by default and expands dynamically only when the input field is shown.
+- [x] **HORIZON-04**: "Set Learning Target" button container is compact by default and expands dynamically only when the input field is shown.
 - [ ] **HORIZON-05**: Ghost node layout is readable after Horizon generation — no overlapping labels or stacked nodes.
 - [ ] **HORIZON-06**: Chat panel does not collapse when ghost nodes render — shell preset transition does not fire prematurely.
-- [ ] **HORIZON-07**: The "TARGET X" label is removed from below the Learning Target controls.
+- [x] **HORIZON-07**: The "TARGET X" label is removed from below the Learning Target controls.
 
 ## Out of Scope
 
@@ -37,11 +37,11 @@ Bug fixes and UX frictions from QA round 2.
 |-------------|-------|--------|
 | AGENT-01 | Phase 16 | Complete |
 | AGENT-02 | Phase 16 | Complete |
-| CRYST-04 | Phase 17 | Pending |
-| HORIZON-04 | Phase 17 | Pending |
+| CRYST-04 | Phase 17 | Complete |
+| HORIZON-04 | Phase 17 | Complete |
 | HORIZON-05 | Phase 17 | Pending |
 | HORIZON-06 | Phase 17 | Pending |
-| HORIZON-07 | Phase 17 | Pending |
+| HORIZON-07 | Phase 17 | Complete |
 
 **Coverage:**
 - v1.4 requirements: 7 total

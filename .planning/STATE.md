@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: QA Refinement II
-status: Ready to plan
-stopped_at: Completed 16-02-PLAN.md
-last_updated: "2026-03-24T18:51:53.373Z"
+status: Ready to execute
+stopped_at: "Completed 17-01-PLAN.md (checkpoint: awaiting human-verify Task 2)"
+last_updated: "2026-03-24T19:41:57.789Z"
 progress:
   total_phases: 2
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 4
+  completed_plans: 3
 ---
 
 # Project State
@@ -23,8 +23,8 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 
 ## Current Position
 
-Phase: 17
-Plan: Not started
+Phase: 17 (horizon-crystallize-ui-fixes) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -48,6 +48,7 @@ Plan: Not started
 *Updated after each plan completion*
 | Phase 16-socratic-agent-redesign P01 | 5min | 2 tasks | 3 files |
 | Phase 16-socratic-agent-redesign P02 | 8min | 1 tasks | 1 files |
+| Phase 17-horizon-crystallize-ui-fixes P01 | 8min | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -63,6 +64,9 @@ Recent decisions affecting current work:
 - [Phase 16-socratic-agent-redesign]: 16-01-conditional-penalty: 'here is how'/'here's how' removed from penalty list; remaining patterns penalized -0.1 when question follows, -0.4 when no question
 - [Phase 16-02]: 16-02-case-message-wording: Avoid causal 'because X' in expected_neurogenesis:false final_user_messages — BLOOM_ANALYZE_SIGNALS fires on /\bbecause\b.{5+}/
 - [Phase 16-02]: 16-02-no-threshold-change: promptfooconfig.yaml threshold left at >= 0.8; heuristic template scores 0.80 exactly, all 13 cases pass without adjustment
+- [Phase 17-horizon-crystallize-ui-fixes]: 17-01-cryst04-unconditional-reset: setActiveCrystallizeSession(null) placed before if(!currentConversationId) so skipNextLoadRef guard cannot prevent the reset
+- [Phase 17-horizon-crystallize-ui-fixes]: 17-01-horizon04-conditional-width: wrapper divs use no width class when collapsed; container shrinks to content
+- [Phase 17-horizon-crystallize-ui-fixes]: 17-01-horizon07-label-removal: TARGET label JSX removed entirely; horizonTarget/horizonError props retained in type and call sites
 
 ### Pending Todos
 
@@ -74,6 +78,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-24T18:47:37.568Z
-Stopped at: Completed 16-02-PLAN.md
+Last session: 2026-03-24T19:41:57.787Z
+Stopped at: Completed 17-01-PLAN.md (checkpoint: awaiting human-verify Task 2)
 Resume file: None
