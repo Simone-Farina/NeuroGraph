@@ -58,7 +58,7 @@
 
 **Milestone Goal:** Fix 6 bugs from QA round 2 — critical Socratic agent redesign so it teaches instead of parroting, plus Horizon UI and Crystallize state polish.
 
-- [ ] **Phase 16: Socratic Agent Redesign** - Teach-and-question contract, progressive knowledge building per turn
+- [x] **Phase 16: Socratic Agent Redesign** - Teach-and-question contract, progressive knowledge building per turn (completed 2026-03-24)
 - [ ] **Phase 17: Horizon & Crystallize UI Fixes** - Paste state session-scoping, dynamic container sizing, ghost node layout, shell timing, TARGET label removal
 
 ---
@@ -115,5 +115,5 @@ Plans:
 | 13. Socratic Chat Engine | v1.2 | 2/2 | Complete | 2026-03-24 |
 | 14. Backend AI Correctness | v1.3 | 2/2 | Complete | 2026-03-24 |
 | 15. UI/UX Polish & Security | v1.3 | 2/2 | Complete | 2026-03-24 |
-| 16. Socratic Agent Redesign | v1.4 | 1/2 | In Progress|  |
+| 16. Socratic Agent Redesign | v1.4 | 1/2 | Complete    | 2026-03-24 |
 | 17. Horizon & Crystallize UI Fixes | v1.4 | 0/TBD | Not started | - |
