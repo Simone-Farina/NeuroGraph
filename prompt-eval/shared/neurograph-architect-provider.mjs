@@ -397,6 +397,59 @@ function heuristicArchitect(vars) {
     };
   }
 
+  // Boundary cases for relationship-type disambiguation (Phase 19 eval expansion)
+  if (targetTopic === 'javascript') {
+    return {
+      isValid: true,
+      nodes: [
+        buildNode('Python', 'A general-purpose programming language known for readability and versatility.', 'Understand'),
+        buildNode('JavaScript', 'A dynamic programming language that powers web interactivity and Node.js servers.', 'Understand'),
+      ],
+      synapses: [
+        { sourceTitle: 'Python', targetTitle: 'JavaScript', type: 'RELATED' },
+      ],
+    };
+  }
+
+  if (targetTopic === 'design patterns') {
+    return {
+      isValid: true,
+      nodes: [
+        buildNode('Object-Oriented Programming', 'A paradigm organizing code around objects that encapsulate data and behavior.', 'Understand'),
+        buildNode('Design Patterns', 'Reusable solutions to common software design problems within OOP.', 'Apply'),
+        buildNode('SOLID Principles', 'Five design principles that make OOP code more maintainable and extensible.', 'Analyze'),
+      ],
+      synapses: [
+        { sourceTitle: 'Design Patterns', targetTitle: 'Object-Oriented Programming', type: 'BUILDS_ON' },
+      ],
+    };
+  }
+
+  if (targetTopic === 'gradient descent') {
+    return {
+      isValid: true,
+      nodes: [
+        buildNode('Calculus', 'The mathematical study of continuous change through derivatives and integrals.', 'Understand'),
+        buildNode('Partial Derivatives', 'Derivatives of multivariable functions with respect to one variable at a time.', 'Apply'),
+        buildNode('Gradient Descent', 'An optimization algorithm that iteratively adjusts parameters by following the negative gradient.', 'Apply'),
+      ],
+      synapses: [
+        { sourceTitle: 'Partial Derivatives', targetTitle: 'Gradient Descent', type: 'PREREQUISITE' },
+      ],
+    };
+  }
+
+  if (targetTopic === 'quantum computing') {
+    return {
+      isValid: true,
+      nodes: [
+        buildNode('Quantum Computing', 'Computing that exploits quantum-mechanical phenomena like superposition and entanglement.', 'Understand'),
+        buildNode('Italian Cuisine', 'The culinary traditions and recipes originating from Italy.', 'Remember'),
+      ],
+      synapses: [],
+    };
+  }
+
   return {
     isValid: false,
     refusalReason: 'The Architect fallback does not know how to structure this curriculum yet.',
