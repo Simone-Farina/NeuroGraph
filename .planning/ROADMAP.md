@@ -102,5 +102,5 @@ Plans:
 | 11.5. Horizon UI & DAG Wiring | v1.2 | 3/3 | Complete | 2026-03-23 |
 | 12. Chat Analyzer / Bouncer Agent | v1.2 | 2/2 | Complete | 2026-03-23 |
 | 13. Socratic Chat Engine | v1.2 | 2/2 | Complete | 2026-03-24 |
-| 14. Backend AI Correctness | v1.3 | 2/2 | Complete   | 2026-03-24 |
+| 14. Backend AI Correctness | v1.3 | 2/2 | Complete    | 2026-03-24 |
 | 15. UI/UX Polish & Security | v1.3 | 0/? | Not started | - |
