@@ -84,7 +84,11 @@
   2. Any `generateObject` call that times out after 25 seconds returns a typed `APICallError` or `NoObjectGeneratedError` — never an unhandled promise rejection
   3. Creating a neuron succeeds even when the post-insert vector search (`find_similar_neurons`) fails — the neuron appears in the graph and no 500 is returned to the client
   4. All four AI call sites (`/api/chat`, `/api/architect`, `/api/neurons/extract`, `/api/neurons/ai-action`) have `maxRetries: 2` and `AbortSignal.timeout(25000)` applied
-**Plans**: TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 18-01-PLAN.md — Harden generateObject call sites (AI-02) + neurons route resilience (AI-03)
+- [ ] 18-02-PLAN.md — Harden streamText call sites with onError (AI-01)
 
 ### Phase 19: Enterprise Prompt Engineering
 **Goal**: All AI agent prompts meet enterprise pedagogical standards — the Socratic agent uses Khanmigo-proven calibration patterns, the DAG agent uses a comprehension-test heuristic with boundary examples, and the eval suite validates behavioral correctness (not just structural output)
@@ -143,7 +147,7 @@
 | 15. UI/UX Polish & Security | v1.3 | 2/2 | Complete | 2026-03-24 |
 | 16. Socratic Agent Redesign | v1.4 | 2/2 | Complete | 2026-03-24 |
 | 17. Horizon & Crystallize UI Fixes | v1.4 | 2/2 | Complete | 2026-03-24 |
-| 18. AI Reliability | v2.0 | 0/? | Not started | - |
+| 18. AI Reliability | v2.0 | 0/2 | Planning | - |
 | 19. Enterprise Prompt Engineering | v2.0 | 0/? | Not started | - |
 | 20. Editor Reliability | v2.0 | 0/? | Not started | - |
 | 21. Graph Performance & Bloom UI | v2.0 | 0/? | Not started | - |
