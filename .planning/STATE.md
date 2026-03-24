@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: MVP Core Stability
-status: Ready to execute
-stopped_at: Completed 18-02-PLAN.md
-last_updated: "2026-03-24T21:05:51.986Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 18-01-PLAN.md
+last_updated: "2026-03-24T21:07:51.187Z"
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
 ---
 
 # Project State
@@ -47,6 +47,7 @@ Plan: 2 of 2
 
 *Updated after each plan completion*
 | Phase 18-ai-reliability P02 | 8min | 2 tasks | 2 files |
+| Phase 18 P01 | 10m | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -62,6 +63,8 @@ Recent decisions affecting current work:
 - [Phase 18-ai-reliability]: onError is the ONLY reliable surface for mid-stream AI SDK errors — outer try/catch does not catch them (per GitHub issue #4726)
 - [Phase 18-ai-reliability]: maxRetries: 1 on chat (not 0 or 2) — interactive streaming needs 1 retry for transient errors, but more adds dead silence
 - [Phase 18-ai-reliability]: 60s timeout for chat, 30s for ai-action — proportional to expected generation length
+- [Phase 18]: Use NoObjectGeneratedError.isInstance() not instanceof for SDK error discrimination
+- [Phase 18]: Wrap entire post-insert enrichment in a single non-fatal try/catch (crystallize + vector search + inferPrerequisites + ghostProjection)
 
 ### Pending Todos
 
@@ -74,6 +77,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-24T21:05:51.984Z
-Stopped at: Completed 18-02-PLAN.md
+Last session: 2026-03-24T21:07:51.182Z
+Stopped at: Completed 18-01-PLAN.md
 Resume file: None

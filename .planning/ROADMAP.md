@@ -66,7 +66,7 @@
 
 **Milestone Goal:** Every core feature works flawlessly end-to-end. No new features — make what exists production-grade. Enterprise-level prompt engineering for all AI agents.
 
-- [ ] **Phase 18: AI Reliability** - Typed error handling, timeouts, and retry logic across all AI call sites
+- [x] **Phase 18: AI Reliability** - Typed error handling, timeouts, and retry logic across all AI call sites (completed 2026-03-24)
 - [ ] **Phase 19: Enterprise Prompt Engineering** - Khanmigo patterns, comprehension-test DAG heuristic, expanded eval suite
 - [ ] **Phase 20: Editor Reliability** - TipTap content sync race fix, serialization standardized to getJSON
 - [ ] **Phase 21: Graph Performance & Bloom UI** - React.memo on nodes, onlyRenderVisibleElements, real-time Bloom depth indicator
@@ -84,10 +84,10 @@
   2. Any `generateObject` call that times out after 25 seconds returns a typed `APICallError` or `NoObjectGeneratedError` — never an unhandled promise rejection
   3. Creating a neuron succeeds even when the post-insert vector search (`find_similar_neurons`) fails — the neuron appears in the graph and no 500 is returned to the client
   4. All four AI call sites (`/api/chat`, `/api/architect`, `/api/neurons/extract`, `/api/neurons/ai-action`) have `maxRetries: 2` and `AbortSignal.timeout(25000)` applied
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 18-01-PLAN.md — Harden generateObject call sites (AI-02) + neurons route resilience (AI-03)
+- [x] 18-01-PLAN.md — Harden generateObject call sites (AI-02) + neurons route resilience (AI-03)
 - [x] 18-02-PLAN.md — Harden streamText call sites with onError (AI-01)
 
 ### Phase 19: Enterprise Prompt Engineering
@@ -147,7 +147,7 @@ Plans:
 | 15. UI/UX Polish & Security | v1.3 | 2/2 | Complete | 2026-03-24 |
 | 16. Socratic Agent Redesign | v1.4 | 2/2 | Complete | 2026-03-24 |
 | 17. Horizon & Crystallize UI Fixes | v1.4 | 2/2 | Complete | 2026-03-24 |
-| 18. AI Reliability | v2.0 | 1/2 | In Progress|  |
+| 18. AI Reliability | v2.0 | 2/2 | Complete   | 2026-03-24 |
 | 19. Enterprise Prompt Engineering | v2.0 | 0/? | Not started | - |
 | 20. Editor Reliability | v2.0 | 0/? | Not started | - |
 | 21. Graph Performance & Bloom UI | v2.0 | 0/? | Not started | - |

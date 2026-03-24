@@ -10,8 +10,8 @@ Production hardening of all core features. No new features — make existing one
 ### AI Reliability
 
 - [x] **AI-01**: All `streamText` calls have an `onError` callback that logs and surfaces errors instead of silently swallowing them
-- [ ] **AI-02**: All `generateObject` calls (Architect, inferPrerequisites, Bouncer) have `maxRetries: 2`, `AbortSignal.timeout(25000)`, and typed error handling using `NoObjectGeneratedError` and `APICallError`
-- [ ] **AI-03**: The neurons POST route does not return 500 after a successful neuron insert — post-insert operations (vector search, inferPrerequisites, ghost projection) are non-fatal and return partial success
+- [x] **AI-02**: All `generateObject` calls (Architect, inferPrerequisites, Bouncer) have `maxRetries: 2`, `AbortSignal.timeout(25000)`, and typed error handling using `NoObjectGeneratedError` and `APICallError`
+- [x] **AI-03**: The neurons POST route does not return 500 after a successful neuron insert — post-insert operations (vector search, inferPrerequisites, ghost projection) are non-fatal and return partial success
 
 ### Enterprise Prompt Engineering
 
@@ -49,8 +49,8 @@ Production hardening of all core features. No new features — make existing one
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | AI-01 | Phase 18 | Complete |
-| AI-02 | Phase 18 | Pending |
-| AI-03 | Phase 18 | Pending |
+| AI-02 | Phase 18 | Complete |
+| AI-03 | Phase 18 | Complete |
 | PROMPT-01 | Phase 19 | Pending |
 | PROMPT-02 | Phase 19 | Pending |
 | PROMPT-03 | Phase 19 | Pending |
