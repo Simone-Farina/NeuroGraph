@@ -337,11 +337,15 @@ export function ChatPanel() {
   // because refreshConversations() in onFinish would trigger loadMessages before the
   // server-side onFinish DB write completes — wiping the streamed tool parts.
   useEffect(() => {
+    // Always reset Crystallize state when switching conversations.
+    // Must be unconditional — skipNextLoadRef guard would otherwise
+    // let paste banner bleed into the newly-selected conversation.
+    setActiveCrystallizeSession(null);
+
     if (!currentConversationId) {
       setMessages([]);
       setEdgeSuggestions([]);
       setConnectionNotice(null);
-      setActiveCrystallizeSession(null);
       return;
     }
 

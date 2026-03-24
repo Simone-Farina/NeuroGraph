@@ -97,7 +97,7 @@ function HorizonControls({
   onClearDraft,
 }: HorizonControlsProps) {
   return (
-    <div className="rounded-2xl border border-white/5 bg-neural-dark/80 p-3 backdrop-blur-xl">
+    <div className={`rounded-2xl border border-white/5 bg-neural-dark/80 backdrop-blur-xl ${isTargetOpen ? 'p-3' : 'p-2'}`}>
       <div className="flex flex-wrap items-center gap-2">
         {!isTargetOpen ? (
           <button
@@ -149,20 +149,6 @@ function HorizonControls({
         ) : null}
       </div>
 
-      {(horizonTarget || horizonError) && (
-        <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.18em]">
-          {horizonTarget ? (
-            <span className="rounded-xl border border-white/[0.05] bg-white/[0.02] px-3 py-1 font-serif text-white/34">
-              Target {horizonTarget}
-            </span>
-          ) : null}
-          {horizonError ? (
-            <span className="rounded-xl border border-orange-400/16 bg-orange-500/[0.08] px-3 py-1 font-serif text-orange-300/82">
-              {horizonError}
-            </span>
-          ) : null}
-        </div>
-      )}
     </div>
   );
 }
@@ -425,7 +411,7 @@ function GraphCanvas() {
             while the Horizon lets you inspect a draft path before anything becomes permanent.
           </p>
         </div>
-        <div className="absolute left-5 top-5 z-20 w-[min(420px,calc(100%-2.5rem))]">
+        <div className={`absolute left-5 top-5 z-20 ${isTargetOpen ? 'w-[min(420px,calc(100%-2.5rem))]' : ''}`}>
           <HorizonControls
             isTargetOpen={isTargetOpen}
             targetInput={targetInput}
@@ -446,7 +432,7 @@ function GraphCanvas() {
 
   return (
     <>
-      <div className="pointer-events-none absolute left-5 top-5 z-20 w-[min(460px,calc(100%-2.5rem))]">
+      <div className={`pointer-events-none absolute left-5 top-5 z-20 ${isTargetOpen ? 'w-[min(460px,calc(100%-2.5rem))]' : ''}`}>
         <div className="pointer-events-auto">
           <HorizonControls
             isTargetOpen={isTargetOpen}
