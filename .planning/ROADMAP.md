@@ -90,8 +90,11 @@ Plans:
   3. After Horizon generation, ghost node labels are readable and nodes do not overlap or stack on top of each other
   4. The chat panel remains visible and does not collapse during or after ghost node rendering — the shell preset transition does not fire prematurely
   5. The "TARGET X" label below the Learning Target controls is absent from the UI
-**Plans**: TBD
-**UI hint**: yes
+**Plans**: 2 plans
+
+Plans:
+- [ ] 17-01-PLAN.md — Crystallize state reset, compact HorizonControls, TARGET label removal
+- [ ] 17-02-PLAN.md — Ghost node dagre layout fix and shell preset timing decouple
 
 ---
 
@@ -116,4 +119,4 @@ Plans:
 | 14. Backend AI Correctness | v1.3 | 2/2 | Complete | 2026-03-24 |
 | 15. UI/UX Polish & Security | v1.3 | 2/2 | Complete | 2026-03-24 |
 | 16. Socratic Agent Redesign | v1.4 | 1/2 | Complete    | 2026-03-24 |
-| 17. Horizon & Crystallize UI Fixes | v1.4 | 0/TBD | Not started | - |
+| 17. Horizon & Crystallize UI Fixes | v1.4 | 0/2 | Not started | - |
