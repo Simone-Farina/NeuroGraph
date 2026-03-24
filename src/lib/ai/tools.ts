@@ -18,8 +18,8 @@ const parameters = z.object({
     .max(500)
     .describe('The key takeaway or aha moment from the conversation (10-500 chars)'),
   bloom_level: z
-    .enum(['Remember', 'Understand', 'Apply', 'Analyze', 'Evaluate', 'Create'])
-    .describe("Bloom's taxonomy level that best describes the depth of understanding"),
+    .enum(['Analyze', 'Evaluate', 'Create'])
+    .describe("Bloom's taxonomy level — only Analyze, Evaluate, or Create level insights qualify for neurogenesis"),
 });
 
 export const neurogenesisSchema = parameters;

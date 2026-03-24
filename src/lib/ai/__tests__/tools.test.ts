@@ -7,14 +7,7 @@ describe('Neurogenesis Tool Schema', () => {
       title: 'Valid Title',
       definition: 'This is a valid definition for the neuron.',
       core_insight: 'This is a core insight that explains the concept.',
-      bloom_level: 'Understand',
-      related_neurons: [
-        {
-          id: '123e4567-e89b-12d3-a456-426614174000',
-          title: 'Related Neuron',
-          relationship_type: 'RELATED',
-        },
-      ],
+      bloom_level: 'Analyze',
     };
     const result = neurogenesisSchema.safeParse(validInput);
     expect(result.success).toBe(true);
@@ -25,7 +18,7 @@ describe('Neurogenesis Tool Schema', () => {
       title: 'Valid Title',
       definition: 'This is a valid definition for the neuron.',
       core_insight: 'This is a core insight that explains the concept.',
-      bloom_level: 'Apply',
+      bloom_level: 'Analyze',
     };
     const result = neurogenesisSchema.safeParse(minimalInput);
     expect(result.success).toBe(true);
@@ -53,7 +46,7 @@ describe('Neurogenesis Tool Schema', () => {
           title: 'No',
           definition: 'Valid definition text here.',
           core_insight: 'Valid core insight text here.',
-          bloom_level: 'Remember',
+          bloom_level: 'Analyze',
         }).success
       ).toBe(false);
 
@@ -63,7 +56,7 @@ describe('Neurogenesis Tool Schema', () => {
           title: 'a'.repeat(121),
           definition: 'Valid definition text here.',
           core_insight: 'Valid core insight text here.',
-          bloom_level: 'Remember',
+          bloom_level: 'Analyze',
         }).success
       ).toBe(false);
     });
@@ -75,7 +68,7 @@ describe('Neurogenesis Tool Schema', () => {
           title: 'Valid Title',
           definition: 'Short',
           core_insight: 'Valid core insight text here.',
-          bloom_level: 'Remember',
+          bloom_level: 'Analyze',
         }).success
       ).toBe(false);
 
@@ -85,7 +78,7 @@ describe('Neurogenesis Tool Schema', () => {
           title: 'Valid Title',
           definition: 'a'.repeat(281),
           core_insight: 'Valid core insight text here.',
-          bloom_level: 'Remember',
+          bloom_level: 'Analyze',
         }).success
       ).toBe(false);
     });
@@ -97,7 +90,7 @@ describe('Neurogenesis Tool Schema', () => {
           title: 'Valid Title',
           definition: 'Valid definition text here.',
           core_insight: 'Short',
-          bloom_level: 'Remember',
+          bloom_level: 'Analyze',
         }).success
       ).toBe(false);
 
@@ -107,7 +100,7 @@ describe('Neurogenesis Tool Schema', () => {
           title: 'Valid Title',
           definition: 'Valid definition text here.',
           core_insight: 'a'.repeat(501),
-          bloom_level: 'Remember',
+          bloom_level: 'Analyze',
         }).success
       ).toBe(false);
     });
@@ -122,56 +115,54 @@ describe('Neurogenesis Tool Schema', () => {
         }).success
       ).toBe(false);
     });
-  });
 
-  describe('Related Neurons Validation', () => {
-    it('should validate related_neurons array length', () => {
-      const validInput = {
-        title: 'Valid Title',
-        definition: 'Valid definition text here.',
-        core_insight: 'Valid core insight text here.',
-        bloom_level: 'Remember',
-        related_neurons: Array(6).fill({
-          id: '123e4567-e89b-12d3-a456-426614174000',
-          relationship_type: 'RELATED',
-        }),
-      };
-      const result = neurogenesisSchema.safeParse(validInput);
-      expect(result.success).toBe(false);
+    it('rejects bloom_level values below Analyze threshold', () => {
+      expect(
+        neurogenesisSchema.safeParse({
+          title: 'Valid Title',
+          definition: 'Valid definition text here.',
+          core_insight: 'Valid core insight text here.',
+          bloom_level: 'Remember',
+        }).success
+      ).toBe(false);
+
+      expect(
+        neurogenesisSchema.safeParse({
+          title: 'Valid Title',
+          definition: 'Valid definition text here.',
+          core_insight: 'Valid core insight text here.',
+          bloom_level: 'Understand',
+        }).success
+      ).toBe(false);
+
+      expect(
+        neurogenesisSchema.safeParse({
+          title: 'Valid Title',
+          definition: 'Valid definition text here.',
+          core_insight: 'Valid core insight text here.',
+          bloom_level: 'Apply',
+        }).success
+      ).toBe(false);
     });
 
-    it('should validate related neuron id is uuid', () => {
-      const invalidIdInput = {
-        title: 'Valid Title',
-        definition: 'Valid definition text here.',
-        core_insight: 'Valid core insight text here.',
-        bloom_level: 'Remember',
-        related_neurons: [
-            {
-                id: 'not-a-uuid',
-                relationship_type: 'RELATED',
-            }
-        ],
-      };
-      const result = neurogenesisSchema.safeParse(invalidIdInput);
-      expect(result.success).toBe(false);
-    });
+    it('accepts valid Bloom levels: Evaluate and Create', () => {
+      expect(
+        neurogenesisSchema.safeParse({
+          title: 'Valid Title',
+          definition: 'Valid definition text here.',
+          core_insight: 'Valid core insight text here.',
+          bloom_level: 'Evaluate',
+        }).success
+      ).toBe(true);
 
-     it('should validate relationship_type enum', () => {
-      const invalidTypeInput = {
-        title: 'Valid Title',
-        definition: 'Valid definition text here.',
-        core_insight: 'Valid core insight text here.',
-        bloom_level: 'Remember',
-        related_neurons: [
-            {
-                id: '123e4567-e89b-12d3-a456-426614174000',
-                relationship_type: 'INVALID_TYPE',
-            }
-        ],
-      };
-      const result = neurogenesisSchema.safeParse(invalidTypeInput);
-      expect(result.success).toBe(false);
+      expect(
+        neurogenesisSchema.safeParse({
+          title: 'Valid Title',
+          definition: 'Valid definition text here.',
+          core_insight: 'Valid core insight text here.',
+          bloom_level: 'Create',
+        }).success
+      ).toBe(true);
     });
   });
 });

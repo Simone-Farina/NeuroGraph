@@ -21,7 +21,7 @@ const validPayload = {
   title: 'Test Neuron',
   definition: 'A test neuron definition with sufficient length.',
   core_insight: 'A core insight that is also long enough to be valid.',
-  bloom_level: 'Remember',
+  bloom_level: 'Analyze',
   source_conversation_id: '123e4567-e89b-12d3-a456-426614174000',
   source_message_ids: ['msg-1', 'msg-2'],
   related_neurons: [],
@@ -158,5 +158,66 @@ describe('POST /api/neurons', () => {
 
     expect(response.status).toBe(201);
     expect(json.mastered_queue_item_id).toBe('queue-1');
+  });
+
+  it('rejects shallow bloom_level with 422', async () => {
+    const shallowPayload = { ...validPayload, bloom_level: 'Remember' };
+    const req = new NextRequest('http://localhost:3000/api/neurons', {
+      method: 'POST',
+      body: JSON.stringify(shallowPayload),
+    });
+
+    const response = await POST(req);
+    const json = await response.json();
+
+    expect(response.status).toBe(422);
+    expect(json.error).toContain('Analyze, Evaluate, or Create');
+  });
+
+  it('rejects Understand bloom_level with 422', async () => {
+    const shallowPayload = { ...validPayload, bloom_level: 'Understand' };
+    const req = new NextRequest('http://localhost:3000/api/neurons', {
+      method: 'POST',
+      body: JSON.stringify(shallowPayload),
+    });
+
+    const response = await POST(req);
+    expect(response.status).toBe(422);
+  });
+
+  it('rejects Apply bloom_level with 422', async () => {
+    const shallowPayload = { ...validPayload, bloom_level: 'Apply' };
+    const req = new NextRequest('http://localhost:3000/api/neurons', {
+      method: 'POST',
+      body: JSON.stringify(shallowPayload),
+    });
+
+    const response = await POST(req);
+    expect(response.status).toBe(422);
+  });
+
+  it('allows ghost neurons with shallow bloom_level', async () => {
+    const ghostPayload = { ...validPayload, bloom_level: 'Remember', is_ghost: true };
+    const req = new NextRequest('http://localhost:3000/api/neurons', {
+      method: 'POST',
+      body: JSON.stringify(ghostPayload),
+    });
+
+    const response = await POST(req);
+    expect(response.status).toBe(201);
+  });
+
+  it('calls find_similar_neurons with widened parameters', async () => {
+    const req = new NextRequest('http://localhost:3000/api/neurons', {
+      method: 'POST',
+      body: JSON.stringify(validPayload),
+    });
+
+    await POST(req);
+
+    expect(mockSupabase.rpc).toHaveBeenCalledWith('find_similar_neurons', expect.objectContaining({
+      match_count: 10,
+      match_threshold: 0.15,
+    }));
   });
 });

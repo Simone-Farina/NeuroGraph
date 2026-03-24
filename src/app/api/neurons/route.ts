@@ -85,6 +85,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Bloom-level gate: reject shallow neurons from user conversations (per D-04)
+    const NEUROGENESIS_BLOOM_THRESHOLD = ['Analyze', 'Evaluate', 'Create'] as const;
+    if (!parsed.data.is_ghost && !(NEUROGENESIS_BLOOM_THRESHOLD as readonly string[]).includes(parsed.data.bloom_level)) {
+      return NextResponse.json(
+        {
+          error: `Neurogenesis requires Analyze, Evaluate, or Create level understanding. ` +
+                 `Received "${parsed.data.bloom_level}". Continue the conversation to reach deeper insight.`,
+        },
+        { status: 422 }
+      );
+    }
+
     const {
       source_message_ids: sourceMessageIds,
       ...neuronInput
@@ -156,8 +168,8 @@ export async function POST(request: NextRequest) {
     const { data: similarNeurons, error: similarError } = await supabase.rpc('find_similar_neurons', {
       query_embedding: embedding,
       match_user_id: user.id,
-      match_count: 5,
-      match_threshold: 0.3,
+      match_count: 10,
+      match_threshold: 0.15,
     });
 
     if (similarError) {
