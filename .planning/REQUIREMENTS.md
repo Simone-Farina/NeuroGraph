@@ -37,20 +37,20 @@ Bug fixes and UX frictions discovered during hands-on QA testing.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| BUG-01 | TBD | Pending |
-| BUG-02 | TBD | Pending |
-| BUG-03 | TBD | Pending |
-| BUG-04 | TBD | Pending |
-| BUG-05 | TBD | Pending |
-| BUG-06 | TBD | Pending |
-| BUG-07 | TBD | Pending |
-| BUG-08 | TBD | Pending |
+| BUG-01 | Phase 14 | Pending |
+| BUG-02 | Phase 14 | Pending |
+| BUG-03 | Phase 14 | Pending |
+| BUG-04 | Phase 15 | Pending |
+| BUG-05 | Phase 15 | Pending |
+| BUG-06 | Phase 15 | Pending |
+| BUG-07 | Phase 15 | Pending |
+| BUG-08 | Phase 15 | Pending |
 
 **Coverage:**
 - v1.3 requirements: 8 total
-- Mapped to phases: 0
-- Unmapped: 8
+- Mapped to phases: 8
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-24*
-*Last updated: 2026-03-24 after QA testing session*
+*Last updated: 2026-03-24 — traceability mapped to Phases 14-15*
