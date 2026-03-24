@@ -1,5 +1,17 @@
 # Milestones
 
+## v1.4 QA Refinement II (Shipped: 2026-03-24)
+
+**Phases completed:** 2 phases, 4 plans, 4 tasks
+
+**Key accomplishments:**
+
+- CHAT_SYSTEM_PROMPT rewritten with mandatory acknowledge/enrich/question contract; scoreSocraticTone gains teaching-content dimension calibrated so canonical teach-then-ask scores 1.0 and question-parrot scores 0.40
+- 3 teach-then-ask golden cases added (historical, science, programming domains); full 34-case cross-agent promptfoo suite passes at 100% with no threshold changes needed
+- Crystallize paste banner no longer leaks across conversations; HorizonControls collapses to a compact pill; TARGET label removed from below the controls.
+
+---
+
 ## v1.3 QA Refinement (Shipped: 2026-03-24)
 
 **Phases completed:** 2 phases, 4 plans, 6 tasks
