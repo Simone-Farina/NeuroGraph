@@ -8,6 +8,44 @@ Living document capturing lessons, trends, and execution metrics across mileston
 |-----------|--------|-------|-------|-------------|------|
 | v1.0      | 4      | 5     | 0     | GPT-4o, Cl. | < 5  |
 | v1.1      | 5      | 15    | 24    | Claude       | ~2   |
+| v1.2      | 5      | 13    | 35    | Claude       | ~1   |
+
+---
+
+## Milestone: v1.2 — Agent Intelligence
+
+**Shipped:** 2026-03-24
+**Phases:** 5 | **Plans:** 13
+
+### What Was Built
+- promptfoo evaluation harness with per-agent golden suites (31 total cases)
+- DAG Manager (Architect) prompt contract with strict cycle refusal and 8-case eval suite
+- Horizon UI wiring: ephemeral `/api/architect` route, ghost node rendering, briefing panel, chat seed handoff
+- Bouncer dual-purpose contract: duplicate rejection + definition/insight extraction, 13-case suite
+- Socratic Chat Engine: anti-answer-giving directives, Bloom-gated Neurogenesis (Analyze+ only), 10 multi-turn cases
+- Replaced vector-similarity RELATED wiring with LLM Epistemological Inquisitor (PREREQUISITE-only graph edges)
+
+### What Worked
+- **Eval-Driven Development**: Writing promptfoo golden cases before prompt changes caught contract issues early
+- **Phase 11/12/13 pattern replication**: Each agent followed the same proven template (prompt → schema → provider → golden cases)
+- **Heuristic fallback providers**: Offline/CI runs pass 100% without API keys — critical for fast iteration
+- **Assumption-mode discussions**: Codebase analysis before user Q&A reduced discussion interactions to ~2 corrections
+
+### What Was Inefficient
+- **REQUIREMENTS.md traceability tracking fell behind**: Phase 12 and 13 requirements weren't marked complete in the traceability table during execution
+- **Phase parser can't detect phases 8+**: Known `gsd-tools init phase-op` bug forced manual directory creation for phases 8, 9, 12, 13
+- **Wave 1 worktree merge conflicts**: STATE.md conflicts on every worktree merge due to parallel state updates
+
+### Patterns Established
+- **Golden casuistry**: Hand-curated 8-12 cases per agent, not broad synthetic coverage
+- **Dual-mode eval**: Heuristic fallback for CI, LLM-as-judge for live validation
+- **Bloom-gated Neurogenesis**: AI proposes node creation only at Analyze/Evaluate/Create cognitive level
+- **Epistemological Inquisitor**: LLM-based prerequisite detection replaces vector-proximity wiring
+
+### Key Lessons
+- Prompt/schema length mismatches (280 vs 500 chars) are easy to miss — the eval passes but the prompt lies to the model
+- Multi-turn eval requires YAML not CSV — message arrays break CSV quoting
+- The heuristic question-mark exemption matters: "Why does X?" is Understand, not Analyze
 
 ---
 
