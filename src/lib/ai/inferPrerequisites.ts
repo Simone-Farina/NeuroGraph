@@ -45,20 +45,39 @@ export async function inferPrerequisites(
   const { object } = await generateObject({
     model,
     schema: prerequisiteInferenceSchema,
+    maxRetries: 2,
+    abortSignal: AbortSignal.timeout(25_000),
     system: `You are a pedagogical graph engine for NeuroGraph.
 Your task is to determine which existing concepts are TRUE PREREQUISITES for a newly learned concept.
 
-A prerequisite means: "You MUST understand concept A before you can properly understand concept B."
-- "Linear Algebra" is a prerequisite for "Neural Networks"
-- "Neural Networks" is NOT a prerequisite for "Linear Algebra" (it's the reverse)
-- "Python" is NOT a prerequisite for "JavaScript" (they are related, not dependent)
+A prerequisite has ONE test: if a learner has NEVER encountered concept A, can they still meaningfully understand concept B? If NO — A is a PREREQUISITE of B. If YES — A is merely RELATED. Apply this test to every candidate before deciding.
+
+Boundary examples covering all connection types:
+
+PREREQUISITE (removing source blocks target):
+  "Derivatives" -> "Integrals": You cannot understand integration without knowing what differentiation is.
+  "TCP/IP" -> "HTTP": HTTP cannot function without the transport layer.
+
+BUILDS_ON (extends but does not gate):
+  "Calculus" -> "Differential Equations": DiffEq extends calculus, but basic calculus works without DiffEq.
+  "OOP" -> "Design Patterns": Design patterns enrich OOP, but OOP functions without them.
+
+RELATED (lateral, no direction):
+  "Python" <-> "JavaScript": Parallel languages, neither depends on the other.
+  "Renaissance Art" <-> "Baroque Art": Historical context, not logical dependency.
+
+NO CONNECTION:
+  "Cooking" <-> "Quantum Physics": No pedagogical relationship.
 
 Rules:
-- Only mark concepts that have a strict pedagogical dependency
+- Only mark concepts that have a strict pedagogical dependency (PREREQUISITE)
 - Do NOT mark merely related or tangentially connected concepts
 - Confidence should reflect how certain you are (0.9+ for obvious dependencies like math→physics)
+- Technical domains (mathematics, CS, physics) tend to have strict, verifiable prerequisites; humanistic domains tend to have contextual ones — prefer RELATED in ambiguous humanistic cases
 - For suggested_next: propose 1-2 concepts that would naturally follow from mastering the new concept
-- suggested_next titles should be specific and learnable (not vague categories)`,
+- suggested_next titles should be specific and learnable (not vague categories)
+
+Before returning, verify your output mentally: can you traverse from prerequisites to the new concept in a valid learning order? If any cycle exists, return zero prerequisites rather than a broken chain.`,
     prompt: `New Neuron:
 Title: "${newNeuron.title}"
 Definition: ${newNeuron.definition}
