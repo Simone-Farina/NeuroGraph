@@ -27,8 +27,8 @@ Production hardening of all core features. No new features — make existing one
 
 ### Graph Performance
 
-- [ ] **GRAPH-01**: NeuronNode and GhostNeuronNode wrapped in `React.memo` — graph does not re-render all nodes when one node's retrievability updates
-- [ ] **GRAPH-02**: ReactFlow configured with `onlyRenderVisibleElements` — off-screen nodes are not in the DOM
+- [x] **GRAPH-01**: NeuronNode and GhostNeuronNode wrapped in `React.memo` — graph does not re-render all nodes when one node's retrievability updates
+- [x] **GRAPH-02**: ReactFlow configured with `onlyRenderVisibleElements` — off-screen nodes are not in the DOM
 
 ### Bloom UI
 
@@ -57,8 +57,8 @@ Production hardening of all core features. No new features — make existing one
 | PROMPT-04 | Phase 19 | Complete |
 | EDITOR-01 | Phase 20 | Complete |
 | EDITOR-02 | Phase 20 | Complete |
-| GRAPH-01 | Phase 21 | Pending |
-| GRAPH-02 | Phase 21 | Pending |
+| GRAPH-01 | Phase 21 | Complete |
+| GRAPH-02 | Phase 21 | Complete |
 | BLOOM-01 | Phase 21 | Pending |
 
 **Coverage:**

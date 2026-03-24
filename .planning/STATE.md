@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: MVP Core Stability
-status: Ready to plan
-stopped_at: Completed 20-01-PLAN.md
-last_updated: "2026-03-24T21:48:47.242Z"
+status: Ready to execute
+stopped_at: Completed 21-01-PLAN.md
+last_updated: "2026-03-24T21:56:43.773Z"
 progress:
   total_phases: 4
   completed_phases: 3
-  total_plans: 5
-  completed_plans: 5
+  total_plans: 7
+  completed_plans: 6
 ---
 
 # Project State
@@ -23,8 +23,8 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 
 ## Current Position
 
-Phase: 21
-Plan: Not started
+Phase: 21 (graph-performance-bloom-ui) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -51,6 +51,7 @@ Plan: Not started
 | Phase 19-enterprise-prompt-engineering P01 | 15min | 3 tasks | 3 files |
 | Phase 19 P02 | 2min | 2 tasks | 5 files |
 | Phase 20-editor-reliability P01 | 7min | 2 tasks | 2 files |
+| Phase 21-graph-performance-bloom-ui P01 | 8min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -76,6 +77,8 @@ Recent decisions affecting current work:
 - [Phase 20-editor-reliability]: 20-01-single-effect-neuron-id: Single effect keyed on [neuron.id, editor] replaces dual effects; focus guard is wrong when ID changes
 - [Phase 20-editor-reliability]: 20-01-getjson-canonical: JSON.stringify(getJSON()) is canonical save format replacing getHTML()
 - [Phase 20-editor-reliability]: 20-01-emit-update-false: TipTap v3 setContent uses {emitUpdate:false} options object (not boolean) to suppress dirty/extraction triggers on programmatic sync
+- [Phase 21-graph-performance-bloom-ui]: No custom comparison function in React.memo — shallow default correct for React Flow stable prop references
+- [Phase 21-graph-performance-bloom-ui]: Named function expressions inside React.memo for correct DevTools component names
 
 ### Pending Todos
 
@@ -88,6 +91,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-24T21:47:37.586Z
-Stopped at: Completed 20-01-PLAN.md
+Last session: 2026-03-24T21:56:43.771Z
+Stopped at: Completed 21-01-PLAN.md
 Resume file: None
