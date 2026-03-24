@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -25,6 +25,8 @@ export function AppSidebar() {
   const [keyPrefix, setKeyPrefix] = useState<string | null>(null);
   const [rawKey, setRawKey] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [isKeyPrefixVisible, setIsKeyPrefixVisible] = useState(false);
+  const keyPrefixTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Load collapsed state from localStorage on mount
   useEffect(() => {
@@ -49,6 +51,13 @@ export function AppSidebar() {
       .catch(() => setKeyState('no-key'));
   }, []);
 
+  // Clean up auto-mask timer on unmount
+  useEffect(() => {
+    return () => {
+      if (keyPrefixTimerRef.current) clearTimeout(keyPrefixTimerRef.current);
+    };
+  }, []);
+
   const handleGenerate = async () => {
     // If key exists and not in confirm state, show confirmation first
     if (keyState === 'has-key') {
@@ -66,6 +75,10 @@ export function AppSidebar() {
       setRawKey(data.key);
       setKeyPrefix(data.prefix);
       setKeyState('revealed');
+      // Start the 10-second window during which the prefix is visible after masking the raw key
+      setIsKeyPrefixVisible(true);
+      if (keyPrefixTimerRef.current) clearTimeout(keyPrefixTimerRef.current);
+      keyPrefixTimerRef.current = setTimeout(() => setIsKeyPrefixVisible(false), 10_000);
     } catch {
       setKeyState(keyPrefix ? 'has-key' : 'no-key');
     }
@@ -325,7 +338,9 @@ export function AppSidebar() {
 
           {keyState === 'has-key' && (
             <div className="flex items-center justify-between gap-2">
-              <span className="font-mono text-xs text-white/50 truncate">{keyPrefix}...</span>
+              <span className="font-mono text-xs text-white/50 truncate">
+                {isKeyPrefixVisible ? `${keyPrefix}...` : 'ng_****...'}
+              </span>
               <div className="flex items-center gap-1">
                 <button
                   onClick={handleGenerate}
