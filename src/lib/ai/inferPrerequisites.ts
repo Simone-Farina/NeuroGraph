@@ -17,7 +17,7 @@ export const prerequisiteInferenceSchema = z.object({
   suggested_next: z.array(z.object({
     title: z.string().max(120).describe('Title of a logical next concept to learn'),
     reasoning: z.string().max(200).describe('Why this is a natural next step'),
-  })).max(2).optional().describe('Optional: 1-2 organic ghost node suggestions as next learning steps'),
+  })).max(2).nullable().describe('1-2 organic ghost node suggestions as next learning steps, or null if none'),
 });
 
 export type PrerequisiteInferenceResult = z.infer<typeof prerequisiteInferenceSchema>;
@@ -33,7 +33,7 @@ export async function inferPrerequisites(
   candidateNeurons: { id: string; title: string; definition: string }[],
 ): Promise<PrerequisiteInferenceResult> {
   if (candidateNeurons.length === 0) {
-    return { prerequisites: [], suggested_next: [] };
+    return { prerequisites: [], suggested_next: null };
   }
 
   const model = getModelForRole('neurogenesis_heavy');
