@@ -1,6 +1,7 @@
 # NeuroGraph Conversationalist Golden Cases
 # Phase 13 Plan 02 — 10 hand-curated multi-turn golden cases
 # Phase 16 Plan 02 — 3 teach-then-ask golden cases added
+# Phase 19 Plan 02 — 4 Khanmigo behavioral cases added
 #
 # Case Distribution:
 #   Socratic Tone (4): cases 1-4 — scored threshold > 0.8, expected_neurogenesis: false
@@ -8,6 +9,7 @@
 #   Neurogenesis No-Trigger (2): cases 8-9 — hard pass/fail, expected_neurogenesis: false
 #   Edge Cases (1): case 10 — topic pivot, expected_neurogenesis: false
 #   Teach-Then-Ask (3): cases 11-13 — scored threshold >= 0.8, expected_neurogenesis: false
+#   Khanmigo Behavioral (4): cases 14-17 — mistake handling, calibrated difficulty, meta-questioning, neurogenesis priming
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Socratic Tone Cases
@@ -195,3 +197,168 @@
         content: "Mostly Python with classes and loops."
     final_user_message: "I'm not sure what makes functional programming different from what I already do."
     expected_neurogenesis: false
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Khanmigo Behavioral Cases (Phase 19 Plan 02)
+# Tests the 4 calibration patterns added to CHAT_SYSTEM_PROMPT in Plan 19-01:
+#   - Mistake handling: agent must NOT correct directly, must ask about reasoning
+#   - Calibrated difficulty: agent must simplify when user is uncertain
+#   - Meta-questioning: agent surfaces assumptions after substantive multi-turn exchange
+#   - Multi-turn neurogenesis priming: Analyze-level insight across turns triggers neurogenesis
+# ──────────────────────────────────────────────────────────────────────────────
+
+- description: "Mistake handling — agent asks about reasoning, does not give direct correction"
+  vars:
+    messages:
+      - role: user
+        content: "I'm learning about photosynthesis."
+      - role: assistant
+        content: "Great starting point. What do you already know about what photosynthesis produces and what it requires?"
+    final_user_message: "Photosynthesis produces carbon dioxide — plants breathe it out."
+    expected_neurogenesis: false
+  assert:
+    - type: javascript
+      value: |
+        // Mistake handling (Khanmigo pattern): agent must NOT give the direct correction.
+        // It should ask about the user's reasoning — "how did you arrive at that" or equivalent.
+        // Heuristic: response must contain a question mark (clarifying question required).
+        const result = JSON.parse(output);
+        const text = result.response.toLowerCase();
+        const hasQuestion = /\?/.test(result.response);
+        // Must ask — no question is a clear failure of the mistake-handling pattern.
+        if (!hasQuestion) {
+          return { pass: false, score: 0, reason: 'Agent did not ask a question — must probe reasoning on incorrect statement' };
+        }
+        // MUST NOT directly state the correction without any probe.
+        // Acceptable to eventually mention oxygen but only alongside a question.
+        // Penalise responses that lead with "actually" or "that's incorrect" as a standalone correction.
+        const directCorrection = /^(actually|that('s| is) (incorrect|wrong|not right))/i.test(result.response.trim());
+        if (directCorrection) {
+          return { pass: false, score: 0, reason: 'Agent opened with direct correction — should ask about reasoning first' };
+        }
+        return { pass: true, score: 1, reason: 'Agent asked clarifying question without leading with direct correction' };
+
+- description: "Calibrated difficulty — agent simplifies and anchors when user is vague and uncertain"
+  vars:
+    messages:
+      - role: user
+        content: "I want to understand how electricity works."
+      - role: assistant
+        content: "Good question. Where would you like to start — the idea of charge, or how current flows through a circuit?"
+    final_user_message: "I think it's something about electrons? I'm not really sure."
+    expected_neurogenesis: false
+  assert:
+    - type: javascript
+      value: |
+        // Calibrated difficulty (Khanmigo pattern): user signals uncertainty ("not really sure").
+        // Agent should NOT escalate — must simplify, offer a concrete anchor or analogy.
+        // Heuristic: response must contain a question (still Socratic) AND must not start
+        // with a multi-part question that assumes existing knowledge.
+        const result = JSON.parse(output);
+        const text = result.response;
+        const hasQuestion = /\?/.test(text);
+        if (!hasQuestion) {
+          return { pass: false, score: 0, reason: 'Agent must still ask a question even when simplifying' };
+        }
+        // Must NOT pose a multi-part complex question that overwhelms an uncertain learner.
+        // Detect by counting question marks — more than 2 suggests escalation not simplification.
+        const questionCount = (text.match(/\?/g) || []).length;
+        if (questionCount > 2) {
+          return { pass: false, score: 0.3, reason: 'Agent may be escalating — too many questions for uncertain learner' };
+        }
+        return { pass: true, score: 1, reason: 'Agent calibrated difficulty — single focused question suitable for uncertain learner' };
+
+- description: "Meta-questioning — agent surfaces assumptions after sustained multi-turn exchange"
+  vars:
+    messages:
+      - role: user
+        content: "I want to understand whether democracy is the best form of government."
+      - role: assistant
+        content: "Big question. What do you mean by 'best' — most stable, most representative, most efficient at decisions? Let's pick one angle."
+      - role: user
+        content: "I think most representative — everyone should have a voice."
+      - role: assistant
+        content: "That's a clear value. Now, when you say 'everyone should have a voice,' what do you mean — the right to vote, or meaningful influence over outcomes? These can diverge significantly."
+      - role: user
+        content: "Both ideally, but I guess the right to vote at minimum."
+      - role: assistant
+        content: "Fair. So your baseline is procedural legitimacy — votes as the mechanism. Here's a harder question: does majority rule always produce representative outcomes? Think about what happens when 51% consistently outvote the same 49%."
+      - role: user
+        content: "That's a problem — the minority never gets what they want. Maybe you need constitutional protections."
+    final_user_message: "So a pure democracy might actually undermine representation in the long run?"
+    expected_neurogenesis: false
+  assert:
+    - type: javascript
+      value: |
+        // Meta-questioning (Khanmigo pattern): after 3+ turns of substantive exchange,
+        // agent should surface an assumption or ask about the reasoning process.
+        // Heuristic: response should contain either "assumption" or "what would have to be true"
+        // OR ask a meta-level question about the user's own reasoning.
+        // This is a soft heuristic — meta-questions are rare so we use score, not hard pass/fail.
+        const result = JSON.parse(output);
+        const text = result.response.toLowerCase();
+        const hasMetaSignal =
+          /\bassumption\b/.test(text) ||
+          /what would have to be true/i.test(text) ||
+          /\byou('re| are) assuming\b/i.test(text) ||
+          /\bimplicit(ly)?\b/.test(text) ||
+          /\bunderlying\b/.test(text) ||
+          /\btake\s+(for\s+)?granted\b/i.test(text);
+        const hasQuestion = /\?/.test(result.response);
+        if (hasMetaSignal) {
+          return { pass: true, score: 1, reason: 'Agent surfaced an assumption or meta-level question' };
+        }
+        if (hasQuestion) {
+          // Has a question but not explicitly meta — partial credit
+          return { pass: true, score: 0.8, reason: 'Agent asked a question but did not explicitly surface an assumption' };
+        }
+        return { pass: false, score: 0, reason: 'Agent neither surfaced an assumption nor asked a follow-up question' };
+
+- description: "Multi-turn neurogenesis priming — cross-domain insight at Analyze level triggers neurogenesis"
+  vars:
+    messages:
+      - role: user
+        content: "I've been thinking about how natural selection works."
+      - role: assistant
+        content: "Great starting point. What's your current understanding of the mechanism — what actually gets selected, and over what timescale?"
+      - role: user
+        content: "Organisms with traits that help them survive reproduce more, so those traits spread."
+      - role: assistant
+        content: "You've got the core right. Now push it further — what does 'spread' actually mean at the population level? And what happens to a trait that's neutral, neither helpful nor harmful?"
+      - role: user
+        content: "Neutral traits just drift randomly through the population — they don't get selected for or against."
+      - role: assistant
+        content: "Exactly — that's genetic drift. Now here's an interesting boundary: what distinguishes a trait that was selected for versus one that just drifted to fixation? Can you tell them apart by looking at modern organisms?"
+      - role: user
+        content: "That's hard — you'd need to know the ancestral environment and look for statistical over-representation."
+    final_user_message: "I realized that natural selection and genetic drift are both mechanisms of evolution — selection is deterministic given fitness, but drift is stochastic noise, similar to how signal and noise coexist in information theory."
+    expected_neurogenesis: true
+  assert:
+    - type: javascript
+      value: |
+        // Multi-turn neurogenesis priming: user articulates a genuine cross-domain insight
+        // connecting evolution to information theory (Analyze/Evaluate level).
+        // The neurogenesis assertion in defaultTest checks expected_neurogenesis: true.
+        // This custom assertion verifies the response ACKNOWLEDGES the insight depth
+        // rather than deflecting or immediately pivoting to another question.
+        const result = JSON.parse(output);
+        const text = result.response.toLowerCase();
+        // Response should acknowledge the insight — not just fire another question.
+        // Signals: "insight", "exactly", "that's", "nicely", "well", "astute", "sharp",
+        // or engagement with the cross-domain framing.
+        const acknowledgementSignals = [
+          /\binsight\b/i,
+          /\bexactly\b/i,
+          /\bthat('s| is) (a )?(really |quite |very )?(sharp|deep|good|strong|nice|astute|interesting|powerful)\b/i,
+          /\bnicely\b/i,
+          /\bwell (put|framed|articulated|observed)\b/i,
+          /\binformation theory\b/i,
+          /\bstochastic\b/i,
+          /\bdeterministic\b/i,
+          /\banalog(y|ous)\b/i,
+        ];
+        const acknowledges = acknowledgementSignals.some((p) => p.test(result.response));
+        if (!acknowledges) {
+          return { pass: false, score: 0.5, reason: 'Response does not acknowledge the cross-domain insight before asking another question' };
+        }
+        return { pass: true, score: 1, reason: 'Response acknowledges the Analyze-level cross-domain insight' };

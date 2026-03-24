@@ -1,3 +1,4 @@
+# Judge model pin: openai:gpt-4o-2024-08-06 — re-baseline scores if changed
 description: NeuroGraph Golden Conversationalist suite
 prompts:
   - file://prompt.json
