@@ -74,7 +74,11 @@
   2. Reading a full Socratic exchange, each agent turn visibly adds knowledge the user did not state — the agent is a teacher, not an echo
   3. The existing promptfoo golden suite (31 cases) continues to pass at 100% after the prompt contract change
   4. The agent still withholds direct answers to Bloom-shallow queries — teaching does not collapse into answer-giving
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 16-01-PLAN.md — Rewrite CHAT_SYSTEM_PROMPT and update scoreSocraticTone heuristic
+- [ ] 16-02-PLAN.md — Add teach-then-ask golden cases and verify full eval suite
 
 ### Phase 17: Horizon & Crystallize UI Fixes
 **Goal**: Horizon UI is visually stable and Crystallize paste state is properly session-scoped
@@ -111,5 +115,5 @@
 | 13. Socratic Chat Engine | v1.2 | 2/2 | Complete | 2026-03-24 |
 | 14. Backend AI Correctness | v1.3 | 2/2 | Complete | 2026-03-24 |
 | 15. UI/UX Polish & Security | v1.3 | 2/2 | Complete | 2026-03-24 |
-| 16. Socratic Agent Redesign | v1.4 | 0/TBD | Not started | - |
+| 16. Socratic Agent Redesign | v1.4 | 0/2 | In progress | - |
 | 17. Horizon & Crystallize UI Fixes | v1.4 | 0/TBD | Not started | - |
