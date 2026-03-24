@@ -159,79 +159,72 @@ export async function POST(request: NextRequest) {
 
     const neuron = data;
 
-    const { count } = await supabase
-      .from('neurons')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .not('embedding', 'is', null);
-
-    const { data: similarNeurons, error: similarError } = await supabase.rpc('find_similar_neurons', {
-      query_embedding: embedding,
-      match_user_id: user.id,
-      match_count: 10,
-      match_threshold: 0.15,
-    });
-
-    if (similarError) {
-      return NextResponse.json({ error: similarError.message }, { status: 500 });
-    }
-
-    // Vector search results are used as candidates for the LLM prerequisite inference.
-    // We no longer auto-create RELATED synapses from vector similarity — only the
-    // Epistemological Inquisitor (inferPrerequisites) can create graph edges.
-    const similarRows = ((similarNeurons ?? []) as SimilarNeuronRow[]).filter(
-      (row) => row.id !== neuron.id
-    );
-
-    let masteredQueueItemId: string | undefined;
-
-    const crystallizeQueueItemId = await resolveCrystallizeQueueItemId(
-      supabase,
-      neuron.source_conversation_id
-    );
-
-    if (crystallizeQueueItemId) {
-      const masteryResult = await advanceQueueItemToMastered(supabase, crystallizeQueueItemId);
-      if (masteryResult === 'mastered' || masteryResult === 'already_mastered') {
-        masteredQueueItemId = crystallizeQueueItemId;
-      }
-    }
-
-    // ─── Phase 2: AI Prerequisite Inference & Ghost Node Projection ───
+    // ─── Post-insert enrichment (all non-fatal) ───
     let prerequisiteLinks: string[] = [];
     let projectedGhosts: { id: string; title: string }[] = [];
+    let masteredQueueItemId: string | undefined;
 
     try {
-      // Fetch full data for similar neurons to feed the AI
-      const candidateIds = similarRows.map(r => r.id);
-      if (candidateIds.length > 0) {
-        const { data: candidateNeurons } = await supabase
-          .from('neurons')
-          .select('id, title, definition')
-          .in('id', candidateIds);
+      // Crystallize queue advancement
+      const crystallizeQueueItemId = await resolveCrystallizeQueueItemId(
+        supabase,
+        neuron.source_conversation_id
+      );
 
-        if (candidateNeurons && candidateNeurons.length > 0) {
-          const inferenceResult = await inferPrerequisites(
-            { title: neuron.title, definition: parsed.data.definition, core_insight: parsed.data.core_insight },
-            candidateNeurons
-          );
+      if (crystallizeQueueItemId) {
+        const masteryResult = await advanceQueueItemToMastered(supabase, crystallizeQueueItemId);
+        if (masteryResult === 'mastered' || masteryResult === 'already_mastered') {
+          masteredQueueItemId = crystallizeQueueItemId;
+        }
+      }
 
-          // Create PREREQUISITE synapses
-          prerequisiteLinks = await createPrerequisiteSynapses(
-            user.id, neuron.id, inferenceResult.prerequisites
-          );
+      // Vector search for prerequisite candidates
+      const { data: similarNeurons, error: similarError } = await supabase.rpc('find_similar_neurons', {
+        query_embedding: embedding,
+        match_user_id: user.id,
+        match_count: 10,
+        match_threshold: 0.15,
+      });
 
-          // Project organic ghost nodes
-          if (inferenceResult.suggested_next && inferenceResult.suggested_next.length > 0) {
-            projectedGhosts = await projectGhostNodes(
-              user.id, neuron.id, inferenceResult.suggested_next, parsed.data.source_conversation_id
+      if (similarError) {
+        console.warn('[neurons/POST] find_similar_neurons failed (non-fatal):', similarError.message);
+      } else {
+        // Vector search results are used as candidates for the LLM prerequisite inference.
+        // We no longer auto-create RELATED synapses from vector similarity — only the
+        // Epistemological Inquisitor (inferPrerequisites) can create graph edges.
+        const similarRows = ((similarNeurons ?? []) as SimilarNeuronRow[]).filter(
+          (row) => row.id !== neuron.id
+        );
+
+        // AI Prerequisite Inference & Ghost Node Projection
+        const candidateIds = similarRows.map(r => r.id);
+        if (candidateIds.length > 0) {
+          const { data: candidateNeurons } = await supabase
+            .from('neurons')
+            .select('id, title, definition')
+            .in('id', candidateIds);
+
+          if (candidateNeurons && candidateNeurons.length > 0) {
+            const inferenceResult = await inferPrerequisites(
+              { title: neuron.title, definition: parsed.data.definition, core_insight: parsed.data.core_insight },
+              candidateNeurons
             );
+
+            prerequisiteLinks = await createPrerequisiteSynapses(
+              user.id, neuron.id, inferenceResult.prerequisites
+            );
+
+            if (inferenceResult.suggested_next && inferenceResult.suggested_next.length > 0) {
+              projectedGhosts = await projectGhostNodes(
+                user.id, neuron.id, inferenceResult.suggested_next, parsed.data.source_conversation_id
+              );
+            }
           }
         }
       }
-    } catch (aiError) {
-      // Non-fatal: prerequisite inference is best-effort
-      console.warn('[neurons/POST] Prerequisite inference failed:', aiError);
+    } catch (enrichmentError) {
+      // Non-fatal: the neuron is already persisted. Log and return partial success.
+      console.warn('[neurons/POST] Post-insert enrichment failed (non-fatal):', enrichmentError);
     }
 
     return NextResponse.json(
