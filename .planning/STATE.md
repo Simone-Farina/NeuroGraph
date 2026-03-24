@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: QA Refinement
-status: Ready to execute
-stopped_at: Completed 15-01-PLAN.md
-last_updated: "2026-03-24T16:51:49.518Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 15-ui-ux-polish-security-02-PLAN.md
+last_updated: "2026-03-24T16:53:33.142Z"
 progress:
   total_phases: 2
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 4
-  completed_plans: 3
+  completed_plans: 4
 ---
 
 # Project State
@@ -46,6 +46,7 @@ Plan: 2 of 2
 | Phase 14-backend-ai-correctness P01 | 2min | 2 tasks | 4 files |
 | Phase 14-backend-ai-correctness P02 | 8min | 2 tasks | 5 files |
 | Phase 15-ui-ux-polish-security P01 | 12min | 2 tasks | 4 files |
+| Phase 15-ui-ux-polish-security P02 | 4min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -65,6 +66,8 @@ Recent decisions affecting current work:
 - [Phase 15-01]: useEffect cleanup for setShellPreset: sidebar Link navigation bypasses openChat(), so cleanup must live in the layout effect itself
 - [Phase 15-01]: input-available maps to result in toolState derivation: only rehydrated messages from loadMessages have this state; fresh streaming calls use partial-call
 - [Phase 15-01]: style={{ display: 'none' }} on Handle elements: guarantees invisibility despite React Flow CSS specificity
+- [Phase 15-ui-ux-polish-security]: 15-02-horizon-extraction: HorizonControls extracted into shared sub-component so empty-state and populated-state copies cannot drift apart
+- [Phase 15-ui-ux-polish-security]: 15-02-key-masking: isKeyPrefixVisible defaults false; 10s timer starts on generation success; timer ref cleaned up on unmount to prevent memory leaks
 
 ### Pending Todos
 
@@ -76,6 +79,6 @@ None at roadmap creation.
 
 ## Session Continuity
 
-Last session: 2026-03-24T16:51:49.515Z
-Stopped at: Completed 15-01-PLAN.md
+Last session: 2026-03-24T16:53:33.140Z
+Stopped at: Completed 15-ui-ux-polish-security-02-PLAN.md
 Resume file: None

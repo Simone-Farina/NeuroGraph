@@ -48,7 +48,7 @@
 **Milestone Goal:** Fix 8 bugs and UX frictions discovered during hands-on QA testing. No new features.
 
 - [x] **Phase 14: Backend AI Correctness** - Fix Architect schema error, enforce Bloom gate at runtime, repair DAG prerequisite wiring (completed 2026-03-24)
-- [ ] **Phase 15: UI/UX Polish & Security** - Fix layout resets, design inconsistencies, stuck neuron indicators, handle dots, and API key masking
+- [x] **Phase 15: UI/UX Polish & Security** - Fix layout resets, design inconsistencies, stuck neuron indicators, handle dots, and API key masking (completed 2026-03-24)
 
 ---
 
@@ -82,7 +82,7 @@ Plans:
 **Plans**: 2 plans
 Plans:
 - [x] 15-01-PLAN.md — Fix layout reset, Handle dots, and stuck neurogenesis spinners (BUG-04, BUG-06, BUG-07)
-- [ ] 15-02-PLAN.md — Redesign Learning Target UI and add API key masking (BUG-05, BUG-08)
+- [x] 15-02-PLAN.md — Redesign Learning Target UI and add API key masking (BUG-05, BUG-08)
 **UI hint**: yes
 
 ---
@@ -106,4 +106,4 @@ Plans:
 | 12. Chat Analyzer / Bouncer Agent | v1.2 | 2/2 | Complete | 2026-03-23 |
 | 13. Socratic Chat Engine | v1.2 | 2/2 | Complete | 2026-03-24 |
 | 14. Backend AI Correctness | v1.3 | 2/2 | Complete    | 2026-03-24 |
-| 15. UI/UX Polish & Security | v1.3 | 1/2 | In Progress|  |
+| 15. UI/UX Polish & Security | v1.3 | 2/2 | Complete   | 2026-03-24 |
