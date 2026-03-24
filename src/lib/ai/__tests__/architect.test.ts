@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { zodSchema } from 'ai';
 
 import { architectResponseSchema } from '../architect';
 
@@ -6,6 +7,7 @@ describe('architectResponseSchema', () => {
   it('accepts a valid acyclic architect graph', () => {
     const result = architectResponseSchema.safeParse({
       isValid: true,
+      refusalReason: null,
       nodes: [
         {
           title: 'Linear Algebra',
@@ -30,9 +32,66 @@ describe('architectResponseSchema', () => {
     expect(result.success).toBe(true);
   });
 
+  it('accepts valid graph with explicit refusalReason: null', () => {
+    const result = architectResponseSchema.safeParse({
+      isValid: true,
+      refusalReason: null,
+      nodes: [
+        {
+          title: 'Calculus',
+          definition: 'Calculus is the mathematical study of continuous change.',
+          bloom_level: 'Understand',
+        },
+      ],
+      synapses: [],
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects valid graph (isValid: true) with non-null refusalReason', () => {
+    const result = architectResponseSchema.safeParse({
+      isValid: true,
+      refusalReason: 'some reason',
+      nodes: [
+        {
+          title: 'Calculus',
+          definition: 'Calculus is the mathematical study of continuous change.',
+          bloom_level: 'Understand',
+        },
+      ],
+      synapses: [],
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it('accepts invalid response (isValid: false) with a refusalReason string', () => {
+    const result = architectResponseSchema.safeParse({
+      isValid: false,
+      refusalReason: 'Cycle detected',
+      nodes: [],
+      synapses: [],
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects invalid response (isValid: false) with refusalReason: null', () => {
+    const result = architectResponseSchema.safeParse({
+      isValid: false,
+      refusalReason: null,
+      nodes: [],
+      synapses: [],
+    });
+
+    expect(result.success).toBe(false);
+  });
+
   it('rejects cycles in pedagogical edges', () => {
     const result = architectResponseSchema.safeParse({
       isValid: true,
+      refusalReason: null,
       nodes: [
         {
           title: 'Theory A',
@@ -65,6 +124,7 @@ describe('architectResponseSchema', () => {
   it('requires refusalReason and empty arrays for invalid responses', () => {
     const missingReason = architectResponseSchema.safeParse({
       isValid: false,
+      refusalReason: null,
       nodes: [],
       synapses: [],
     });
@@ -85,5 +145,10 @@ describe('architectResponseSchema', () => {
     });
 
     expect(nonEmptyInvalid.success).toBe(false);
+  });
+
+  it('includes refusalReason in JSON Schema required array', () => {
+    const jsonSchema = zodSchema(architectResponseSchema).jsonSchema;
+    expect(jsonSchema.required).toContain('refusalReason');
   });
 });

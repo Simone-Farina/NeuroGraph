@@ -85,7 +85,7 @@ function findPedagogicalCycle(
 export const architectResponseSchema = z
   .object({
     isValid: z.boolean(),
-    refusalReason: z.string().min(1).optional(),
+    refusalReason: z.string().min(1).nullable(),
     nodes: z.array(architectNodeSchema),
     synapses: z.array(architectSynapseSchema),
   })
@@ -111,11 +111,11 @@ export const architectResponseSchema = z
       return;
     }
 
-    if (value.refusalReason !== undefined) {
+    if (value.refusalReason !== null) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['refusalReason'],
-        message: 'refusalReason must be omitted when isValid is true.',
+        message: 'refusalReason must be null when isValid is true.',
       });
     }
 
