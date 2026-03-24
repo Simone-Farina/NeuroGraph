@@ -9,7 +9,7 @@ Bug fixes and UX frictions discovered during hands-on QA testing.
 
 ### Backend Bugs
 
-- [ ] **BUG-01**: Architect API `/api/architect` returns valid curriculum instead of schema error — `refusalReason` must be included in the OpenAI structured output `required` array or made truly optional in a way the provider accepts
+- [x] **BUG-01**: Architect API `/api/architect` returns valid curriculum instead of schema error — `refusalReason` must be included in the OpenAI structured output `required` array or made truly optional in a way the provider accepts
 - [ ] **BUG-02**: Bloom-gated Neurogenesis is enforced at runtime — user cannot create a neuron from a shallow Remember/Understand conversation; the `suggest_neurogenesis` tool only fires at Analyze+ cognitive level
 - [ ] **BUG-03**: DAG agent (inferPrerequisites) creates prerequisite connections when appropriate — "Vector Databases" should link to "Relational Databases" or "NoSQL Databases" as prerequisites. Legacy nonsensical edges (e.g., "Relational Databases" → "Automated Red-Teaming") are cleaned up
 
@@ -37,7 +37,7 @@ Bug fixes and UX frictions discovered during hands-on QA testing.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| BUG-01 | Phase 14 | Pending |
+| BUG-01 | Phase 14 | Complete |
 | BUG-02 | Phase 14 | Pending |
 | BUG-03 | Phase 14 | Pending |
 | BUG-04 | Phase 15 | Pending |
