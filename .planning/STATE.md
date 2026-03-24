@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: MVP Core Stability
-status: Ready to execute
-stopped_at: Completed 21-01-PLAN.md
-last_updated: "2026-03-24T21:56:43.773Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 21-02-PLAN.md
+last_updated: "2026-03-24T21:57:55.731Z"
 progress:
   total_phases: 4
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 7
-  completed_plans: 6
+  completed_plans: 7
 ---
 
 # Project State
@@ -52,6 +52,7 @@ Plan: 2 of 2
 | Phase 19 P02 | 2min | 2 tasks | 5 files |
 | Phase 20-editor-reliability P01 | 7min | 2 tasks | 2 files |
 | Phase 21-graph-performance-bloom-ui P01 | 8min | 2 tasks | 4 files |
+| Phase 21-graph-performance-bloom-ui P02 | 2min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,8 @@ Recent decisions affecting current work:
 - [Phase 20-editor-reliability]: 20-01-emit-update-false: TipTap v3 setContent uses {emitUpdate:false} options object (not boolean) to suppress dirty/extraction triggers on programmatic sync
 - [Phase 21-graph-performance-bloom-ui]: No custom comparison function in React.memo — shallow default correct for React Flow stable prop references
 - [Phase 21-graph-performance-bloom-ui]: Named function expressions inside React.memo for correct DevTools component names
+- [Phase 21-graph-performance-bloom-ui]: 21-02: BLOOM_QUESTION_EXEMPTION applied — messages ending with '?' capped at Understand regardless of other signals, mirroring eval provider
+- [Phase 21-graph-performance-bloom-ui]: 21-02: bloomLevel derived via useMemo on messages (not state) — zero extra renders or API calls, meter advances only (max across messages)
 
 ### Pending Todos
 
@@ -91,6 +94,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-24T21:56:43.771Z
-Stopped at: Completed 21-01-PLAN.md
+Last session: 2026-03-24T21:57:55.729Z
+Stopped at: Completed 21-02-PLAN.md
 Resume file: None

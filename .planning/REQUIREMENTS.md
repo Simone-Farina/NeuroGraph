@@ -32,7 +32,7 @@ Production hardening of all core features. No new features — make existing one
 
 ### Bloom UI
 
-- [ ] **BLOOM-01**: Chat interface shows a real-time cognitive depth indicator (6-segment meter) reflecting the user's approximate Bloom level based on client-side keyword analysis of their messages
+- [x] **BLOOM-01**: Chat interface shows a real-time cognitive depth indicator (6-segment meter) reflecting the user's approximate Bloom level based on client-side keyword analysis of their messages
 
 ## Out of Scope
 
@@ -59,7 +59,7 @@ Production hardening of all core features. No new features — make existing one
 | EDITOR-02 | Phase 20 | Complete |
 | GRAPH-01 | Phase 21 | Complete |
 | GRAPH-02 | Phase 21 | Complete |
-| BLOOM-01 | Phase 21 | Pending |
+| BLOOM-01 | Phase 21 | Complete |
 
 **Coverage:**
 - v2.0 requirements: 12 total

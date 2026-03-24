@@ -69,7 +69,7 @@
 - [x] **Phase 18: AI Reliability** - Typed error handling, timeouts, and retry logic across all AI call sites (completed 2026-03-24)
 - [x] **Phase 19: Enterprise Prompt Engineering** - Khanmigo patterns, comprehension-test DAG heuristic, expanded eval suite (completed 2026-03-24)
 - [x] **Phase 20: Editor Reliability** - TipTap content sync race fix, serialization standardized to getJSON (completed 2026-03-24)
-- [ ] **Phase 21: Graph Performance & Bloom UI** - React.memo on nodes, onlyRenderVisibleElements, real-time Bloom depth indicator
+- [x] **Phase 21: Graph Performance & Bloom UI** - React.memo on nodes, onlyRenderVisibleElements, real-time Bloom depth indicator (completed 2026-03-24)
 
 ---
 
@@ -126,11 +126,11 @@ Plans:
   1. Updating retrievability on one node does not trigger a re-render of all other nodes in the graph — observable via React DevTools profiler
   2. Off-screen nodes are absent from the DOM when the graph contains 100+ nodes and `onlyRenderVisibleElements` is active
   3. The chat interface displays a 6-segment Bloom depth meter that advances visibly as the user's messages shift from factual recall (Remember) toward synthesis and evaluation (Analyze/Create)
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 - [x] 21-01-PLAN.md — React.memo on graph components + onlyRenderVisibleElements (GRAPH-01, GRAPH-02)
-- [ ] 21-02-PLAN.md — Bloom depth meter in chat interface (BLOOM-01)
+- [x] 21-02-PLAN.md — Bloom depth meter in chat interface (BLOOM-01)
 
 ---
 
@@ -159,4 +159,4 @@ Plans:
 | 18. AI Reliability | v2.0 | 2/2 | Complete    | 2026-03-24 |
 | 19. Enterprise Prompt Engineering | v2.0 | 1/2 | Complete    | 2026-03-24 |
 | 20. Editor Reliability | v2.0 | 1/1 | Complete    | 2026-03-24 |
-| 21. Graph Performance & Bloom UI | v2.0 | 1/2 | In Progress|  |
+| 21. Graph Performance & Bloom UI | v2.0 | 2/2 | Complete   | 2026-03-24 |
