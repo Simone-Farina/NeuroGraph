@@ -197,6 +197,12 @@ export async function POST(request: NextRequest) {
       tools: {
         suggest_neurogenesis: suggestNeurogenesisTool,
       },
+      maxRetries: 1,                             // Chat is interactive — 1 retry max (user is watching)
+      abortSignal: AbortSignal.timeout(60_000),  // 60s — allows long Socratic exchanges
+      onError: ({ error }) => {
+        // This is the ONLY reliable way to log stream errors — they are NOT thrown to outer try/catch
+        console.error('[chat/stream] Provider error during stream:', error);
+      },
       onFinish: async (event) => {
         // event.text is the SDK's own accumulation — reliable regardless of chunk field names.
         const assistantText = event.text.trim();
