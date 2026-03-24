@@ -90,8 +90,9 @@ export function NeurogenesisSuggestion({
   }
 
   const isInputComplete = input && Object.keys(input).length > 0 && input.definition;
+  const isStreaming = state === 'partial-call';
 
-  if (!isInputComplete) {
+  if (!isInputComplete || isStreaming) {
     return (
       <div className="neurogenesis-suggestion my-8 pl-5 border-l border-amber-500/20">
         <p className="text-[14px] font-serif italic text-white/40 flex items-center gap-3">

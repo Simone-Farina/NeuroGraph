@@ -125,7 +125,9 @@ export function MessageList({
                       };
 
                       const toolState: 'call' | 'result' =
-                        toolPart.state === 'output-available' ? 'result' : 'call';
+                        (toolPart.state === 'output-available' || toolPart.state === 'input-available')
+                          ? 'result'
+                          : 'call';
 
                       return (
                         <div key={toolPart.toolCallId} className="my-8">
