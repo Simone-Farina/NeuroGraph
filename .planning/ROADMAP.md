@@ -62,6 +62,65 @@
 
 ---
 
+### v2.0 MVP Core Stability (Phases 18-21) — In Progress
+
+**Milestone Goal:** Every core feature works flawlessly end-to-end. No new features — make what exists production-grade. Enterprise-level prompt engineering for all AI agents.
+
+- [ ] **Phase 18: AI Reliability** - Typed error handling, timeouts, and retry logic across all AI call sites
+- [ ] **Phase 19: Enterprise Prompt Engineering** - Khanmigo patterns, comprehension-test DAG heuristic, expanded eval suite
+- [ ] **Phase 20: Editor Reliability** - TipTap content sync race fix, serialization standardized to getJSON
+- [ ] **Phase 21: Graph Performance & Bloom UI** - React.memo on nodes, onlyRenderVisibleElements, real-time Bloom depth indicator
+
+---
+
+## Phase Details
+
+### Phase 18: AI Reliability
+**Goal**: Every AI call site is resilient — timeouts bound LLM calls, retries handle transient failures, typed errors surface actionable messages instead of opaque 500s, and the neurons route never returns 500 after a successful insert
+**Depends on**: Phase 17
+**Requirements**: AI-01, AI-02, AI-03
+**Success Criteria** (what must be TRUE):
+  1. A failing AI stream (simulated network drop) logs a structured error and the user sees a recoverable error message — not a blank screen or silent hang
+  2. Any `generateObject` call that times out after 25 seconds returns a typed `APICallError` or `NoObjectGeneratedError` — never an unhandled promise rejection
+  3. Creating a neuron succeeds even when the post-insert vector search (`find_similar_neurons`) fails — the neuron appears in the graph and no 500 is returned to the client
+  4. All four AI call sites (`/api/chat`, `/api/architect`, `/api/neurons/extract`, `/api/neurons/ai-action`) have `maxRetries: 2` and `AbortSignal.timeout(25000)` applied
+**Plans**: TBD
+
+### Phase 19: Enterprise Prompt Engineering
+**Goal**: All AI agent prompts meet enterprise pedagogical standards — the Socratic agent uses Khanmigo-proven calibration patterns, the DAG agent uses a comprehension-test heuristic with boundary examples, and the eval suite validates behavioral correctness (not just structural output)
+**Depends on**: Phase 18
+**Requirements**: PROMPT-01, PROMPT-02, PROMPT-03, PROMPT-04
+**Success Criteria** (what must be TRUE):
+  1. The Socratic chat agent handles a user mistake by asking "how did you get there" — not by correcting the answer directly
+  2. The DAG agent's `inferPrerequisites` refuses to link two nodes when removing one does not make the other incomprehensible (comprehension test boundary)
+  3. Server-side Kahn's algorithm rejects a cyclic prerequisite chain even when the LLM prompt compliance fails
+  4. The promptfoo eval suite passes 42+ cases (up from 34), including multi-turn neurogenesis priming and Bloom distribution behavioral assertions
+**Plans**: TBD
+
+### Phase 20: Editor Reliability
+**Goal**: The TipTap editor displays correct neuron content on every navigation event, regardless of focus state, and all editor components share a single serialization format
+**Depends on**: Phase 18
+**Requirements**: EDITOR-01, EDITOR-02
+**Success Criteria** (what must be TRUE):
+  1. Switching between neurons while the editor is focused always displays the newly selected neuron's content — stale content from the previous neuron never persists
+  2. All content saved through any editor component is stored as TipTap JSON (`getJSON()`) — no mixed HTML/plain-text formats in new saves
+  3. A schema mismatch between editor extensions (e.g., after an upgrade) surfaces an `onContentError` log entry rather than silently corrupting the document
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 21: Graph Performance & Bloom UI
+**Goal**: The knowledge graph renders at 60fps at scale and the chat interface gives users real-time cognitive depth feedback via a Bloom-level indicator
+**Depends on**: Phase 20
+**Requirements**: GRAPH-01, GRAPH-02, BLOOM-01
+**Success Criteria** (what must be TRUE):
+  1. Updating retrievability on one node does not trigger a re-render of all other nodes in the graph — observable via React DevTools profiler
+  2. Off-screen nodes are absent from the DOM when the graph contains 100+ nodes and `onlyRenderVisibleElements` is active
+  3. The chat interface displays a 6-segment Bloom depth meter that advances visibly as the user's messages shift from factual recall (Remember) toward synthesis and evaluation (Analyze/Create)
+**Plans**: TBD
+**UI hint**: yes
+
+---
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -84,3 +143,7 @@
 | 15. UI/UX Polish & Security | v1.3 | 2/2 | Complete | 2026-03-24 |
 | 16. Socratic Agent Redesign | v1.4 | 2/2 | Complete | 2026-03-24 |
 | 17. Horizon & Crystallize UI Fixes | v1.4 | 2/2 | Complete | 2026-03-24 |
+| 18. AI Reliability | v2.0 | 0/? | Not started | - |
+| 19. Enterprise Prompt Engineering | v2.0 | 0/? | Not started | - |
+| 20. Editor Reliability | v2.0 | 0/? | Not started | - |
+| 21. Graph Performance & Bloom UI | v2.0 | 0/? | Not started | - |

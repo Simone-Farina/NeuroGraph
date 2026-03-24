@@ -48,24 +48,24 @@ Production hardening of all core features. No new features — make existing one
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AI-01 | TBD | Pending |
-| AI-02 | TBD | Pending |
-| AI-03 | TBD | Pending |
-| PROMPT-01 | TBD | Pending |
-| PROMPT-02 | TBD | Pending |
-| PROMPT-03 | TBD | Pending |
-| PROMPT-04 | TBD | Pending |
-| EDITOR-01 | TBD | Pending |
-| EDITOR-02 | TBD | Pending |
-| GRAPH-01 | TBD | Pending |
-| GRAPH-02 | TBD | Pending |
-| BLOOM-01 | TBD | Pending |
+| AI-01 | Phase 18 | Pending |
+| AI-02 | Phase 18 | Pending |
+| AI-03 | Phase 18 | Pending |
+| PROMPT-01 | Phase 19 | Pending |
+| PROMPT-02 | Phase 19 | Pending |
+| PROMPT-03 | Phase 19 | Pending |
+| PROMPT-04 | Phase 19 | Pending |
+| EDITOR-01 | Phase 20 | Pending |
+| EDITOR-02 | Phase 20 | Pending |
+| GRAPH-01 | Phase 21 | Pending |
+| GRAPH-02 | Phase 21 | Pending |
+| BLOOM-01 | Phase 21 | Pending |
 
 **Coverage:**
 - v2.0 requirements: 12 total
-- Mapped to phases: 0
-- Unmapped: 12
+- Mapped to phases: 12
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-24*
-*Last updated: 2026-03-24 after research synthesis*
+*Last updated: 2026-03-24 after roadmap creation — all 12 requirements mapped to Phases 18-21*
