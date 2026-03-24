@@ -1,623 +1,673 @@
-# Architecture Research
+# Architecture Patterns: Production Hardening
 
-**Domain:** Cognitive Funnel / Staging Area integration into existing Next.js + Supabase knowledge graph
-**Researched:** 2026-03-22
-**Confidence:** HIGH (based on direct codebase analysis)
-
----
-
-## Standard Architecture
-
-### System Overview — Current State
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                          CLIENT (Browser)                                    │
-├──────────────────────────────┬──────────────────────────────────────────────┤
-│  LEFT PANEL (40vw)           │  RIGHT PANEL (60vw)                          │
-│  ┌────────────┐ ┌──────────┐ │  ┌─────────────────────────────────────────┐ │
-│  │ AppSidebar │ │ ChatPanel│ │  │  GraphPanel (React Flow + dagre layout) │ │
-│  │            │ │(chat mode│ │  │                                         │ │
-│  │ - nav links│ │ useChat) │ │  │  NeuronDetailPanel (mode=neuron overlay)│ │
-│  │ - conv list│ │          │ │  │                                         │ │
-│  └────────────┘ └──────────┘ │  └─────────────────────────────────────────┘ │
-│                               │                                               │
-│  graphStore: leftPanelMode: 'chat' | 'neuron' | 'review'                    │
-│  ConversationContext: currentConversationId, conversations[]                 │
-├──────────────────────────────┴──────────────────────────────────────────────┤
-│                     Next.js 14 App Router (Route Handlers)                   │
-│  /api/chat        → streamText, suggestNeurogenesisTool, RAG context         │
-│  /api/neurons     → create neuron, bouncer check, synapse auto-link          │
-│  /api/neurons/[id]/synapses → upsert edge                                   │
-│  /api/conversations/[id] → DELETE conversation                               │
-│  /api/review      → FSRS rating endpoint                                    │
-│  /api/youtube     → transcript extraction                                    │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                          Supabase (PostgreSQL)                                │
-│  neurons (pgvector 1536-dim, FSRS fields, content, RLS)                     │
-│  synapses (PREREQUISITE | RELATED | BUILDS_ON, RLS)                         │
-│  conversations + messages (14-day TTL via pg_cron, RLS)                     │
-│  Auth: Supabase Auth + SSR cookies via middleware.ts                         │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-### System Overview — Target State (v1.1 Staging Area)
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                          CLIENT (Browser)                                    │
-├──────────────────────────────┬──────────────────────────────────────────────┤
-│  LEFT PANEL (40vw)           │  RIGHT PANEL (60vw)                          │
-│  ┌────────────┐ ┌──────────┐ │  ┌─────────────────────────────────────────┐ │
-│  │ AppSidebar │ │ Panel    │ │  │  GraphPanel (unchanged)                 │ │
-│  │ + "Queue"  │ │ switches │ │  │                                         │ │
-│  │   nav item │ │ on mode  │ │  │  NeuronDetailPanel (unchanged)          │ │
-│  │   + badge  │ │          │ │  │                                         │ │
-│  └────────────┘ └──────────┘ │  └─────────────────────────────────────────┘ │
-│                               │                                               │
-│  graphStore: leftPanelMode adds 'queue' to union                             │
-│  NEW: queueStore (items[], isLoading, optimistic mutations)                  │
-│  ConversationContext: unchanged, used by crystallize handoff                 │
-├──────────────────────────────┴──────────────────────────────────────────────┤
-│                     Next.js 14 App Router (Route Handlers)                   │
-│  --- EXISTING (unchanged) ---                                                │
-│  /api/chat  /api/neurons  /api/review  /api/youtube                         │
-│                                                                              │
-│  --- NEW ---                                                                 │
-│  /api/queue              → GET list, POST create (browser)                  │
-│  /api/queue/[id]         → PATCH state transition, DELETE discard           │
-│  /api/queue/[id]/crystallize → POST: fetch URL + summarize + seed convo     │
-│  /api/capture            → POST with Bearer token (iOS Shortcuts)           │
-│  /api/keys               → GET list, POST generate key                      │
-│  /api/keys/[id]          → DELETE revoke                                    │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                          Supabase (PostgreSQL)                                │
-│  --- EXISTING (unchanged) ---                                                │
-│  neurons, synapses, conversations, messages                                  │
-│                                                                              │
-│  --- NEW ---                                                                 │
-│  knowledge_queue  (4-state funnel, source_url, extracted_content, RLS)      │
-│  user_api_keys    (hashed_key, label, last_used_at, revoked_at, RLS)        │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
+**Domain:** Production-hardening existing AI agents and editor
+**Researched:** 2026-03-24
+**Overall confidence:** HIGH (based on direct codebase audit + verified docs)
 
 ---
 
-## Component Responsibilities
+## Preamble: What Was Audited
 
-### Existing Components — What Changes
+Every hardening recommendation below is grounded in the actual code at the time of research. File paths and line numbers are cited so the implementer can navigate directly to the integration point.
 
-| Component | Current Role | v1.1 Change |
-|-----------|-------------|-------------|
-| `graphStore.ts` | `leftPanelMode: 'chat' | 'neuron' | 'review'` | Add `'queue'` to the union type. Add `openQueue()` action. |
-| `AppSidebar.tsx` | Nav links (Chat, Review) + conversation list | Add "Queue" nav link with unread badge count. Pattern matches existing nav items. |
-| `types/database.ts` | Types for neurons, synapses, conversations, messages | Add `KnowledgeQueueItem`, `QueueItemState`, `ApiKey` types. |
-| `app/(app)/layout.tsx` | Renders sidebar + children in 40vw | No structural change; children routing handles queue panel. |
-| `middleware.ts` | Cookie auth for `/app/*` | No change. `/api/capture` is a separate route that handles bearer auth internally. |
-| `/api/chat` route | Cookie auth, RAG context, streamText | No change. AI isolation means queue table is never queried here. |
+Files audited:
+- `src/app/api/chat/route.ts` — streamText, onFinish persistence
+- `src/app/api/neurons/route.ts` — embedding → bouncer → insert → inferPrerequisites → ghostNodes
+- `src/app/api/architect/route.ts` — generateObject, no retry/timeout today
+- `src/lib/ai/inferPrerequisites.ts` — generateObject for prerequisite inference
+- `src/lib/ai/embeddings.ts` — bare embed() call, no error handling
+- `src/lib/ai/bouncer.ts` — find_similar_neurons RPC, swallows errors silently (returns null)
+- `src/lib/ai/providers.ts` — model resolution, fallback logic
+- `src/components/editor/NeuronTipTapEditor.tsx` — getText() serialization (lossy)
+- `src/components/editor/LiquidDocumentEditor.tsx` — getHTML() on save, content sync
+- `src/components/graph/GraphPanel.tsx` — inline dagre layout, no memoization on node components
+- `src/components/graph/layout.worker.ts` — worker exists but is NOT wired to GraphPanel
+- `src/stores/graphStore.ts` — Zustand, no persistence, interval leak risk
+- `src/lib/db/queries.ts` — no retry wrapper on any Supabase call
 
-### New Components
-
-| Component | Type | Responsibility |
-|-----------|------|----------------|
-| `src/app/(app)/app/queue/page.tsx` | Page | Renders `QueuePanel` when navigated to |
-| `src/components/queue/QueuePanel.tsx` | Client Component | Master triage list: all items, state filter tabs, bulk actions |
-| `src/components/queue/QueueItem.tsx` | Client Component | Single row: title, state badge, source URL chip, action buttons |
-| `src/components/queue/QueueEmptyState.tsx` | Client Component | Onboarding prompt when queue is empty |
-| `src/stores/queueStore.ts` | Zustand store | Local queue state: items array, optimistic mutations |
-| `src/hooks/useQueue.ts` | Custom hook | Fetches `/api/queue`, provides typed CRUD operations |
-| `src/app/api/queue/route.ts` | Route Handler | GET (list user queue) + POST (create from browser) |
-| `src/app/api/queue/[id]/route.ts` | Route Handler | PATCH (state transition) + DELETE (discard) |
-| `src/app/api/queue/[id]/crystallize/route.ts` | Route Handler | POST: fetch URL → summarize → seed conversation → return conversationId |
-| `src/app/api/capture/route.ts` | Route Handler | POST with `Authorization: Bearer <key>` — mobile/iOS Shortcuts endpoint |
-| `src/app/api/keys/route.ts` | Route Handler | GET list + POST generate |
-| `src/app/api/keys/[id]/route.ts` | Route Handler | DELETE revoke |
-| `src/lib/db/queue.ts` | DB queries module | `queueQueries` object following the existing `neuronQueries` pattern in `queries.ts` |
-| `src/lib/queue/extractor.ts` | Server utility | URL content fetch + HTML-to-text extraction (fetch + Cheerio or similar) |
-| `src/lib/queue/summarizer.ts` | Server utility | Calls `getModelForRole('synthesis_fast')` to produce a learning-context summary |
-| `src/lib/auth/apiKeys.ts` | Server utility | `generateApiKey()`, `hashApiKey()`, `verifyApiKey()` — crypto.randomBytes + SHA-256 |
+Stack versions (from `package.json`):
+- `ai`: ^6.0.82 (Vercel AI SDK v6)
+- `@xyflow/react`: ^12.10.0
+- `@tiptap/*`: ^3.20.4
+- `@supabase/supabase-js`: ^2.95.3
+- `zustand`: ^5.0.11
+- `next`: ^14.2.35
 
 ---
 
-## Recommended Project Structure
+## 1. LLM API Failure: Error Boundaries and Graceful Degradation
 
-```
-src/
-├── app/
-│   ├── (app)/
-│   │   └── app/
-│   │       ├── page.tsx              # unchanged — ChatPanel
-│   │       ├── review/               # unchanged
-│   │       └── queue/
-│   │           └── page.tsx          # NEW — renders QueuePanel
-│   ├── api/
-│   │   ├── chat/                     # unchanged
-│   │   ├── neurons/                  # unchanged
-│   │   ├── review/                   # unchanged
-│   │   ├── queue/
-│   │   │   ├── route.ts              # NEW — GET list, POST create
-│   │   │   └── [id]/
-│   │   │       ├── route.ts          # NEW — PATCH state, DELETE
-│   │   │       └── crystallize/
-│   │   │           └── route.ts      # NEW — crystallize orchestration
-│   │   ├── capture/
-│   │   │   └── route.ts              # NEW — bearer token endpoint
-│   │   └── keys/
-│   │       ├── route.ts              # NEW — GET/POST keys
-│   │       └── [id]/
-│   │           └── route.ts          # NEW — DELETE/revoke
-├── components/
-│   ├── layout/
-│   │   └── AppSidebar.tsx            # MODIFIED — add Queue nav item + badge
-│   ├── chat/                         # unchanged
-│   ├── graph/                        # unchanged
-│   └── queue/                        # NEW directory
-│       ├── QueuePanel.tsx
-│       ├── QueueItem.tsx
-│       └── QueueEmptyState.tsx
-├── hooks/
-│   ├── useQueue.ts                   # NEW
-│   └── (existing hooks unchanged)
-├── lib/
-│   ├── auth/
-│   │   ├── apiKeys.ts                # NEW — key generation + verification
-│   │   └── (existing files unchanged)
-│   ├── db/
-│   │   ├── queue.ts                  # NEW — queueQueries following queries.ts pattern
-│   │   └── (existing files unchanged)
-│   └── queue/
-│       ├── extractor.ts              # NEW — URL fetch + content extraction
-│       └── summarizer.ts             # NEW — synthesis_fast model prompt
-├── stores/
-│   ├── graphStore.ts                 # MODIFIED — add 'queue' + openQueue()
-│   ├── queueStore.ts                 # NEW — local queue state
-│   └── (existing stores unchanged)
-└── types/
-    ├── database.ts                   # MODIFIED — add KnowledgeQueueItem, ApiKey rows
-    └── queue.ts                      # NEW — QueueItemState enum, domain types
-```
+### Current state
 
-### Structure Rationale
+**`/api/chat` (streamText):** The outer `try/catch` catches synchronous errors before streaming begins and returns a 500 JSON response. However, errors that occur mid-stream (network drop, provider 503, rate-limit mid-response) are NOT caught — `streamText` propagates them via the stream itself and the client sees a partial response or a silent cut. The `onFinish` callback has its own inner `try/catch` that only logs DB write failures; it does not communicate back to the client.
 
-- **`src/app/api/capture/`** is separate from `/api/queue/` because it uses bearer auth instead of cookie sessions. Keeping them in separate files prevents auth logic from cross-contaminating.
-- **`src/lib/queue/`** groups URL extraction and summarization as a pure library layer, keeping route handlers thin. This mirrors the existing `src/lib/ai/` pattern where `embeddings.ts`, `rag.ts`, `bouncer.ts` are library modules called by route handlers.
-- **`src/lib/auth/apiKeys.ts`** lives alongside `supabase.ts` in `lib/auth/` — key verification is an authentication concern, not a queue concern.
-- **`src/stores/queueStore.ts`** is a separate Zustand store rather than extending `graphStore`. `graphStore` owns graph/UI-mode state; queue items have different shape, lifecycle, and consumer components. The only bridge is `graphStore.openQueue()`.
+**`/api/architect` and `inferPrerequisites` (generateObject):** No retry, no timeout, no error-type discrimination. A single transient 529 (overloaded) from OpenAI causes the entire neurogenesis POST to surface a 500 to the user.
 
----
+**`/api/neurons` (composite):** The `inferPrerequisites` + `projectGhostNodes` block is correctly wrapped in `try/catch` and logged as non-fatal (line 232). The embedding call (`generateEmbedding`) on line 108 is NOT wrapped — an OpenAI failure here kills the entire neuron creation request, including the DB insert which has not happened yet. This is the correct behavior semantically, but the error message surfaced is opaque.
 
-## Architectural Patterns
+### Recommended patterns
 
-### Pattern 1: Bearer Token API Key Auth (mobile capture endpoint)
+#### A. streamText — client-visible error surface (MODIFY `chat/route.ts`)
 
-**What:** The `/api/capture` route does NOT use Supabase SSR cookies. It reads `Authorization: Bearer <key>`, hashes it, looks up `user_api_keys`, and identifies the user from the stored `user_id`.
+The Vercel AI SDK v6 `streamText` call should receive `maxRetries` and an `onError` handler for mid-stream provider failures.
 
-**When to use:** Only on `/api/capture`. Every other route continues using `createServerSupabaseClient()` with cookie sessions unchanged.
-
-**Trade-offs:** Stateless, trivial for iOS Shortcuts to call with a static header. Keys are long-lived so revocation must be fast (soft-delete via `revoked_at`). Hashing (SHA-256) protects against DB compromise — raw key is never stored.
-
-**Note:** `/api/capture` requires a Supabase **service role** client to look up keys (bypasses RLS). Store `SUPABASE_SERVICE_ROLE_KEY` as a server-only env var. The existing `createServerSupabaseClient()` is cookie-based and cannot be used here.
-
-**Example:**
 ```typescript
-// src/lib/auth/apiKeys.ts
-import crypto from 'node:crypto';
-
-export function generateApiKey(): string {
-  return `ng_${crypto.randomBytes(32).toString('hex')}`;
-}
-
-export function hashApiKey(rawKey: string): string {
-  return crypto.createHash('sha256').update(rawKey).digest('hex');
-}
-
-// src/app/api/capture/route.ts (auth section)
-const authHeader = request.headers.get('Authorization');
-const rawKey = authHeader?.replace('Bearer ', '').trim();
-if (!rawKey) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-const hashed = hashApiKey(rawKey);
-const { data: keyRow } = await supabaseAdmin
-  .from('user_api_keys')
-  .select('user_id, revoked_at')
-  .eq('hashed_key', hashed)
-  .single();
-
-if (!keyRow || keyRow.revoked_at) {
-  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-}
-// keyRow.user_id is the authenticated user — proceed with insert
+// MODIFY: src/app/api/chat/route.ts, streamText call (~line 193)
+const response = streamText({
+  model,
+  system: systemPrompt,
+  messages: modelMessages,
+  tools: { suggest_neurogenesis: suggestNeurogenesisTool },
+  maxRetries: 2,                    // retry transient provider errors automatically
+  onError: (event) => {
+    // Mid-stream provider failure — log for observability
+    console.error('[chat/stream] provider error:', event.error);
+  },
+  onFinish: async (event) => { /* existing */ },
+});
 ```
 
-### Pattern 2: Server-Side State Machine Transitions
+The `maxRetries: 2` is the primary lever. The SDK retries on 429/500/503 with exponential backoff automatically. Confidence: HIGH per AI SDK v6 core docs.
 
-**What:** `knowledge_queue.state` is a controlled enum. The PATCH endpoint validates that the requested transition is allowed before writing to the DB.
+#### B. generateObject — explicit error-type handling (MODIFY `architect/route.ts`, `inferPrerequisites.ts`)
 
-**When to use:** Every state change goes through `/api/queue/[id]` — never a direct Supabase client write from the browser.
+AI SDK v6 exposes typed errors. The recommended pattern for `generateObject` in production:
 
-**Trade-offs:** One more round-trip per action, but prevents invalid states and centralises side effects (e.g., nulling `extracted_content` when transitioning back to inbox).
-
-**Allowed transitions:**
-```
-inbox         → passive_debt   (defer for later)
-inbox         → crystallizing  (user starts Crystallize flow)
-inbox         → discarded      (user rejects item)
-passive_debt  → inbox          (reactivate)
-passive_debt  → crystallizing
-passive_debt  → discarded
-crystallizing → mastered       (neuron created — client triggers this PATCH)
-crystallizing → inbox          (abandon crystallize — move back to triage)
-crystallizing → discarded
-mastered      → (none)         terminal state
-discarded     → (none)         terminal state
-```
-
-### Pattern 3: Crystallize Flow — Orchestrated in Route Handler
-
-**What:** The crystallize action is a multi-step server-side orchestration that produces a ready-to-use conversation:
-1. Fetch raw URL content (`extractor.ts` — fetch + HTML parse)
-2. Summarize with `getModelForRole('synthesis_fast')` (`summarizer.ts`)
-3. Create a `conversations` row (title = queue item title)
-4. Create an initial `messages` row (role: `assistant`, content: summary)
-5. Update queue item state to `crystallizing`, store `crystallized_conversation_id`
-6. Return `{ conversationId }` to the client
-
-The client then calls `setCurrentConversationId(conversationId)` and `useGraphStore.openChat()`.
-
-**When to use:** Only on explicit user Crystallize action. URL fetching is never triggered automatically.
-
-**Client-side trigger example:**
 ```typescript
-// In QueueItem.tsx
-const handleCrystallize = async (itemId: string) => {
-  const res = await fetch(`/api/queue/${itemId}/crystallize`, { method: 'POST' });
-  const { conversationId } = await res.json();
-  setCurrentConversationId(conversationId);    // ConversationContext
-  useGraphStore.getState().openChat();          // graphStore — switches leftPanelMode to 'chat'
-  router.push('/app');                          // navigate to chat page
+// MODIFY: src/app/api/architect/route.ts and src/lib/ai/inferPrerequisites.ts
+import { generateObject, NoObjectGeneratedError, APICallError } from 'ai';
+
+try {
+  const { object } = await generateObject({
+    model,
+    schema: architectResponseSchema,
+    system: ARCHITECT_SYSTEM_PROMPT,
+    prompt: buildArchitectPrompt(target),
+    maxRetries: 2,
+  });
+  // ...
+} catch (error) {
+  if (NoObjectGeneratedError.isInstance(error)) {
+    // Schema validation failed — model returned unparseable output
+    return NextResponse.json(
+      { error: 'Could not generate a valid curriculum. Try a more specific topic.' },
+      { status: 422 }
+    );
+  }
+  if (APICallError.isInstance(error) && error.statusCode === 429) {
+    return NextResponse.json(
+      { error: 'AI service is busy. Please wait a moment.' },
+      { status: 429 }
+    );
+  }
+  return NextResponse.json({ error: 'Architect request failed' }, { status: 500 });
+}
+```
+
+`NoObjectGeneratedError` and `APICallError` are stable exports in AI SDK v6 (confirmed HIGH confidence from ai-sdk.dev docs).
+
+#### C. Embedding failure — distinguish fatal vs recoverable (MODIFY `neurons/route.ts`)
+
+The `generateEmbedding` call on line 108 of `neurons/route.ts` failing kills neuron creation. This is semantically correct (the neuron cannot be stored without its vector). The error message should be user-readable:
+
+```typescript
+// MODIFY: src/app/api/neurons/route.ts ~line 108
+let embedding: number[];
+try {
+  embedding = await generateEmbedding(embeddingInput);
+} catch (embeddingError) {
+  console.error('[neurons/POST] Embedding generation failed:', embeddingError);
+  return NextResponse.json(
+    { error: 'Could not generate knowledge vector. Check OpenAI key or try again.' },
+    { status: 503 }
+  );
+}
+```
+
+The bouncer's `checkNeuronCollision` already returns `null` on error (line 39 in `bouncer.ts`) — this is the right fail-open behavior and must be preserved.
+
+#### D. `lib/ai/embeddings.ts` — add maxRetries (MODIFY)
+
+```typescript
+// MODIFY: src/lib/ai/embeddings.ts
+import { embed } from 'ai';
+import { getEmbeddingModel } from './providers';
+
+export async function generateEmbedding(text: string): Promise<number[]> {
+  const { embedding } = await embed({
+    model: getEmbeddingModel(),
+    value: text,
+    maxRetries: 2,   // embeddings are cheap to retry; this covers transient OpenAI blips
+  });
+  return embedding;
+}
+```
+
+---
+
+## 2. Retry/Timeout Patterns for generateObject and streamText
+
+### Current state
+
+No timeout is set on any LLM call. Vercel Fluid Compute sets a 5-minute function timeout across all plans. A stalled OpenAI stream will block for up to 5 minutes before timing out, making the user wait silently.
+
+The layout worker (`layout.worker.ts`) exists but is not wired into `GraphPanel.tsx`. The graph still runs dagre layout synchronously on the main thread.
+
+### Recommended patterns
+
+#### A. Stream chunk timeout for streamText (MODIFY `chat/route.ts`)
+
+AI SDK v6 honors the standard Web API `AbortSignal.timeout()` as the `abortSignal` prop:
+
+```typescript
+// MODIFY: src/app/api/chat/route.ts streamText call
+const response = streamText({
+  model,
+  // ...
+  maxRetries: 2,
+  abortSignal: AbortSignal.timeout(55_000), // 55s total — safely under Vercel 60s limit
+});
+```
+
+If the stream does not complete in 55 seconds it aborts cleanly and the client `useChat` hook receives an error that can trigger a retry prompt.
+
+Confidence: MEDIUM — `abortSignal` prop is documented; the 55s limit is community convention for Vercel, not a hard rule.
+
+#### B. generateObject timeout (MODIFY `architect/route.ts`, `inferPrerequisites.ts`)
+
+```typescript
+const { object } = await generateObject({
+  model,
+  // ...
+  maxRetries: 2,
+  abortSignal: AbortSignal.timeout(30_000), // 30s — curriculum generation should not stall
+});
+```
+
+The architect is called interactively from the graph panel. A 30-second timeout with the existing `isHorizonLoading` spinner is acceptable UX.
+
+#### C. Wire the layout worker to GraphPanel (MODIFY `GraphPanel.tsx`)
+
+The `layout.worker.ts` file at `src/components/graph/layout.worker.ts` exists but is unused. `GraphPanel.tsx` calls `getLayoutedElements` synchronously on the React render thread every time `combinedNodes` or `combinedEdges` change (line 204). With 200 nodes, dagre layout can block the main thread for 50-200ms.
+
+Critical mismatch to fix first: the worker uses `rankdir: 'LR'` while `GraphPanel.tsx` uses `rankdir: 'TB'`. Update the worker to `TB` before wiring.
+
+```typescript
+// ADD to GraphPanel.tsx: replace synchronous onLayout with worker-based layout
+const layoutWorkerRef = useRef<Worker | null>(null);
+
+useEffect(() => {
+  layoutWorkerRef.current = new Worker(
+    new URL('../../components/graph/layout.worker.ts', import.meta.url)
+  );
+  layoutWorkerRef.current.onmessage = (event) => {
+    const { nodes: layoutedNodes, edges: layoutedEdges } = event.data;
+    setFlowNodes([...layoutedNodes]);
+    setFlowEdges([...layoutedEdges]);
+    window.requestAnimationFrame(() => fitView({ padding: 0.3, maxZoom: 0.7 }));
+  };
+  return () => layoutWorkerRef.current?.terminate();
+}, [fitView, setFlowNodes, setFlowEdges]);
+```
+
+Remove the existing synchronous `onLayout` callback and the `useEffect` that calls it. Send layout requests to the worker instead:
+
+```typescript
+useEffect(() => {
+  if (layoutWorkerRef.current) {
+    layoutWorkerRef.current.postMessage({
+      nodes: combinedNodes,
+      edges: combinedEdges,
+      requestId: Date.now(),
+    });
+  }
+}, [combinedNodes, combinedEdges]);
+```
+
+---
+
+## 3. TipTap v3 Content Serialization Reliability
+
+### Current state
+
+**`NeuronTipTapEditor.tsx`** calls `editor.getText()` in the `onUpdate` callback and passes plain text to the `onChange` prop. This is lossy — all formatting (headings, lists, code blocks, bold) is stripped. For the current use case (feeding extraction endpoints), this is acceptable, but any future consumer of `onChange` must know they receive plain text.
+
+**`LiquidDocumentEditor.tsx`** calls `editor.getHTML()` on save (line 222). This is the canonical serialization path for persisted content. The `neuron.content` field is HTML. On load, content is restored via `editor.commands.setContent(neuron.content || '')`.
+
+**SSR hydration:** Both editors correctly set `immediatelyRender: false` — the required TipTap v3 setting to prevent hydration mismatch. This is correct.
+
+**Content sync race condition (BUG):** `LiquidDocumentEditor` has two separate effects managing content sync:
+- Line 202-208: reacts to `neuron.id` change — resets state vars but does NOT call `editor.commands.setContent`
+- Line 210-216: reacts to `neuron.content` change but guards with `!editor.isFocused`
+
+If a user navigates from neuron A to neuron B while the editor is focused, the content displayed remains neuron A's content until the editor loses focus. The `neuron.id` effect resets `title` and `isDirty` state but leaves the editor content stale. This is a real, reproducible bug.
+
+**Schema mismatch risk:** TipTap v3 introduced `enableContentCheck` for detecting when stored HTML is incompatible with the current extension schema. Neither editor enables this check. If extensions change in a future milestone, silently invalid content will load without warning.
+
+### Recommended patterns
+
+#### A. Fix content sync race on neuron switch (MODIFY `LiquidDocumentEditor.tsx`)
+
+Replace the two separate effects with one unified effect keyed on `neuron.id`:
+
+```typescript
+// MODIFY: src/components/editor/LiquidDocumentEditor.tsx
+// Replace the effect at ~line 202 and the effect at ~line 210 with:
+useEffect(() => {
+  if (!editor) return;
+  // Force-sync content on neuron ID change regardless of focus state
+  editor.commands.setContent(neuron.content || '');
+  setTitle(neuron.title || '');
+  setIsDirty(false);
+  setExtractedMeta(null);
+  setExtractionState('idle');
+  setAiOutput(null);
+}, [neuron.id, editor]); // neuron.id is the authoritative switch signal
+```
+
+The `isFocused` guard was protecting against overwriting in-progress edits within the same neuron. That protection is no longer needed when the trigger is `neuron.id` change — an ID change always means a different neuron, and the current content should be discarded.
+
+#### B. Add enableContentCheck for schema-invalid content detection (MODIFY both editors)
+
+```typescript
+// MODIFY: src/components/editor/LiquidDocumentEditor.tsx and NeuronTipTapEditor.tsx
+// Add to useEditor config:
+enableContentCheck: true,
+onContentError: () => {
+  console.warn('[TipTap] Schema mismatch detected — some content nodes may not render correctly');
+},
+```
+
+This does not block functionality. It surfaces schema drift that would otherwise be invisible. Confidence: HIGH per TipTap v3 docs.
+
+#### C. Keep HTML serialization for this milestone (DECISION)
+
+The current stack stores HTML in `neuron.content`. Switching to `getJSON()` would be more resilient to schema changes but requires a migration to convert all existing content. Do not change the serialization format in this milestone. Flag for v2.1.
+
+---
+
+## 4. React Flow Performance with 50-200 Nodes
+
+### Current state
+
+`GraphPanel.tsx` has these performance risks, identified by direct code audit:
+
+1. **`nodeTypes` and `edgeTypes` defined outside the component** (lines 29-36) — this is already correct and avoids the most common re-render trap.
+
+2. **`getLayoutedElements` runs synchronously on the React thread** every time `combinedNodes` or `combinedEdges` changes (line 204-205). With 200 nodes, dagre layout takes ~100ms on the main thread.
+
+3. **`onlyRenderVisibleElements` not set** — all nodes render regardless of viewport position. React Flow does NOT virtualize by default.
+
+4. **`NeuronNode` and `GhostNeuronNode` are not wrapped in `React.memo`**. Per React Flow docs, custom node components must be memoized or they trigger full graph re-renders on any state change.
+
+5. **The `updateNode` loop** (lines 208-230) iterates all nodes every minute and calls `updateNode` once per changed node. Each call triggers a Zustand `set()` which re-renders the entire graph. With 200 nodes this means up to 200 individual re-renders per minute.
+
+6. **Soft-FIRe BFS traversal** (lines 282-310) runs on the main thread every 5 minutes when `loadGraph` fires. At 200 nodes it is O(V+E) and fast, but it mutates `node.data` in-place before `setGraph` — a pattern that bypasses React's immutability checks and can cause missed updates.
+
+### Recommended patterns
+
+#### A. Memoize NeuronNode and GhostNeuronNode (MODIFY both files)
+
+```typescript
+// MODIFY: src/components/graph/NeuronNode.tsx
+import { memo } from 'react';
+export const NeuronNode = memo(NeuronNodeComponentImpl);
+
+// MODIFY: src/components/graph/GhostNeuronNode.tsx
+export const GhostNeuronNode = memo(GhostNeuronNodeImpl);
+```
+
+This is the #1 documented optimization from the React Flow team. Confidence: HIGH.
+
+#### B. Enable onlyRenderVisibleElements (MODIFY `GraphPanel.tsx`)
+
+```typescript
+// MODIFY: src/components/graph/GraphPanel.tsx ReactFlow props (~line 459)
+<ReactFlow
+  // ...existing props...
+  onlyRenderVisibleElements={true}
+/>
+```
+
+Known caveat: there is a reported bug (GitHub issue #4516) where edges with one off-screen endpoint may not render. The current `fitView` approach lays out all nodes to fit the viewport, so this is unlikely to manifest during normal use. Test with panning and zooming before shipping.
+
+Confidence: MEDIUM — effective for large graphs, but edge rendering bug is real.
+
+#### C. Batch the retrievability update loop (MODIFY `graphStore.ts` + `GraphPanel.tsx`)
+
+Replace N individual `updateNode()` calls with a single batched store update:
+
+```typescript
+// ADD to src/stores/graphStore.ts GraphStore type:
+batchUpdateNodeRetrievability: (updates: Array<{ id: string; retrievability: number }>) => void;
+
+// ADD implementation:
+batchUpdateNodeRetrievability: (updates) =>
+  set((state) => {
+    const updateMap = new Map(updates.map((u) => [u.id, u.retrievability]));
+    return {
+      nodes: state.nodes.map((node) =>
+        updateMap.has(node.id)
+          ? { ...node, data: { ...node.data, retrievability: updateMap.get(node.id) } }
+          : node
+      ),
+    };
+  }),
+```
+
+```typescript
+// MODIFY: src/components/graph/GraphPanel.tsx updateRetrievability function (~line 207)
+const updateRetrievability = () => {
+  const now = new Date();
+  const currentNodes = useGraphStore.getState().nodes;
+  const updates: Array<{ id: string; retrievability: number }> = [];
+
+  currentNodes.forEach((node) => {
+    // ... compute newRetrievability as before ...
+    if (Math.abs(newRetrievability - previousRetrievability) > 0.001) {
+      updates.push({ id: node.id, retrievability: newRetrievability });
+    }
+  });
+
+  if (updates.length > 0) {
+    useGraphStore.getState().batchUpdateNodeRetrievability(updates);
+  }
 };
 ```
 
-### Pattern 4: AI Isolation via Structural Separation
+This reduces re-renders from N to 1 per minute cycle.
 
-**What:** The RAG function (`getRelevantContext()` in `/api/chat`) queries only the `neurons` table via pgvector. The `knowledge_queue` table is never queried from any chat-related route. The isolation is structural (different table) — no code guard needed in the chat route.
+#### D. Wire layout.worker.ts to GraphPanel (MODIFY `GraphPanel.tsx`)
 
-**Why this is the right pattern:** The isolation cannot be accidentally broken by a future developer editing `/api/chat` unless they explicitly add a queue query. The system prompt is assembled only from neuron context. Queue items enter AI context only in the crystallize route, where they seed a new conversation, not the ongoing chat.
-
----
-
-## Data Flow
-
-### Flow 1: Mobile Capture (iOS Shortcut → Queue)
-
-```
-iOS Shortcut
-  POST /api/capture
-  Authorization: Bearer ng_<raw_key>
-  Body: { url, title?, note? }
-      ↓
-/api/capture route handler
-  hashApiKey(rawKey) → lookup user_api_keys (service role client)
-  validate: row exists AND revoked_at IS NULL
-  insert knowledge_queue { user_id, source_url, title, note, state: 'inbox' }
-  update user_api_keys SET last_used_at = NOW() WHERE id = keyRow.id
-      ↓
-Response: 201 { id, title, state: 'inbox' }
-```
-
-### Flow 2: Browser Queue Triage (state transitions)
-
-```
-User clicks "Move to Passive Debt" in QueueItem
-      ↓
-queueStore.optimisticUpdate(id, { state: 'passive_debt' })   ← immediate UI
-      ↓
-PATCH /api/queue/{id}  Body: { state: 'passive_debt' }
-  cookie auth → get user
-  fetch current item state from DB
-  validate transition: 'inbox' → 'passive_debt' is allowed
-  UPDATE knowledge_queue SET state = 'passive_debt', updated_at = NOW()
-      ↓
-on success: no further action (optimistic update already applied)
-on failure: queueStore.revertUpdate(id)  ← roll back UI
-```
-
-### Flow 3: Crystallize Flow (full orchestration)
-
-```
-User clicks "Crystallize" on a queue item
-      ↓
-POST /api/queue/{id}/crystallize
-      ↓
-Server Step 1: extractor.ts
-  fetch(source_url, { signal: AbortSignal.timeout(5000) })
-  parse HTML → extract main text content
-  fallback: use item.title + item.note if fetch fails or URL is null
-      ↓
-Server Step 2: summarizer.ts
-  getModelForRole('synthesis_fast')
-  prompt: "You are preparing material for Socratic learning. Summarize
-           the key ideas in this content so a student can engage with them
-           actively: {extracted_text}"
-  → summary string
-      ↓
-Server Step 3: create conversation
-  INSERT conversations { user_id, title: item.title }
-  INSERT messages { conversation_id, role: 'assistant', content: summary }
-      ↓
-Server Step 4: update queue item
-  UPDATE knowledge_queue SET
-    state = 'crystallizing',
-    extracted_content = {extracted_text},
-    crystallized_conversation_id = {conversationId}
-      ↓
-Response: { conversationId, summary }
-      ↓
-Client:
-  setCurrentConversationId(conversationId)    ← ConversationContext
-  useGraphStore.getState().openChat()          ← leftPanelMode = 'chat'
-  router.push('/app')
-      ↓
-ChatPanel loads the pre-seeded conversation
-User Socratizes with AI (existing flow, unchanged)
-      ↓
-On Neurogenesis (existing flow, unchanged):
-  POST /api/neurons → neuron created
-  Client also calls: PATCH /api/queue/{id} { state: 'mastered' }
-```
-
-### Flow 4: Chat AI — Queue Items Stay Invisible
-
-```
-User sends chat message
-      ↓
-POST /api/chat
-  getRelevantContext(latestUserText, user.id, supabase)
-      ↓
-getRelevantContext() queries: neurons table ONLY (pgvector similarity)
-knowledge_queue: NEVER QUERIED (different table, no reference in chat route)
-      ↓
-System prompt built from neuron embeddings only
-Queue items are structurally invisible to the AI
-```
-
-### State Management
-
-```
-Zustand graphStore (MODIFIED)
-  leftPanelMode: 'chat' | 'neuron' | 'review' | 'queue'  ← 'queue' added
-  openQueue() action  ← NEW
-  (all existing state and actions unchanged)
-      ↓ (subscribe)
-AppSidebar, layout, ChatPanel, QueuePanel
-
-Zustand queueStore (NEW)
-  items: KnowledgeQueueItem[]
-  isLoading: boolean
-  counts: { inbox: number; passive_debt: number; active: number }
-  setItems(), updateItem(id, patch), removeItem(id)
-      ↓ (subscribe)
-QueuePanel, QueueItem, AppSidebar badge
-
-React Context: ConversationContext (UNCHANGED)
-  currentConversationId
-  refreshConversations()
-  Used by crystallize flow: setCurrentConversationId(crystallized conversationId)
-```
+See Section 2C. This is the highest-impact React performance change — moving dagre off the main thread.
 
 ---
 
-## New Database Schema
+## 5. Supabase RPC Call Reliability
 
-### `knowledge_queue` table
+### Current state
+
+Three critical RPC call sites and their current error handling:
+
+| Site | Call | Error handling | Consequence of failure |
+|------|------|---------------|------------------------|
+| `bouncer.ts` line 31 | `find_similar_neurons` | Returns null, logs | Fail-open: correct |
+| `neurons/route.ts` line 168 | `find_similar_neurons` (post-insert) | Returns 500 to client | WRONG: neuron already inserted |
+| `queries.ts` line 89 | `find_similar_neurons` | Throws | Depends on caller |
+| `queries.ts` line 124 | `get_neuron_neighborhood` | Throws | Depends on caller |
+
+**Critical bug in `neurons/route.ts`:** The `find_similar_neurons` call at line 168 runs AFTER the neuron has been inserted into the database (line 127-148). If this RPC call fails, the current code returns a 500 to the client. The client then shows an error. But the neuron was successfully created. The user may retry, creating a duplicate. This is the highest-priority reliability fix in the entire codebase.
+
+**Known platform issue:** The Supabase-js SDK has a 3-second API statement timeout enforced at the PostgREST layer. For pgvector similarity search on a cold start with 1000+ vectors, this can be reached. There is no client-side configuration option — it must be overridden with `SET LOCAL statement_timeout` inside the Postgres function body.
+
+**Connection pooling:** The current `createServerSupabaseClient()` pattern creates one Supabase client per request via the REST/PostgREST layer. This is correct for serverless. Supabase's Supavisor handles pooling server-side. No client-side changes needed.
+
+### Recommended patterns
+
+#### A. Make post-insert find_similar_neurons non-fatal (MODIFY `neurons/route.ts`) — CRITICAL
+
+```typescript
+// MODIFY: src/app/api/neurons/route.ts ~line 168
+const { data: similarNeurons, error: similarError } = await supabase.rpc('find_similar_neurons', {
+  query_embedding: embedding,
+  match_user_id: user.id,
+  match_count: 10,
+  match_threshold: 0.15,
+});
+
+if (similarError) {
+  // NON-FATAL: neuron is already inserted. Log and return success without prerequisites.
+  console.warn('[neurons/POST] find_similar_neurons failed (non-fatal):', similarError.message);
+  return NextResponse.json(
+    {
+      neuron,
+      prerequisite_links: [],
+      projected_ghosts: [],
+      mastered_queue_item_id: masteredQueueItemId,
+    },
+    { status: 201 }
+  );
+}
+```
+
+This is the single most impactful reliability fix in the codebase.
+
+#### B. Add a lightweight retry helper for RPC calls (NEW `src/lib/db/rpc-retry.ts`)
+
+```typescript
+// NEW: src/lib/db/rpc-retry.ts
+export async function withRpcRetry<T>(
+  fn: () => Promise<{ data: T | null; error: unknown }>,
+  maxAttempts = 2,
+  delayMs = 500
+): Promise<{ data: T | null; error: unknown }> {
+  let lastResult = await fn();
+  if (!lastResult.error) return lastResult;
+
+  for (let attempt = 1; attempt < maxAttempts; attempt++) {
+    await new Promise((r) => setTimeout(r, delayMs * attempt));
+    lastResult = await fn();
+    if (!lastResult.error) return lastResult;
+  }
+
+  return lastResult;
+}
+```
+
+Apply to: `bouncer.ts` find_similar_neurons (before insert, safe to retry). Do NOT apply to the post-insert call — the fix there is to make it non-fatal, not to retry.
+
+#### C. Override statement_timeout in the find_similar_neurons Postgres function (NEW migration)
 
 ```sql
-CREATE TABLE knowledge_queue (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-
-  -- Content
-  source_url TEXT,                     -- nullable (text notes have no URL)
-  title TEXT NOT NULL,
-  note TEXT,                           -- user annotation
-  extracted_content TEXT,              -- populated on crystallize (server-side fetch)
-
-  -- State machine (4 active states + 1 terminal per branch)
-  state TEXT NOT NULL DEFAULT 'inbox'
-    CHECK (state IN ('inbox', 'passive_debt', 'crystallizing', 'mastered', 'discarded')),
-
-  -- Linkage (once crystallized/mastered)
-  crystallized_neuron_id UUID REFERENCES neurons(id) ON DELETE SET NULL,
-  crystallized_conversation_id UUID REFERENCES conversations(id) ON DELETE SET NULL,
-
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-ALTER TABLE knowledge_queue ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can CRUD own queue items"
-  ON knowledge_queue FOR ALL USING (auth.uid() = user_id);
-
--- Partial index: active items only (not terminal states)
-CREATE INDEX idx_knowledge_queue_user_active
-  ON knowledge_queue(user_id, state, created_at DESC)
-  WHERE state NOT IN ('mastered', 'discarded');
+-- MIGRATION: Modify find_similar_neurons function
+-- Add at the start of the function body:
+SET LOCAL statement_timeout = '8000'; -- 8 seconds, overrides the 3s PostgREST default
 ```
 
-### `user_api_keys` table
+This requires a Supabase SQL migration. The `SET LOCAL` approach is confirmed to work inside Postgres functions (per Supabase GitHub discussion #27421). Confidence: MEDIUM.
 
-```sql
-CREATE TABLE user_api_keys (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+---
 
-  label TEXT NOT NULL,                 -- "iPhone Shortcut", "Home Mac"
-  hashed_key TEXT NOT NULL UNIQUE,    -- SHA-256 of raw key — raw key never stored
-  last_used_at TIMESTAMPTZ,
-  revoked_at TIMESTAMPTZ,             -- NULL = active; non-null = revoked (soft delete)
+## 6. Zustand Store Resilience
 
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
+### Current state
 
-ALTER TABLE user_api_keys ENABLE ROW LEVEL SECURITY;
--- Users can read and delete their own keys via browser session
-CREATE POLICY "Users can read own keys"
-  ON user_api_keys FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Users can delete own keys"
-  ON user_api_keys FOR DELETE USING (auth.uid() = user_id);
--- INSERT done via service role in /api/keys route (bypasses RLS by design)
+**`graphStore.ts`:** No persistence middleware. Store resets on page refresh. All graph state is loaded fresh from the API on mount. This is intentional and correct — freshness matters more than instant load for a learning app.
+
+Specific risks identified:
+
+**Interval leak on fast remounts:** The `setInterval(loadGraph, 5 * 60 * 1000)` in `GraphPanel.tsx` is created inside a `useEffect` with `[setGraph]` as dependency. `setGraph` is a Zustand action with a stable reference, so this does not cause duplicate intervals in normal usage. However, the `loadGraph` async function inside the effect does not check if the component is still mounted before calling `setGraph`. On fast navigation (route A → route B before the initial fetch completes), the stale response arrives and writes to the store after the component unmounts.
+
+**Horizon loading orphan:** If the component unmounts while `isHorizonLoading: true` (user navigates away mid-architect-request), the store retains `isHorizonLoading: true`. On remount, the UI shows a permanent spinner.
+
+**React 18 StrictMode double-invocation:** In development, React 18 mounts → unmounts → remounts every component. The cleanup function correctly clears intervals. No production issue.
+
+**`queueStore.ts`:** `pendingById` optimistic state would be lost on remount. This is brief and acceptable — the pending state will re-sync on the next mutation.
+
+### Recommended patterns
+
+#### A. Abort controller for loadGraph (MODIFY `GraphPanel.tsx`)
+
+```typescript
+// MODIFY: src/components/graph/GraphPanel.tsx loadGraph useEffect (~line 238)
+useEffect(() => {
+  let aborted = false;
+
+  const loadGraph = async () => {
+    const response = await fetch('/api/neurons', { cache: 'no-store' });
+    if (!response.ok || aborted) return;
+
+    const payload = await response.json();
+    if (aborted) return; // guard against unmount between fetch and .json()
+
+    // ... existing mapping logic ...
+    setGraph(mappedNodes, mappedEdges);
+  };
+
+  loadGraph();
+  const interval = setInterval(loadGraph, 5 * 60 * 1000);
+
+  return () => {
+    aborted = true;
+    clearInterval(interval);
+  };
+}, [setGraph]);
+```
+
+The `aborted` boolean prevents stale fetch responses from writing to the store after unmount.
+
+#### B. Clear horizon loading state on unmount (MODIFY `GraphPanel.tsx`)
+
+```typescript
+// ADD to GraphCanvas component in GraphPanel.tsx:
+useEffect(() => {
+  return () => {
+    // Prevent orphaned loading spinner if component unmounts mid-architect-request
+    if (useGraphStore.getState().isHorizonLoading) {
+      useGraphStore.getState().setHorizonError('Request cancelled');
+    }
+  };
+}, []); // empty deps — runs cleanup only on unmount
+```
+
+`setHorizonError` already sets `isHorizonLoading: false` (confirmed in `graphStore.ts` line 177).
+
+#### C. Do not add persist middleware (DECISION)
+
+The store is deliberately ephemeral. Adding `persist` would cause stale graph state to display on load, overriding the fresh API response with potentially deleted or modified neurons. The flash of empty state on load is acceptable and intentional for correctness.
+
+---
+
+## Integration Point Summary
+
+| Integration Point | File(s) | Type | Priority |
+|-------------------|---------|------|----------|
+| Post-insert find_similar_neurons non-fatal | `api/neurons/route.ts` ~line 168 | MODIFY | Critical |
+| TipTap content sync race on neuron switch | `components/editor/LiquidDocumentEditor.tsx` | MODIFY | Critical |
+| generateEmbedding maxRetries + error message | `lib/ai/embeddings.ts`, `api/neurons/route.ts` | MODIFY | High |
+| streamText maxRetries + abortSignal | `api/chat/route.ts` | MODIFY | High |
+| generateObject typed errors + maxRetries | `api/architect/route.ts`, `lib/ai/inferPrerequisites.ts` | MODIFY | High |
+| NeuronNode + GhostNeuronNode React.memo | `components/graph/NeuronNode.tsx`, `GhostNeuronNode.tsx` | MODIFY | High |
+| Batch retrievability update | `stores/graphStore.ts` + `GraphPanel.tsx` | MODIFY | Medium |
+| Wire layout.worker.ts to GraphPanel | `components/graph/GraphPanel.tsx` + `layout.worker.ts` | MODIFY | Medium |
+| loadGraph abort controller | `components/graph/GraphPanel.tsx` | MODIFY | Medium |
+| Horizon loading orphan guard on unmount | `components/graph/GraphPanel.tsx` | MODIFY | Medium |
+| Add enableContentCheck to both editors | `LiquidDocumentEditor.tsx`, `NeuronTipTapEditor.tsx` | MODIFY | Low |
+| RPC retry helper | `lib/db/rpc-retry.ts` | NEW | Medium |
+| statement_timeout in find_similar_neurons | Supabase migration | NEW | Medium |
+
+---
+
+## Build Order
+
+Build in this order to avoid regressions and respect dependencies:
+
+```
+Phase A — AI reliability (no React dependencies, safest first):
+  1. src/lib/ai/embeddings.ts
+     Add maxRetries: 2 to embed() call. Trivial change, no side effects.
+
+  2. src/app/api/neurons/route.ts
+     - Fix embedding error message (~line 108)
+     - Fix find_similar_neurons post-insert non-fatal (~line 168-177)
+     Depends on: embeddings.ts change.
+
+  3. src/lib/ai/inferPrerequisites.ts
+     Add maxRetries + typed error handling to generateObject.
+
+  4. src/app/api/architect/route.ts
+     Add maxRetries + typed error handling to generateObject.
+     Same pattern as step 3 — do together.
+
+  5. src/app/api/chat/route.ts
+     Add maxRetries + abortSignal to streamText.
+
+Phase B — Editor reliability (independent of Phase A):
+  6. src/components/editor/LiquidDocumentEditor.tsx
+     - Fix neuron.id content sync race
+     - Add enableContentCheck
+     No dependencies on Phase A. Can be built in parallel.
+
+Phase C — Graph performance (depends on each other, do in sequence):
+  7. src/components/graph/NeuronNode.tsx + GhostNeuronNode.tsx
+     Add React.memo. Pure wraps, no logic change.
+
+  8. src/stores/graphStore.ts
+     Add batchUpdateNodeRetrievability action.
+
+  9. src/components/graph/layout.worker.ts
+     Update rankdir from 'LR' to 'TB' to match GraphPanel.
+
+  10. src/components/graph/GraphPanel.tsx
+      - Wire layout worker (depends on step 9)
+      - Batch retrievability (depends on step 8)
+      - Abort controller for loadGraph
+      - Horizon orphan guard on unmount
+      Depends on: steps 7, 8, 9.
+
+Phase D — Supabase (requires DB migration, do last):
+  11. src/lib/db/rpc-retry.ts
+      New file, no dependencies.
+
+  12. Supabase SQL migration
+      Add SET LOCAL statement_timeout to find_similar_neurons.
+      Requires dashboard access and migration deployment.
 ```
 
 ---
 
-## Anti-Patterns
+## Anti-Patterns to Avoid
 
-### Anti-Pattern 1: Exposing Queue Items to Chat RAG Context
+### 1. Retry-wrapping the entire neurons POST handler
 
-**What people do:** Add `knowledge_queue` to the `getRelevantContext()` function to give the AI "more material to work with."
+The handler performs a DB INSERT. Retrying the entire handler on any failure risks duplicate inserts. Only pre-insert operations (embedding, bouncer check) should retry. The insert itself is protected by the unique constraint on title.
 
-**Why it's wrong:** Breaks the core product constraint ("AI Isolation from Queue" in PROJECT.md). Queue items are unverified, unmastered content. Mixing them into the chat context blurs the boundary between the sacred Knowledge Graph and the staging area, undermining the product's central value proposition.
+### 2. Setting onlyRenderVisibleElements without testing edge rendering
 
-**Do this instead:** Queue data enters an AI prompt in exactly one place: the crystallize route (`/api/queue/[id]/crystallize`), where it seeds a new conversation. Never the ongoing chat context.
+This prop has a known bug (GitHub #4516) with edges where one endpoint is off-screen. Test with a real 100-node graph and deliberately pan nodes off-screen before shipping.
 
-### Anti-Pattern 2: Client-Side State Transitions (Supabase Direct)
+### 3. Switching content storage from HTML to JSON in this milestone
 
-**What people do:** Write queue state directly to Supabase from the browser client (`supabase.from('knowledge_queue').update(...)`) and sync Zustand locally.
+HTML is the current storage format for `neuron.content`. Switching to `getJSON()` without a migration to convert existing content will cause TipTap to render raw HTML strings as plain text nodes. This is a v2.1 concern, not a v2.0 concern.
 
-**Why it's wrong:** Bypasses server-side transition validation. A client could move an item from `inbox` directly to `mastered` without going through Crystallize. Also bypasses server-side side effects (like setting `crystallized_conversation_id` and `extracted_content`).
+### 4. Adding persist middleware to graphStore or queueStore
 
-**Do this instead:** All state transitions go through `PATCH /api/queue/[id]`. The server validates allowed transitions. The client does an optimistic update immediately (for snappy UX) and reverts if the server returns an error.
+Both stores are deliberately ephemeral. Persist middleware would cause stale cache bugs where deleted neurons continue to appear until the next TTL expiry. The loading flash is intentional.
 
-### Anti-Pattern 3: Storing Raw API Keys in the Database
+### 5. Using a generic try/catch around inferPrerequisites for retry
 
-**What people do:** Store the actual `ng_<hex>` string in the `user_api_keys` table for easy equality comparison.
-
-**Why it's wrong:** If the table is compromised (even via an RLS misconfiguration), all mobile capture endpoints across all users are exposed permanently. The damage cannot be undone without contacting each user.
-
-**Do this instead:** Store only `SHA-256(rawKey)`. Show the raw key to the user exactly once at creation (copy-to-clipboard UI; make it clear it won't be shown again). Verification: hash the incoming bearer token and compare to stored hash. This is the GitHub Personal Access Token pattern.
-
-### Anti-Pattern 4: Using Cookie-Based Client in `/api/capture`
-
-**What people do:** Try to use `createServerSupabaseClient()` in the capture route because it's the established pattern in the codebase.
-
-**Why it's wrong:** The capture endpoint has no browser session. iOS Shortcuts cannot negotiate Supabase cookie auth. `createServerSupabaseClient()` reads `next/headers` cookies — there are none. The result is a permanently unauthenticated client that rejects every request with 401.
-
-**Do this instead:** Use a Supabase service role client (`createClient(url, serviceRoleKey)`) inside `/api/capture` only. This is the single exception to the cookie-auth pattern and must be documented at the top of that file.
-
-### Anti-Pattern 5: Merging Queue State into graphStore
-
-**What people do:** Add `queueItems`, `queueLoading`, etc. to `graphStore` for convenience since it's already the global store.
-
-**Why it's wrong:** `graphStore` owns React Flow state (nodes, edges, activeNeuronId, viewport) consumed by graph rendering. Mixing queue items into it couples two different domains, inflates the store, and makes it harder to test either concern in isolation.
-
-**Do this instead:** Separate `queueStore` with its own Zustand slice. The only coupling point between stores is `graphStore.openQueue()`, which flips `leftPanelMode` to `'queue'`. Queue components subscribe to `queueStore`; the sidebar badge subscribes to `queueStore.counts`.
+`inferPrerequisites` creates synapses in the DB on success. Retrying it after a partial failure (generateObject succeeds, synapse insert fails) could create duplicate synapses. The synapse insert already uses `upsert` with `ignoreDuplicates: true`, so this is actually safe — but the intent should be explicit.
 
 ---
 
-## Suggested Build Order (Dependency-Aware)
+## Confidence Assessment
 
-Each step unblocks the next. No step depends on a later one.
-
-### Step 1: Database Layer
-**Deliverables:** Two migrations, updated `types/database.ts`, `src/lib/db/queue.ts`
-- Migration: `knowledge_queue` table + RLS + partial index
-- Migration: `user_api_keys` table + RLS
-- Add `KnowledgeQueueItem`, `QueueItemState`, `ApiKey` types to `types/database.ts`
-- Create `src/lib/db/queue.ts` with `queueQueries` (insert, getByUser, updateState, delete)
-
-**Why first:** Every API route and UI component depends on the schema. No code can be tested without the tables.
-
-### Step 2: API Key System
-**Deliverables:** `src/lib/auth/apiKeys.ts`, `/api/keys/*`, `/api/capture`
-- `src/lib/auth/apiKeys.ts` (generateApiKey, hashApiKey, verifyApiKey)
-- `src/app/api/keys/route.ts` (GET list, POST generate)
-- `src/app/api/keys/[id]/route.ts` (DELETE revoke)
-- `src/app/api/capture/route.ts` (bearer auth, insert to queue)
-
-**Why second:** The capture endpoint is the external-facing mobile surface. Building it before the UI means the iOS Shortcut can be configured and tested immediately in isolation, before any browser UI exists.
-
-### Step 3: Queue CRUD API
-**Deliverables:** `/api/queue/route.ts`, `/api/queue/[id]/route.ts`
-- GET list (cookie auth, filter by user_id, exclude terminal states by default)
-- POST create (from browser — same-session user creates an item directly)
-- PATCH state transition (server-validates allowed transitions)
-- DELETE discard (sets state = 'discarded', or hard-delete if preferred)
-
-**Why third:** Simple CRUD with no external dependencies. The UI in Step 4 calls these endpoints. Building them first means the UI is built against real, testable endpoints from day one.
-
-### Step 4: Triage UI
-**Deliverables:** `queueStore.ts`, `useQueue.ts`, `QueuePanel`, `QueueItem`, sidebar modification, `graphStore.ts` modification, queue page
-- `src/stores/queueStore.ts`
-- `src/hooks/useQueue.ts`
-- `src/components/queue/QueuePanel.tsx`, `QueueItem.tsx`, `QueueEmptyState.tsx`
-- Modify `src/stores/graphStore.ts`: add `'queue'` to mode union + `openQueue()`
-- Modify `src/components/layout/AppSidebar.tsx`: add Queue nav link + unread badge
-- `src/app/(app)/app/queue/page.tsx`
-
-**Why fourth:** UI is the highest layer. It depends on the DB schema (Step 1) and the CRUD API (Steps 2-3). Building after the API means no mock data needed — the panel works with real items from the moment it renders.
-
-### Step 5: Crystallize Flow
-**Deliverables:** `extractor.ts`, `summarizer.ts`, `/api/queue/[id]/crystallize`, QueueItem crystallize button wired
-- `src/lib/queue/extractor.ts` (fetch URL with timeout + Cheerio HTML-to-text)
-- `src/lib/queue/summarizer.ts` (synthesis_fast call)
-- `src/app/api/queue/[id]/crystallize/route.ts` (orchestration route)
-- Update `QueueItem.tsx`: wire Crystallize button, handle response, navigate to chat
-
-**Why last:** The most complex step. Depends on queue items existing and being navigable (Steps 1-4). Introduces a new AI interaction pattern. Isolating it at the end minimises debugging surface area. The crystallize route reuses existing patterns: `conversations`/`messages` inserts already exist in `/api/chat`.
-
----
-
-## Scaling Considerations
-
-| Scale | Architecture Adjustments |
-|-------|--------------------------|
-| 0-1k users | Current synchronous approach is fine. URL extraction is inline in the crystallize route. Service role client in `/api/capture` is acceptable. |
-| 1k-10k users | Move URL extraction to a background job (Supabase Edge Function or pg_cron). Crystallize returns immediately with `{ status: 'processing' }`. A webhook or polling on the client surfaces completion. |
-| 10k+ users | Per-API-key rate limiting on `/api/capture`. pg_cron cleanup of `discarded` items older than 30 days. Partial index on `knowledge_queue` (already designed in Step 1) is essential at this scale. |
-
-### Scaling Priorities
-
-1. **First bottleneck:** URL extraction in the crystallize route. External HTTP calls are slow and flaky. Even at low scale, a poorly-behaved external site can cause the route handler to timeout (Vercel default: 10s on Hobby plan). Mitigation: 5-second `AbortSignal.timeout()` in `extractor.ts`, fallback to title-only if fetch fails or times out.
-2. **Second bottleneck:** `knowledge_queue` full-table scans without the partial index. Step 1's partial index on `(user_id, state, created_at)` WHERE active items only is essential before any production load.
-
----
-
-## Integration Points
-
-### External Services
-
-| Service | Integration Pattern | Notes |
-|---------|---------------------|-------|
-| External URLs (for crystallize) | `fetch()` with `AbortSignal.timeout(5000)` in `extractor.ts` | Must handle redirects, paywalls, and non-HTML gracefully. Fallback to title-only. |
-| Supabase service role | `createClient(url, serviceRoleKey)` in `/api/capture` and `/api/keys` (insert only) | Never expose this client or key to browser. Server-only files. |
-
-### Internal Boundaries
-
-| Boundary | Communication | Notes |
-|----------|---------------|-------|
-| QueueItem → Crystallize route → ConversationContext | fetch POST → returns conversationId → client sets context | Thin handoff: route returns ID, client owns navigation |
-| `/api/capture` → `knowledge_queue` | Service role insert (no cookie session) | Only exception to the cookie-auth pattern in the whole codebase |
-| queueStore ↔ graphStore | `graphStore.openQueue()` only | No shared state. Mode flag is the only coupling. |
-| Chat AI ↔ queue | NONE | Structural isolation — different DB tables, no reference in chat routes |
+| Area | Confidence | Basis |
+|------|------------|-------|
+| AI SDK v6 error types (NoObjectGeneratedError, APICallError) | HIGH | ai-sdk.dev reference docs confirm as stable exports |
+| maxRetries behavior and exponential backoff | HIGH | AI SDK v6 core docs |
+| abortSignal on streamText + generateObject | MEDIUM | Documented prop; Vercel 55s convention is community practice |
+| React Flow React.memo requirement | HIGH | Official React Flow performance docs |
+| onlyRenderVisibleElements edge bug | HIGH | Confirmed in xyflow GitHub issue #4516 |
+| TipTap enableContentCheck API | HIGH | TipTap v3.0 stable release notes |
+| TipTap content sync race (LiquidDocumentEditor) | HIGH | Identified directly by code audit, reproducible |
+| Supabase 3s PostgREST statement timeout | MEDIUM | Confirmed in Supabase GitHub discussion #27421, not primary docs |
+| SET LOCAL statement_timeout workaround | MEDIUM | Reported working in Supabase discussions, not in primary docs |
+| Zustand abort controller pattern | HIGH | Standard React cleanup pattern; no Zustand-specific concerns |
 
 ---
 
 ## Sources
 
-- Direct codebase analysis (2026-03-22):
-  - `/src/stores/graphStore.ts` — leftPanelMode union, action patterns
-  - `/src/middleware.ts` — cookie auth scope (`/app/*` only)
-  - `/src/app/(app)/layout.tsx` — 40/60vw split structure
-  - `/src/app/api/chat/route.ts` — RAG context construction, AI isolation point
-  - `/src/app/api/neurons/route.ts` — existing CRUD + bouncer pattern
-  - `/src/lib/auth/supabase.ts` — `createServerSupabaseClient()` cookie pattern
-  - `/src/lib/ai/providers.ts` — `getModelForRole()` for synthesis_fast
-  - `/src/lib/db/queries.ts` — `neuronQueries` object pattern to follow
-  - `/src/lib/contexts/ConversationContext.tsx` — `setCurrentConversationId` for crystallize handoff
-  - `/src/types/database.ts` — existing type shape for new types to follow
-  - `/src/lib/db/migrations/010_baseline_v2_reset.sql` — current schema baseline
-- Project context: `/.planning/PROJECT.md`
-
----
-*Architecture research for: NeuroGraph v1.1 Staging Area — Cognitive Funnel integration*
-*Researched: 2026-03-22*
+- [AI SDK Core: Error Handling](https://ai-sdk.dev/docs/ai-sdk-core/error-handling)
+- [AI SDK Errors: AI_APICallError](https://ai-sdk.dev/docs/reference/ai-sdk-errors/ai-api-call-error)
+- [AI SDK Errors: AI_NoObjectGeneratedError](https://ai-sdk.dev/docs/reference/ai-sdk-errors/ai-no-object-generated-error)
+- [AI SDK Core: Settings (maxRetries, abortSignal)](https://ai-sdk.dev/docs/ai-sdk-core/settings)
+- [Troubleshooting: Timeouts on Vercel](https://ai-sdk.dev/docs/troubleshooting/timeout-on-vercel)
+- [React Flow: Performance](https://reactflow.dev/learn/advanced-use/performance)
+- [React Flow: onlyRenderVisibleElements edge rendering bug #4516](https://github.com/xyflow/xyflow/issues/4516)
+- [TipTap: Invalid Schema Handling](https://tiptap.dev/docs/guides/invalid-schema)
+- [TipTap 3.0 Stable Release Notes](https://tiptap.dev/blog/release-notes/tiptap-3-0-is-stable)
+- [Supabase: API statement timeout discussion #27421](https://github.com/orgs/supabase/discussions/27421)
+- [Supabase: Connection pooling for serverless Next.js](https://needthisdone.com/blog/supabase-connection-pooling-production-nextjs)
+- [Zustand: React 18 mount/unmount behavior #1683](https://github.com/pmndrs/zustand/discussions/1683)

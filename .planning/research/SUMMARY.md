@@ -1,17 +1,17 @@
 # Project Research Summary
 
-**Project:** NeuroGraph — Cognitive MicroSaaS / Knowledge Graph
-**Domain:** PKM Staging Area & Cognitive Funnel (v1.1 Milestone)
-**Researched:** 2026-03-22
+**Project:** NeuroGraph v2.0 MVP Core Stability
+**Domain:** Cognitive MicroSaaS — Graph-based AI Tutoring Platform
+**Researched:** 2026-03-24
 **Confidence:** HIGH
 
 ## Executive Summary
 
-NeuroGraph v1.1 adds a Staging Area — a knowledge inbox with a deliberate cognitive funnel — on top of an already-production graph-based knowledge system. The fundamental challenge is not technical: it is philosophical. Every competitor (Readwise Reader, Recall.ai, Instapaper) treats ingestion as the product; NeuroGraph must treat ingestion as a liability. The Staging Area must be an uncomfortable pressure surface that forces Crystallization — an active Socratic engagement with captured content — not a passive archive. The product's central thesis only survives if the queue architecture makes passive accumulation feel costly and Crystallization feel like the only resolution.
+NeuroGraph is a production AI tutoring platform built on a well-established but fragile stack: Next.js 14, Vercel AI SDK v6, Supabase/pgvector, TipTap v3, React Flow, and Zustand. The v2.0 milestone is a production hardening sprint — no new features, only making existing features work reliably at scale. The research establishes that the system's architecture is sound and its agent contracts are pedagogically grounded, but the codebase has a consistent pattern of missing error handling across every major subsystem: AI calls have no timeouts, no retry logic, and no typed error handling; the TipTap editor has a reproducible content sync race bug; the knowledge graph re-renders expensively on every state change; and the most critical reliability bug is a post-insert failure path that can return a 500 error to the client while the neuron already exists in the database.
 
-The recommended technical approach is surgical: one new package (`@extractus/article-extractor`), two new DB tables (`knowledge_queue`, `user_api_keys`), five new API route groups, and a dedicated Zustand `queueStore` alongside the existing `graphStore`. The existing React Flow graph, Socratic chat engine, FSRS review system, and Neurogenesis flow remain entirely untouched. The Crystallize flow is a wrapper that seeds an existing chat session with extracted article content — the Socratic mechanics are already built. The mobile capture surface (iOS Shortcuts via `POST /api/capture` with a bearer token) is a clean addition that does not touch the cookie-based auth pattern used everywhere else.
+The recommended approach is to address reliability in a clear build order: AI call hardening first (since it involves no React dependencies and the consequences of getting it wrong are silent production 500s), then editor reliability (independent, can be parallelized), then graph performance (sequential — each change depends on the prior), then Supabase-level fixes requiring schema migrations last. Alongside code changes, prompt engineering is a first-class concern: the Socratic agent lacks Khanmigo-proven calibration patterns (mistake handling, Goldilocks edge, anti-loop variation), the Bouncer has no explicit output contract to prevent JSON contamination, and the Architect produces flat Bloom distributions. These are all pure prompt changes — testable immediately via the existing promptfoo golden suite.
 
-The dominant risks are architectural, not implementation-level: (1) AI context isolation between `knowledge_queue` and `neurons` must be structural — separate tables, no joins in chat routes — not enforced by convention; (2) API key authentication must live inside the route handler itself, not middleware (CVE-2025-29927 is a live CVSS 9.1 bypass affecting all Next.js < 14.2.25); (3) the Queue must route as `/app/queue` via the sidebar nav, not as a fourth `leftPanelMode` value, to avoid a mode-explosion that compounds with every future milestone.
+The key risks are behavioral rather than technical: prompt drift and Bloom classification boundary collapse are the two failure modes most likely to go undetected, because they do not produce errors — they silently degrade pedagogical quality. The mitigation is instrumentation before hardening: establish canary eval tiers, add behavioral production metrics (neurogenesis acceptance rate, Bloom distribution, DAG link count), and track score distributions over time rather than relying on binary pass/fail thresholds.
 
 ---
 
@@ -19,148 +19,164 @@ The dominant risks are architectural, not implementation-level: (1) AI context i
 
 ### Recommended Stack
 
-The v1.1 stack requires exactly one new dependency. All other capabilities are already present or use Node.js built-ins. `@extractus/article-extractor` v8 handles URL fetch + DOM parse + content extraction in a single call and runs in the Node.js runtime (not Edge). API key generation uses `nanoid` (already a transitive dependency) with `ng_` prefix and SHA-256 hashing via Node.js `crypto` — no bcrypt, no JWT overhead, no Vault setup. The `knowledge_queue` state machine uses a plain Supabase table with a status TEXT enum column; pgmq is explicitly wrong here because the queue is a user-facing editorial list, not a background job processor.
+The stack requires no new dependencies for v2.0. All hardening is achievable with packages already installed. The Vercel AI SDK v6 (`ai@6.0.82`) exposes `NoObjectGeneratedError`, `APICallError`, `maxRetries`, `abortSignal`, and `onError` as production-ready APIs — they are simply not used in the current codebase. `AbortSignal.timeout()` is a Node.js 18+ built-in. `React.memo` is already available. `onlyRenderVisibleElements` is in `@xyflow/react@12.10.0`. `editor.getJSON()` and `setContent(content, false)` are in `@tiptap/react@3.20.4`.
 
-**Core technologies (existing, unchanged):**
-- **Next.js 14 App Router**: Full-stack framework — all new routes follow existing route handler patterns
-- **Supabase + pgvector**: Auth, PostgreSQL, vector similarity for Neurons — new tables follow established RLS pattern
-- **React Flow (`@xyflow/react`)**: Graph panel — no changes required for v1.1
-- **Vercel AI SDK 3.x**: AI orchestration — Crystallize uses `getModelForRole('synthesis_fast')` already wired
-- **Zustand**: New `queueStore` added alongside existing `graphStore`
-
-**New for v1.1 (one install):**
-- `@extractus/article-extractor` v8: URL content extraction — Node.js runtime only, must not declare `export const runtime = 'edge'`
-- `nanoid` (already in lockfile as transitive dep): 48-char `ng_`-prefixed API key generation
-- Node.js `crypto` built-in: SHA-256 key hashing, `timingSafeEqual` comparison
-
-**Do not use:** LangChain, browser extensions for capture, pgmq (wrong abstraction), bcrypt/argon2 for API keys (too slow per-request — tokens are already high-entropy), React Context for queue state, JWT for API keys (unnecessary claim encoding overhead).
-
-See `.planning/research/STACK.md` for full detail including SQL schemas and code patterns.
+**Core technologies and v2.0 hardening role:**
+- `ai@6.0.82` (Vercel AI SDK v6) — add `maxRetries`, `abortSignal`, `onError`, typed error narrowing to all 4 AI call sites
+- `@tiptap/react@3.20.4` — standardize on `getJSON()`, fix `setContent` emission default change (v3 breaking change), fix content sync race on neuron switch
+- `@xyflow/react@12.10.0` — add `onlyRenderVisibleElements`, wire existing but unused `layout.worker.ts`, wrap node components in `React.memo`
+- `promptfoo@0.121.2` — add multi-turn sequencing tests, `llm-rubric` anti-repetition assertions, `conversation-relevance`, Bloom distribution assertions, Bouncer confidence calibration
+- `zustand@5.0.11` — add batch retrievability update action, abort controller for load loop, horizon loading orphan guard
+- `@supabase/supabase-js@2.95.3` — make post-insert `find_similar_neurons` failure non-fatal; add `SET LOCAL statement_timeout` in Postgres function; add RPC retry helper
 
 ### Expected Features
 
-The v1.1 feature set is well-defined with clear P1/P2/P3 tiers. Table-stakes features are low-complexity and mostly structural; the differentiators define NeuroGraph against competitors.
+This milestone is a hardening sprint, not a feature sprint. The research maps existing features against production standards and identifies specific gaps.
 
-**Must have (table stakes — P1):**
-- `queue_items` DB schema with 4-state lifecycle (`inbox`, `passive_debt`, `crystallizing`, `mastered`) — prerequisite for everything
-- `user_api_keys` table with SHA-256 hashed key storage — prerequisite for mobile capture
-- `POST /api/capture` endpoint with bearer token auth — enables iOS Shortcut
-- Inbox list UI as sidebar nav route `/app/queue` — shows items with status labels, not a panel mode
-- Manual triage controls: promote to Resource, mark as Passive Debt, delete
-- "Add URL" desktop input field — covers non-mobile capture
-- Crystallize flow: URL extraction to Socratic chat seed — the core differentiator
-- AI isolation: `knowledge_queue` never queried in chat context
+**Must have — behavioral table stakes for AI tutoring agents:**
+- Never-give-answers enforcement — core Socratic contract; partially present, needs explicit edge case rules
+- One-question-at-a-time discipline — present but not strictly enforced
+- Calibrated question difficulty (Khanmigo Goldilocks pattern) — missing entirely from CHAT_SYSTEM_PROMPT
+- Mistake handling without correction — missing; must not correct errors directly, must ask "how did you get there"
+- Anti-loop variation — missing; LLMs repeat question types across turns without explicit instruction
+- Structured output resilience — `NoObjectGeneratedError` handling absent at all 3 `generateObject` call sites
+- Cycle detection as hard server-side guarantee — present in code (DFS), but LLM refusal is first line only, not sufficient on its own
 
-**Should have (competitive differentiators — P2):**
-- Passive Debt count badge on sidebar nav item — ambient pressure signal, not a comfort indicator
-- Pre-generated AI triage summary on ingest (validate demand first — extra AI call per capture)
-- Auto-advance queue item to `mastered` when Neurogenesis fires from a Crystallize session
-- Plain text note capture via iOS Shortcut (same endpoint, `content_type: 'note'`)
+**Should have — differentiators NeuroGraph can activate now:**
+- Bloom real-time depth indicator — client-side keyword scan plus neurogenesis tool call as high-confidence update; zero additional API calls required
+- Bloom escalation prompting — agent actively pulls user from Understand to Analyze; prompt-only change
+- Neurogenesis priming language — "that's an insight worth preserving"; prompt-only change
+- Knowledge-graph-aware enrichment explicitly instructed — RAG context already injected but prompt does not name it
+- Meta-question technique — prompt addition: "what assumption is underneath that claim"
+- Bloom progress tracking via inline `[BLOOM:Level]` marker — parseable by `onFinish`, zero extra API calls
 
-**Defer to v2+:**
-- Bulk onboarding import (capped at 10 with warning — only if onboarding friction is measured)
-- Open Graph preview images in queue list
-- Queue item tagging / manual categorization
-- Browser extension capture (significant build cost, redundant given web input field)
-
-**Anti-features to avoid:** Auto-summarize to auto-create Neurons (this is Recall.ai — breaks the thesis), bulk archive / "mark all read," scheduled Crystallize reminders, full-text search of inbox.
-
-See `.planning/research/FEATURES.md` for competitor analysis and full prioritization matrix.
+**Defer to v2.1+:**
+- Per-session Bloom trajectory log — requires new data model and schema migration
+- Multi-model fallback — adds dependency; no production failure data to justify yet
+- Fine-tuned Bloom classifier — requires curated training data pipeline
+- Duolingo-style persistent "List of Facts" across sessions — significant architecture change; current RAG covers the core need
+- TipTap content storage migration from HTML to JSON — correct long-term direction but requires migration of all existing `neuron.content` rows
 
 ### Architecture Approach
 
-The v1.1 architecture integrates the Staging Area by adding two parallel subsystems — the queue data layer and the mobile capture surface — while touching existing code in exactly three places: `graphStore.ts` (add `openQueue()` action only; do NOT add `'queue'` to `leftPanelMode`), `AppSidebar.tsx` (add Queue nav link with unread badge), and `types/database.ts` (add new types). The Queue renders as an App Router page at `/app/queue`, consistent with how `/app/review` already works. A separate `queueStore` (Zustand) owns queue state; `graphStore` retains sole ownership of React Flow and panel mode state. The only coupling between the two stores is a single `graphStore.openQueue()` call that fires after Crystallize navigates the user to chat.
+All hardening follows a consistent architectural pattern: separate concerns by failure domain. AI call failures are handled at the route handler level with typed SDK errors and should never surface as opaque 500s. Editor state has a single serialization format and a single content sync trigger (`neuron.id` change, not focus state). Graph state has one batched update path for retrievability and an off-thread layout worker for dagre. Supabase calls have explicit non-fatal vs. fatal designations — the post-insert similarity search is non-fatal because the neuron already exists; the pre-insert embedding call is fatal because the neuron cannot be stored without its vector.
 
-**Major components:**
-1. **`/api/capture` (bearer auth)**: The sole exception to cookie-auth in the codebase. Uses a Supabase service role client. Must contain its own auth logic — never delegate to middleware.
-2. **`/api/queue/[id]/crystallize` (orchestration)**: Five-step server route: fetch URL → extract text → AI summary via `synthesis_fast` → create conversation with seeded message → update queue item state. Returns `{ conversationId }` to client, which navigates to chat.
-3. **`queueStore` (Zustand)**: Owns `items[]`, `counts`, optimistic mutations. Consumed by `QueuePanel`, `QueueItem`, and the sidebar badge. Bridge to `graphStore` is `openQueue()` only.
-4. **`src/lib/queue/extractor.ts`**: URL fetch + HTML-to-text extraction. 8–10s `AbortSignal.timeout`. Returns a structured failure signal on insufficient content — never proceeds to Crystallize with empty context.
-5. **`src/lib/auth/apiKeys.ts`**: `generateApiKey()`, `hashApiKey()`, `verifyApiKey()`. Zero new dependencies.
-
-**Key patterns to follow:**
-- State transitions via server-validated PATCH only — client optimistic update, server-side transition allowlist, rollback on failure
-- AI isolation is structural: `getRelevantContext()` queries `neurons` only; `knowledge_queue` has no reference in any chat route
-- Queue content enters AI context in exactly one place: the Crystallize route seeding a new conversation (never ongoing chat)
-- All new routes use cookie-based auth except `/api/capture`, which is documented as the single exception
-
-See `.planning/research/ARCHITECTURE.md` for full data flow diagrams, component registry, and anti-patterns.
+**Major components and their v2.0 hardening responsibilities:**
+1. **AI Route Handlers** (`/api/chat`, `/api/architect`, `/api/neurons/extract`, `/api/neurons/ai-action`) — `maxRetries`, `abortSignal`, `onError`, typed `NoObjectGeneratedError`/`APICallError` handling at all 4 call sites
+2. **Prompt Engineering Layer** (`src/lib/ai/prompts.ts`) — Bouncer output contract, Architect Bloom distribution policy, Chat calibrated difficulty + mistake handling + anti-repetition + Bloom marker, DAG comprehension test + boundary examples + topological self-check
+3. **TipTap Editor Components** (`LiquidDocumentEditor`, `NeuronTipTapEditor`) — unified neuron-switch effect keyed on `neuron.id`, `setContent(content, false)` to prevent false update emissions, shared `BASE_EXTENSIONS` constant, `enableContentCheck: true`
+4. **React Flow Graph** (`GraphPanel`, `NeuronNode`, `GhostNeuronNode`, `SynapseEdge`) — `React.memo` on all custom node/edge types, `onlyRenderVisibleElements`, layout worker wiring (fix `rankdir: LR → TB` mismatch first), batched retrievability updates
+5. **Zustand Stores** (`graphStore`, via `GraphPanel`) — `batchUpdateNodeRetrievability` action, abort controller for `loadGraph` async loop, horizon loading orphan guard on unmount
+6. **Supabase Layer** (`neurons/route.ts`, `rpc-retry.ts`, SQL migration) — non-fatal post-insert similarity search, RPC retry helper, `SET LOCAL statement_timeout = 8000` in `find_similar_neurons` function
+7. **promptfoo Eval Suite** (`prompt-eval/`) — multi-turn test cases, `llm-rubric` anti-repetition, `conversation-relevance`, Bloom distribution assertion, Bouncer confidence calibration
 
 ### Critical Pitfalls
 
-1. **The Passive Bookmark Graveyard** — Label queue items "Unprocessed" / "Passive Debt," never "Saved." Crystallize must be the only path to resolution. No bulk-archive action. Soft cap warning at 10 unprocessed items. Never auto-preview article content inline. Address in Phase 1 (schema state labels) and Phase 3 (UI language).
+1. **Silent prompt drift eroding agent contracts** — Prompts degrade without triggering errors. The Socratic agent starts giving hints; the Bouncer accepts shallow summaries. Mitigation: establish canary eval tier (5–10 cases per agent that must pass 100% at all times), run promptfoo in CI on every prompt change, track Bloom distribution and neurogenesis acceptance rate as behavioral production metrics.
 
-2. **AI Context Contamination** — `knowledge_queue` must be a structurally separate table, never embedded, never joined in chat routes. Enforce with a CI test: "Chat API system prompt contains zero `knowledge_queue` rows." Address in Phase 1 (schema isolation) and Phase 2 (Crystallize flow tests).
+2. **Bloom classification boundary collapse** — The Analyze/Understand boundary is the most failure-prone in research literature. LLMs reward fluent prose over genuine insight ("paraphrasing masquerade"). Mitigation: add negative examples explicitly to Bouncer prompt ("restating a definition is Understand, not Analyze — even if phrased with confidence"), add second-pass structural heuristic for analytical signals, track node Bloom level distribution over time.
 
-3. **Middleware-Only Auth Bypass (CVE-2025-29927)** — Live CVSS 9.1 vulnerability in Next.js < 14.2.25. API key validation must live inside the `/api/capture` route handler itself. Verify Next.js >= 14.2.25 before shipping Phase 2.
+3. **DAG prerequisite hallucination and cycle injection** — LLMs generate plausible-sounding prerequisites that are not actual learning dependencies, especially under long context (>30 nodes). The LLM cycle refusal prompt is not a guarantee. Mitigation: server-side Kahn's algorithm cycle check after every DAG update, cap Architect at 3 new prerequisite links per neurogenesis event, comprehension test formulation in system prompt.
 
-4. **URL Extraction Brittleness** — `@extractus/article-extractor` fails on SPAs, paywalled content, PDFs, and login-gated URLs (~30–40% of real-world URLs). Always check body text length; return `{ success: false, reason }` on failure; present a "paste content manually" fallback. Store extracted content at capture time, not at Crystallize time. Address in Phase 4 (Crystallize flow).
+4. **Post-insert RPC failure creating duplicate neurons** — The `find_similar_neurons` call at `neurons/route.ts ~line 168` runs after the neuron is inserted. If it fails, the current code returns 500 to the client — the user retries and creates a duplicate. This is the single highest-priority reliability fix in the codebase. Mitigation: make the post-insert call non-fatal; return success with empty arrays if it fails.
 
-5. **Left Panel Mode Explosion** — Do NOT add `'queue'` to `leftPanelMode`. Queue is a route (`/app/queue`), not a panel mode. A fourth mode in the union creates a pseudo-router in Zustand that compounds with every future milestone. Address in Phase 3 (architecture decision locked in PR review).
-
-6. **iOS Shortcuts Silent Failure** — iOS "Get Contents of URL" ignores HTTP status codes; it only returns the response body. Always return `{ success: boolean, id?, error? }`. The Shortcut template must include an explicit error branch. Test with an invalid key before shipping.
-
-See `.planning/research/PITFALLS.md` for full SSRF prevention checklist, security mistake catalog, and recovery strategies.
+5. **Eval suite false confidence (Goodhart's Law on evals)** — A 100% pass rate on golden cases can mask real behavioral regression. Cases get tuned to pass specific phrasings, not to detect general behavior. Mitigation: retire binary pass/fail framing, track score distributions across runs, add adversarial cases designed to catch specific failure modes, never tune prompts against the quarantine tier.
 
 ---
 
 ## Implications for Roadmap
 
-The architecture research provides a dependency-aware build order that maps cleanly to five implementation phases. This ordering is non-negotiable: every later phase depends on the earlier ones being production-ready and security-correct.
+Based on combined research, the natural build order is four sequential phases, each a prerequisite for the next in terms of safety and testability. The AI and prompt work can be validated in isolation via promptfoo; the editor and graph work can be validated via manual testing; the Supabase work requires a staging migration before production deployment.
 
-### Phase 1: Data Layer & Authentication Foundation
+### Phase 1: AI Reliability and Prompt Hardening
 
-**Rationale:** Every API route, UI component, and mobile capture flow depends on the schema. No code can be meaningfully tested without the tables. API key auth must be correct from day one — retrofitting hash storage after plaintext keys have been shown to users requires key revocation and user communication. AI isolation must be structural from the first migration.
-**Delivers:** Two Supabase migrations (`knowledge_queue`, `user_api_keys` with RLS + partial indexes), updated `types/database.ts`, `src/lib/db/queue.ts` (queueQueries following existing `neuronQueries` pattern), `src/lib/auth/apiKeys.ts`
-**Addresses:** `queue_items` DB schema, `user_api_keys` auth (P1 features)
-**Avoids:** Plaintext API key storage (Pitfall 5), AI context contamination via structural table separation (Pitfall 2), passive graveyard via schema-level state labels with no ambiguity (Pitfall 1)
+**Rationale:** The AI call sites are the highest risk surface — silent production 500s, stale hanging requests under Vercel's function limits, and no error type discrimination. Fixing these first means all subsequent testing of prompts and behavior happens on a stable foundation. Prompt engineering belongs here because prompts and their eval suite must be validated before graph and editor work begins — the Architect and Bouncer prompts directly affect the quality of data flowing into the graph.
 
-### Phase 2: Mobile Capture & API Routes
+**Delivers:** Production-resilient AI calls with typed error handling, user-readable error messages, timeout bounds on all LLM calls, hardened Socratic/Bouncer/Architect/DAG prompts with Khanmigo patterns, and an expanded promptfoo eval suite with multi-turn tests, behavioral assertions, and Bloom distribution checks.
 
-**Rationale:** The external-facing capture endpoint can be configured and tested with an iOS Shortcut immediately, before any browser UI exists. Queue CRUD API built before UI means the panel is built against real endpoints from day one — no mock data needed. Security-critical routes must be complete and audited before UI work begins.
-**Delivers:** `/api/capture` (bearer token, service role client, SSRF protection), `/api/keys` + `/api/keys/[id]` (generate, list, revoke), `/api/queue` (GET list, POST create), `/api/queue/[id]` (PATCH state machine with transition allowlist, DELETE)
-**Uses:** `nanoid` + `crypto` (apiKeys.ts), `queueQueries` (db/queue.ts), Zod validation on all routes
-**Avoids:** CVE-2025-29927 — auth in route handler, not middleware (Pitfall 4); iOS Shortcuts silent failure — structured `{ success, error }` response body (Pitfall 7); SSRF via `https://` scheme validation and private IP blocking; cookie-auth antipattern in capture endpoint
+**Addresses (from FEATURES.md):**
+- CHAT_SYSTEM_PROMPT: calibrated difficulty, mistake handling, anti-loop variation, meta-question, neurogenesis priming, Bloom marker, anti-repetition
+- Bouncer prompt: output contract, negative Bloom boundary examples
+- Architect prompt: Bloom distribution policy
+- DAG/inferPrerequisites prompt: comprehension test, 4-example boundary set, topological self-check, domain calibration
+- All `generateObject` call sites: `maxRetries`, `abortSignal`, `NoObjectGeneratedError` handling
+- All `streamText` call sites: `onError`, `abortSignal`, `maxRetries`, `onFinish` guard
 
-### Phase 3: Queue Triage UI
+**Avoids:** Silent production 500s (Pitfall 1 root infrastructure), Bloom boundary collapse before production (Pitfall 2), Goodhart's Law on evals (Pitfall 5).
 
-**Rationale:** UI is the highest layer; it depends on the DB schema (Phase 1) and all CRUD APIs (Phase 2). The critical architecture decision — Queue as sidebar route, not `leftPanelMode` value — must be locked before any component is built. Language choice ("Passive Debt," "Unprocessed") is a product decision, not a polish decision.
-**Delivers:** `queueStore.ts`, `useQueue.ts`, `QueuePanel`, `QueueItem`, `QueueEmptyState`, sidebar Queue nav link + unread badge count, minimal `graphStore.ts` modification (add `openQueue()` only), `/app/queue` page
-**Implements:** Separate `queueStore` Zustand slice, optimistic mutations with rollback, status badge count query, deliberate "Unprocessed" / "Passive Debt" UI language, empty state prompting capture
-**Avoids:** Mode explosion — Queue renders at `/app/queue`, not as a `leftPanelMode` union value (Pitfall 6); passive graveyard via uncomfortable state labels (Pitfall 1); article content auto-preview in queue list (UX pitfall)
+**Research flag:** No additional research needed. All Vercel AI SDK v6 error handling APIs are HIGH confidence from official docs. Khanmigo patterns are from a publicly disclosed source.
 
-### Phase 4: Crystallize Flow
+---
 
-**Rationale:** The most complex step. Depends on queue items existing and being triage-able (Phases 1–3). Introduces URL extraction, AI summarization, and the conversation handoff — three new integration points. Isolating it at the end minimizes debugging surface area. Crystallize reuses existing patterns: `conversations`/`messages` inserts already exist in `/api/chat`.
-**Delivers:** `src/lib/queue/extractor.ts` (fetch + extraction with failure signal), `src/lib/queue/summarizer.ts` (`synthesis_fast` prompt), `/api/queue/[id]/crystallize` (5-step orchestration), wired Crystallize button in `QueueItem.tsx` with navigation handoff
-**Uses:** `@extractus/article-extractor` v8, `getModelForRole('synthesis_fast')`, `ConversationContext.setCurrentConversationId`, `graphStore.openChat()`
-**Avoids:** URL extraction brittleness — explicit failure signal + "paste content manually" fallback path (Pitfall 3); AI context contamination — queue data enters chat in exactly one place (Pitfall 2); re-fetching URL at Crystallize time (content stored at capture, Pitfall from technical debt table)
+### Phase 2: Editor Reliability
 
-### Phase 5: Polish & P2 Enhancements
+**Rationale:** The TipTap content sync race bug is reproducible and corrupts UX — a user switching neurons while focused sees wrong content until they blur the editor. This is independent of Phase 1 and can be built in parallel, but is logically ordered here because it affects the data quality of everything the Architect and Bouncer process. Fixing it before graph work ensures the content fed into AI calls is authoritative.
 
-**Rationale:** Only after the core cognitive funnel is validated should optional pressure signals and automation be added. Pre-generated AI summaries cost an extra API call per capture — validate demand exists before shipping. Auto-advance to `mastered` requires linking `queue_item_id` through the Neurogenesis flow.
-**Delivers:** Passive Debt count badge on sidebar, pre-generated AI triage summary on ingest, auto-advance queue item to `mastered` on Neurogenesis, plain text note capture via iOS Shortcut
-**Condition:** Only proceed if Phase 4 usage metrics show Crystallize is being used. If the funnel is working, these enhance it. If not, investigate Phase 3/4 UX before adding Phase 5 complexity.
+**Delivers:** Correct neuron content on every navigation event regardless of focus state; `enableContentCheck` surfacing schema drift before it corrupts user data; shared `BASE_EXTENSIONS` constant preventing schema mismatch between editor contexts.
+
+**Addresses (from ARCHITECTURE.md §3):**
+- `LiquidDocumentEditor`: unified `neuron.id`-keyed effect replacing two conflicting effects, `setContent(content, false)` to prevent false update event emission (TipTap v3 breaking change)
+- Both editors: `enableContentCheck: true`, `onContentError` logging
+- New file `src/lib/editor/extensions.ts`: shared base extension set
+
+**Avoids:** TipTap silent content corruption (Pitfall 4), content sync race corrupting editor state on fast neuron navigation.
+
+**Research flag:** No additional research needed. TipTap v3 APIs are HIGH confidence from official docs and confirmed by direct codebase audit.
+
+---
+
+### Phase 3: Graph Performance
+
+**Rationale:** React Flow performance work must be sequential: `React.memo` on node components first, then the batch update store action, then the layout worker `rankdir` fix, then all `GraphPanel.tsx` changes that depend on them. The `onlyRenderVisibleElements` flag has a known edge rendering bug (GitHub #4516) that must be tested with a real large graph before shipping. This phase is ordered after editor work because the graph performance changes require a coherent test environment with valid editor data.
+
+**Delivers:** Graph rendering that maintains 60fps at 200 nodes; dagre layout off the main thread via the existing but unwired layout worker; batch retrievability updates that trigger 1 re-render per minute instead of N; abort controller preventing stale data from writing to the store after unmount; horizon loading orphan guard preventing a permanent spinner on navigate-away.
+
+**Addresses (from ARCHITECTURE.md §4 and §6):**
+- `NeuronNode.tsx`, `GhostNeuronNode.tsx`, `SynapseEdge.tsx`: `React.memo`
+- `graphStore.ts`: `batchUpdateNodeRetrievability` action
+- `layout.worker.ts`: fix `rankdir: LR → TB`
+- `GraphPanel.tsx`: wire layout worker, enable `onlyRenderVisibleElements`, batch retrievability, abort controller, horizon orphan guard
+
+**Avoids:** React Flow performance cliff at 50–100 nodes (Pitfall 10), Zustand stale closure in async callbacks (Pitfall 6).
+
+**Research flag:** `onlyRenderVisibleElements` requires hands-on testing with a real 100+ node graph before shipping — the edge rendering bug (GitHub #4516) is confirmed but reproduction conditions are not fully documented. Flag for validation step before this phase closes.
+
+---
+
+### Phase 4: Supabase Reliability
+
+**Rationale:** Supabase work is ordered last because it requires a database migration (not trivially reversible) and the most critical fix — making the post-insert similarity search non-fatal — is a semantic change to the API contract that should be made after all other reliability work is stable and testable. The `SET LOCAL statement_timeout` migration requires staging validation before production deployment.
+
+**Delivers:** Elimination of the duplicate-neuron creation bug (most critical reliability issue in the codebase); RPC retry helper for pre-insert calls; 8-second statement timeout override in `find_similar_neurons` to prevent pgvector cold-start failures on large vector sets.
+
+**Addresses (from ARCHITECTURE.md §5):**
+- `api/neurons/route.ts ~line 168`: post-insert `find_similar_neurons` made non-fatal — return `{ neuron, prerequisite_links: [], projected_ghosts: [] }` on RPC failure
+- New `src/lib/db/rpc-retry.ts`: generic retry helper for pre-insert calls (bouncer)
+- Supabase SQL migration: `SET LOCAL statement_timeout = '8000'` in `find_similar_neurons` function body
+
+**Avoids:** Duplicate neuron creation from client retry after false 500 (most critical reliability bug), pgvector cold-start timeout on large graphs.
+
+**Research flag:** The `SET LOCAL statement_timeout` workaround is MEDIUM confidence (confirmed in Supabase community discussion, not in primary docs). Validate in staging before applying to production. The non-fatal post-insert fix is HIGH confidence and can be shipped independently of the migration.
+
+---
 
 ### Phase Ordering Rationale
 
-- **Schema first**: Key storage decisions cannot be changed after users have real API keys; AI isolation must be structural from the first migration, not retrofitted
-- **API before UI**: Testable endpoints expose integration edge cases (iOS Shortcuts, SSRF, timeout behavior, state machine edges) before UI complexity is layered on
-- **UI before Crystallize**: Crystallize needs items to exist and state transitions to work; debugging extraction failures in isolation is far simpler than debugging them embedded in a UI interaction
-- **P2 features last**: They enhance a working funnel; shipping prematurely risks optimizing a flow that hasn't been validated with real usage
+- AI before Editor: prompt changes must be validated via promptfoo before editor and graph work begins; a broken prompt contract invalidates quality assessments of data flowing through the system
+- Editor before Graph: the editor produces content that feeds AI calls and ultimately the graph; fixing the content sync race ensures graph data is authoritative during performance testing
+- Graph before Supabase: graph performance depends on the volume and quality of node data; stable data from phases 1 and 2 makes performance testing meaningful
+- Supabase last: database migrations have the highest rollback cost; all application-layer work should be stable before touching the schema
+- Eval suite expanded in Phase 1 not Phase 4: the eval suite is the safety net for all prompt changes; it must be hardened before prompt engineering begins
 
 ### Research Flags
 
-Phases needing deeper research during planning:
+Phases requiring hands-on validation during execution (not additional pre-work research):
+- **Phase 3 (Graph):** `onlyRenderVisibleElements` edge rendering bug requires live testing with a real 100+ node graph before the flag ships. Cannot be confirmed from documentation alone.
+- **Phase 4 (Supabase):** `SET LOCAL statement_timeout` workaround requires staging database validation. The non-fatal post-insert fix is safe to ship immediately without staging.
 
-- **Phase 4 (Crystallize / URL Extraction)**: URL extraction failure rates against the actual target URL corpus (news, academic papers, Twitter threads, paywalled content) are empirically unknown. Run a pre-Phase-4 extraction test harness against 20+ real URLs to calibrate the failure threshold and "paste manually" UX trigger. `@extractus/article-extractor` vs `@mozilla/readability` + `jsdom` tradeoffs should be validated with actual content samples before committing.
-- **Phase 2 (iOS Shortcuts integration)**: The Shortcut template `.shortcut` deep-link format for pre-filling endpoint URL and API key placeholder has not been device-tested. Validate on a physical iPhone before considering Phase 2 done. Simulate error responses (401, 422) and confirm the Shortcuts error branch fires correctly.
-
-Phases with standard patterns (skip research-phase):
-
-- **Phase 1 (Data Layer)**: Well-documented Supabase migration pattern, identical RLS structure to existing tables. `gen_random_uuid()`, `TIMESTAMPTZ`, and RLS policy patterns are all in production.
-- **Phase 3 (Queue UI)**: Zustand store pattern, optimistic mutations, and sidebar nav link follow established patterns already in the codebase. No novel integration points.
-- **Phase 5 (Polish)**: Count badge is a trivial Supabase `count()` query. Auto-advance is a one-line hook into the existing Neurogenesis flow.
+Phases with well-documented, HIGH-confidence patterns (no additional research needed):
+- **Phase 1 (AI Reliability):** All Vercel AI SDK v6 error handling APIs are verified from official reference docs. Khanmigo patterns are sourced from the publicly disclosed system prompt.
+- **Phase 2 (Editor):** TipTap v3 content sync fix is confirmed by direct code audit and official TipTap v3 docs. The `neuron.id`-keyed unified effect is a standard React pattern.
 
 ---
 
@@ -168,44 +184,60 @@ Phases with standard patterns (skip research-phase):
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | All library choices verified against official docs and npm. One net-new install (`@extractus/article-extractor`). `nanoid` confirmed already in lockfile. SQL schemas and code patterns fully specified. |
-| Features | HIGH | Table stakes and architecture patterns verified against competitors. Mobile capture patterns MEDIUM — iOS Shortcuts behavior confirmed via multiple sources but requires physical device testing. |
-| Architecture | HIGH | Based on direct codebase analysis of existing files (`graphStore.ts`, `middleware.ts`, `queries.ts`, etc.). Component boundaries derived from real code, not inference. Build order is dependency-verified. |
-| Pitfalls | HIGH (core), MEDIUM (integration specifics) | CVE-2025-29927 is a real, documented vulnerability — confirmed. URL extraction failure rates are projected from library limitations, not measured against real URLs. iOS Shortcuts silent failure behavior confirmed from Apple docs. |
+| Stack | HIGH | No new packages needed. All v2.0 changes use existing APIs verified against official docs. Package versions confirmed directly from `package.json`. |
+| Features | HIGH | Features mapped against direct codebase audit. Khanmigo patterns from publicly disclosed source. Bloom research from peer-reviewed 2024–2025 papers. |
+| Architecture | HIGH | Every recommendation grounded in direct file-by-file code audit with specific line numbers. Build order validated against actual dependency graph. |
+| Pitfalls | MEDIUM-HIGH | Critical pitfalls confirmed from multiple corroborating sources. Two Supabase-specific findings (statement timeout override) are MEDIUM — community-confirmed but not in primary docs. |
 
 **Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **URL extraction failure rate on real content**: `@extractus/article-extractor` covers ~70% of use cases per library claims. Actual failure rate on NeuroGraph's target URL corpus is untested. Run a pre-Phase-4 extraction test harness against 20+ diverse real URLs before committing to the fallback UX threshold.
-- **Vercel deployment tier timeout**: Architecture assumes a 10s function timeout budget (Hobby tier). If the project is on Pro tier, the budget is 60s and the extraction strategy can be more lenient. Confirm Vercel plan before Phase 4 implementation.
-- **iOS Shortcuts template behavior**: The `.shortcut` deep-link format for pre-filling API key placeholders is documented but has not been validated on a physical device. Confirm before declaring Phase 2 complete.
-- **`synthesis_fast` model cost at scale (Phase 5 gating)**: If pre-generated AI summaries are shipped in Phase 5, each capture triggers an AI call. Establish a usage baseline in Phase 4 before enabling auto-summary to avoid surprise cost increases.
+- **`onlyRenderVisibleElements` edge rendering bug (Phase 3):** GitHub issue #4516 confirms the bug exists but does not fully document reproduction conditions. Must test with a real large graph before shipping Phase 3. Go/no-go decision at end of Phase 3.
+- **Supabase `SET LOCAL statement_timeout` (Phase 4):** Community-confirmed workaround but not in primary Supabase docs. Requires staging validation before production migration.
+- **Bloom real-time UI indicator design:** No established production pattern exists in any edtech platform. The 6-step indicator design is original — needs UX validation with real users before treating as final. Defer visual design decisions to implementation.
+- **TipTap JSON migration (deferred to v2.1):** The research recommends migrating `neuron.content` from HTML to JSON. This requires a migration script and careful validation of all existing content rows. Flag as a v2.1 priority.
+- **Eval judge model version pinning:** The promptfoo `llm-rubric` judge model is not currently pinned in the config. Before shipping Phase 1 eval changes, the judge model version must be pinned and current scores baselined to prevent score drift from silent judge model updates.
 
 ---
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- Direct codebase analysis (2026-03-22): `graphStore.ts`, `middleware.ts`, `queries.ts`, `ConversationContext.tsx`, `layout.tsx`, `api/chat/route.ts`, `api/neurons/route.ts`, `lib/auth/supabase.ts`, `lib/ai/providers.ts`, `types/database.ts`, `migrations/010_baseline_v2_reset.sql`
-- [nanoid GitHub](https://github.com/ai/nanoid) — v5.1.7, cryptographic security via `crypto.getRandomValues`
-- [@extractus/article-extractor GitHub](https://github.com/extractus/article-extractor) — v8.0.20, API shape and Node.js runtime requirement verified
-- [Node.js crypto docs](https://nodejs.org/api/crypto.html) — `createHash`, `timingSafeEqual` confirmed built-in
-- [Supabase API Keys docs](https://supabase.com/docs/guides/api/api-keys) — hash storage best practice confirmed
-- [Mozilla Readability GitHub](https://github.com/mozilla/readability) — extraction capabilities and SPA limitations
-- CVE-2025-29927: [ProjectDiscovery Analysis](https://projectdiscovery.io/blog/nextjs-middleware-authorization-bypass), [Vercel Postmortem](https://vercel.com/blog/postmortem-on-next-js-middleware-bypass), [NVD](https://nvd.nist.gov/vuln/detail/CVE-2025-29927)
-- [Vercel Function Limitations](https://vercel.com/docs/functions/limitations) — timeout tiers per plan confirmed
+- [AI SDK Core: generateObject reference](https://ai-sdk.dev/docs/reference/ai-sdk-core/generate-object) — `maxRetries`, `abortSignal`, `experimental_repairText`, `NoObjectGeneratedError`
+- [AI SDK Core: streamText reference](https://ai-sdk.dev/docs/reference/ai-sdk-core/stream-text) — `onError`, `abortSignal`, `maxRetries`
+- [AI SDK Core: Error Handling](https://ai-sdk.dev/docs/ai-sdk-core/error-handling) — typed error exports, stream error swallowing pattern
+- [AI SDK Errors: AI_NoObjectGeneratedError](https://ai-sdk.dev/docs/reference/ai-sdk-errors/ai-no-object-generated-error) — type guard API shape confirmed
+- [AI SDK 4.1 release: NoObjectGeneratedError](https://vercel.com/blog/ai-sdk-4-1) — stable export confirmation
+- [GitHub issue #4726: stream functions fail silently](https://github.com/vercel/ai/issues/4726) — `onError` necessity confirmed
+- [Khanmigo Lite system prompt](https://gist.github.com/25yeht/c940f47e8658912fc185595c8903d1ec) — calibrated difficulty, mistake handling, Goldilocks edge patterns; corroborated by multiple GitHub repositories
+- [TipTap: Export to JSON and HTML](https://tiptap.dev/docs/guides/output-json-html) — `getJSON()` as source of truth
+- [TipTap: setContent command](https://tiptap.dev/docs/editor/api/commands/content/set-content) — `emitUpdate` default change in v3
+- [TipTap: Invalid Schema Handling](https://tiptap.dev/docs/guides/invalid-schema) — `enableContentCheck` API
+- [TipTap 3.0 Stable Release Notes](https://tiptap.dev/blog/release-notes/tiptap-3-0-is-stable) — v3 breaking changes confirmed
+- [React Flow: Performance](https://reactflow.dev/learn/advanced-use/performance) — `onlyRenderVisibleElements`, `React.memo` requirement, FPS improvement data
+- [promptfoo: Conversation Relevance](https://www.promptfoo.dev/docs/configuration/expected-outputs/model-graded/conversation-relevance/) — assertion type confirmed
+- [promptfoo: LLM Rubric](https://www.promptfoo.dev/docs/configuration/expected-outputs/model-graded/llm-rubric/) — threshold parameter
+- [promptfoo: Chat Conversations — storeOutputAs](https://www.promptfoo.dev/docs/configuration/chat/) — multi-turn var injection
+- [Learning Analytics with Bloom's Taxonomy — MDPI Computers 2024](https://www.mdpi.com/2073-431X/14/12/555) — Bloom classification accuracy at boundary levels; micro-F1 0.814 for GPT-4o-mini
+- [LLMs meet Bloom's Taxonomy — COLING 2025](https://aclanthology.org/2025.coling-main.350/) — misclassification clustering at adjacent levels confirmed
+- [DAG-Math: Graph-Guided Mathematical Reasoning — ICLR 2025](https://arxiv.org/html/2510.19842v1) — topological self-check pattern for LLM DAG reasoning
+- [LLM-Powered Construction of Course Knowledge-Competency Graphs — ACM ETAI 2025](https://dl.acm.org/doi/10.1145/3766557.3766569) — DAG prerequisite inference patterns
 
 ### Secondary (MEDIUM confidence)
-- [iOS Shortcuts "Get Contents of URL" — Apple Support](https://support.apple.com/guide/shortcuts/request-your-first-api-apd58d46713f/ios) — POST with bearer header confirmed
-- [trovster.com — iOS Shortcut JSON API pattern, 2024](https://www.trovster.com/blog/2024/05/using-a-json-api-and-ios-shortcut-to-update-my-website) — Bearer + JSON body confirmed working
-- [makerkit.dev — Supabase API key management](https://makerkit.dev/blog/tutorials/supabase-api-key-management) — SHA-256 hash storage pattern
-- [Readwise Reader, Recall.ai, Instapaper feature analysis](https://medium.com/macoclock/readwise-reader-vs-instapaper-vs-pocket-which-one-wins-in-2025-2c5e182ca979) — competitor comparison
+- [GitHub issue #4516: onlyRenderVisibleElements edge rendering bug](https://github.com/xyflow/xyflow/issues/4516) — confirmed but reproduction conditions not fully documented
+- [Supabase: API statement timeout discussion #27421](https://github.com/orgs/supabase/discussions/27421) — `SET LOCAL statement_timeout` workaround; community-confirmed
+- [Synergy Codes: React Flow performance guide](https://www.synergycodes.com/blog/guide-to-optimize-react-flow-project-performance) — FPS improvement numbers corroborate official docs
+- [TipTap GitHub issue #4828: Update event triggered unexpectedly](https://github.com/ueberdosis/tiptap/issues/4828) — `setContent` false arg behavior
+- [AI SDK Core: Settings (timeout, abortSignal)](https://ai-sdk.dev/docs/ai-sdk-core/settings) — `abortSignal` prop documented; Vercel 55s/60s convention is community practice
+- [Mechanistic Interpretability via Linear Probing (2026)](https://arxiv.org/html/2602.17229) — Bloom classification approach corroboration
+- [Measuring Agents in Production (arXiv 2512.04123)](https://arxiv.org/html/2512.04123v1) — agent nondeterminism in CI; eval suite brittleness
+- [Building a Golden Dataset (Maxim AI)](https://www.getmaxim.ai/articles/building-a-golden-dataset-for-ai-evaluation-a-step-by-step-guide/) — eval suite golden dataset pitfalls
+- [Prompt Versioning Best Practices (Maxim AI 2025)](https://www.getmaxim.ai/articles/prompt-versioning-best-practices-for-ai-engineering-teams/) — prompt drift monitoring
 
-### Tertiary (LOW confidence — needs validation)
-- URL extraction failure rate (~30–40% on SPAs/paywalled content) — inferred from library limitations, not measured against real corpus
-- iOS Shortcuts `.shortcut` deep-link template format — documented but not device-tested
+### Tertiary (LOW confidence)
+- [The Socratic Prompt — Towards AI](https://pub.towardsai.net/the-socratic-prompt-how-to-make-a-language-model-stop-guessing-and-start-thinking-07279858abad) — meta-questioning technique; single practitioner article, corroborated by Khanmigo source
 
 ---
-*Research completed: 2026-03-22*
+*Research completed: 2026-03-24*
 *Ready for roadmap: yes*
