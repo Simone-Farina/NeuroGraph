@@ -113,8 +113,10 @@ Plans:
   1. Switching between neurons while the editor is focused always displays the newly selected neuron's content — stale content from the previous neuron never persists
   2. All content saved through any editor component is stored as TipTap JSON (`getJSON()`) — no mixed HTML/plain-text formats in new saves
   3. A schema mismatch between editor extensions (e.g., after an upgrade) surfaces an `onContentError` log entry rather than silently corrupting the document
-**Plans**: TBD
-**UI hint**: yes
+**Plans:** 1 plan
+
+Plans:
+- [ ] 20-01-PLAN.md — Fix content sync race + standardize serialization to getJSON (EDITOR-01, EDITOR-02)
 
 ### Phase 21: Graph Performance & Bloom UI
 **Goal**: The knowledge graph renders at 60fps at scale and the chat interface gives users real-time cognitive depth feedback via a Bloom-level indicator
@@ -153,5 +155,5 @@ Plans:
 | 17. Horizon & Crystallize UI Fixes | v1.4 | 2/2 | Complete | 2026-03-24 |
 | 18. AI Reliability | v2.0 | 2/2 | Complete    | 2026-03-24 |
 | 19. Enterprise Prompt Engineering | v2.0 | 1/2 | Complete    | 2026-03-24 |
-| 20. Editor Reliability | v2.0 | 0/? | Not started | - |
+| 20. Editor Reliability | v2.0 | 0/1 | Not started | - |
 | 21. Graph Performance & Bloom UI | v2.0 | 0/? | Not started | - |
