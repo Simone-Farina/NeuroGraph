@@ -1,11 +1,13 @@
 # NeuroGraph Conversationalist Golden Cases
 # Phase 13 Plan 02 — 10 hand-curated multi-turn golden cases
+# Phase 16 Plan 02 — 3 teach-then-ask golden cases added
 #
 # Case Distribution:
 #   Socratic Tone (4): cases 1-4 — scored threshold > 0.8, expected_neurogenesis: false
 #   Neurogenesis Trigger (3): cases 5-7 — hard pass/fail, expected_neurogenesis: true
 #   Neurogenesis No-Trigger (2): cases 8-9 — hard pass/fail, expected_neurogenesis: false
 #   Edge Cases (1): case 10 — topic pivot, expected_neurogenesis: false
+#   Teach-Then-Ask (3): cases 11-13 — scored threshold >= 0.8, expected_neurogenesis: false
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Socratic Tone Cases
@@ -149,4 +151,47 @@
       - role: user
         content: "I'd guess you can't convert all heat to work, there's some waste. But I'm not sure why."
     final_user_message: "Actually, I want to think about how enzymes work instead."
+    expected_neurogenesis: false
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Teach-Then-Ask Cases (Phase 16 Plan 02)
+# Tests the mandatory acknowledge+enrich+question structure from D-01/D-02.
+# All have expected_neurogenesis: false — these are Remember/Understand-level
+# answers that need enrichment before the next Socratic question, not Analyze+.
+# ──────────────────────────────────────────────────────────────────────────────
+
+- description: "Teach-then-ask on shallow answer — historical/philosophical domain"
+  vars:
+    messages:
+      - role: user
+        content: "I'm exploring Buddhist philosophy."
+      - role: assistant
+        content: "Great area. What draws you to it — the metaphysics, the ethical framework, or the meditative practice?"
+      - role: user
+        content: "I guess all of it. I read Siddhartha by Hesse."
+    final_user_message: "I think Siddhartha just wanted independence from his teacher."
+    expected_neurogenesis: false
+
+- description: "Teach-then-ask on vague answer — science domain"
+  vars:
+    messages:
+      - role: user
+        content: "I want to understand how black holes work."
+      - role: assistant
+        content: "Fascinating topic. What aspect interests you most — how they form, what happens at the event horizon, or their effect on spacetime?"
+      - role: user
+        content: "I guess the event horizon part."
+    final_user_message: "I think nothing can escape a black hole — gravity is too strong."
+    expected_neurogenesis: false
+
+- description: "Teach-then-ask when user is confused — programming domain"
+  vars:
+    messages:
+      - role: user
+        content: "I keep hearing about functional programming but I don't really get it."
+      - role: assistant
+        content: "That's a great place to start. What's your current programming background — do you mostly write in imperative or object-oriented style?"
+      - role: user
+        content: "Mostly Python with classes and loops."
+    final_user_message: "I'm not sure what makes functional programming different from what I already do."
     expected_neurogenesis: false
