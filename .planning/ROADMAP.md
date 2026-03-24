@@ -63,7 +63,10 @@
   2. A user cannot create a neuron from a Remember or Understand level conversation — the `suggest_neurogenesis` tool does not fire below Analyze cognitive level
   3. The DAG agent creates a prerequisite edge from "Vector Databases" to "Relational Databases" or "NoSQL Databases" when that relationship is semantically correct
   4. Legacy nonsensical edges (e.g., "Relational Databases" → "Automated Red-Teaming") are absent from the graph after the fix is applied
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 14-01-PLAN.md — Fix OpenAI structured output schema errors (.optional() to .nullable())
+- [ ] 14-02-PLAN.md — Enforce Bloom gate, widen DAG search, clean legacy edges
 **UI hint**: no
 
 ### Phase 15: UI/UX Polish & Security
@@ -99,5 +102,5 @@
 | 11.5. Horizon UI & DAG Wiring | v1.2 | 3/3 | Complete | 2026-03-23 |
 | 12. Chat Analyzer / Bouncer Agent | v1.2 | 2/2 | Complete | 2026-03-23 |
 | 13. Socratic Chat Engine | v1.2 | 2/2 | Complete | 2026-03-24 |
-| 14. Backend AI Correctness | v1.3 | 0/? | Not started | - |
+| 14. Backend AI Correctness | v1.3 | 0/2 | In progress | - |
 | 15. UI/UX Polish & Security | v1.3 | 0/? | Not started | - |
