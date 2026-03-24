@@ -10,7 +10,7 @@ import { useEffect } from 'react';
 interface NeuronTipTapEditorProps {
   content: string;
   placeholder?: string;
-  onChange?: (markdown: string) => void;
+  onChange?: (json: string) => void;
   editable?: boolean;
   className?: string;
 }
@@ -77,19 +77,21 @@ export function NeuronTipTapEditor({
     },
     onUpdate: ({ editor }) => {
       if (onChange) {
-        // Serialize TipTap content back to markdown-compatible text
-        const text = editor.getText();
-        onChange(text);
+        onChange(JSON.stringify(editor.getJSON()));
       }
     },
   });
 
   // Sync external content changes (e.g., when neuron loads)
+  // Compare JSON serializations to avoid spurious setContent calls.
+  // setContent(_, false) prevents triggering onChange on programmatic sync.
   useEffect(() => {
     if (!editor) return;
-    const currentText = editor.getText();
-    if (content !== currentText && !editor.isFocused) {
-      editor.commands.setContent(content || '');
+    if (editor.isFocused) return;
+    const currentJson = JSON.stringify(editor.getJSON());
+    const incoming = content || '';
+    if (incoming !== currentJson) {
+      editor.commands.setContent(incoming, { emitUpdate: false });
     }
   }, [editor, content]);
 
