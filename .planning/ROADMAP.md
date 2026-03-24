@@ -6,6 +6,7 @@
 - [x] **v1.1 Staging Area** — Phases 5-9 (shipped 2026-03-23) [archived](milestones/v1.1-ROADMAP.md)
 - [x] **v1.2 Agent Intelligence** — Phases 10-13 (shipped 2026-03-24) [archived](milestones/v1.2-ROADMAP.md)
 - [x] **v1.3 QA Refinement** — Phases 14-15 (shipped 2026-03-24) [archived](milestones/v1.3-ROADMAP.md)
+- [ ] **v1.4 QA Refinement II** — Phases 16-17 (in progress)
 
 ---
 
@@ -53,6 +54,43 @@
 
 ---
 
+### v1.4 QA Refinement II (Phases 16-17)
+
+**Milestone Goal:** Fix 6 bugs from QA round 2 — critical Socratic agent redesign so it teaches instead of parroting, plus Horizon UI and Crystallize state polish.
+
+- [ ] **Phase 16: Socratic Agent Redesign** - Teach-and-question contract, progressive knowledge building per turn
+- [ ] **Phase 17: Horizon & Crystallize UI Fixes** - Paste state session-scoping, dynamic container sizing, ghost node layout, shell timing, TARGET label removal
+
+---
+
+## Phase Details
+
+### Phase 16: Socratic Agent Redesign
+**Goal**: The Socratic agent teaches and deepens understanding per turn — not a question-parrot
+**Depends on**: Phase 15
+**Requirements**: AGENT-01, AGENT-02
+**Success Criteria** (what must be TRUE):
+  1. After a user answers a question, the agent responds with new information, context, or a counterexample before asking the next question — never bare redirect questions
+  2. Reading a full Socratic exchange, each agent turn visibly adds knowledge the user did not state — the agent is a teacher, not an echo
+  3. The existing promptfoo golden suite (31 cases) continues to pass at 100% after the prompt contract change
+  4. The agent still withholds direct answers to Bloom-shallow queries — teaching does not collapse into answer-giving
+**Plans**: TBD
+
+### Phase 17: Horizon & Crystallize UI Fixes
+**Goal**: Horizon UI is visually stable and Crystallize paste state is properly session-scoped
+**Depends on**: Phase 16
+**Requirements**: CRYST-04, HORIZON-04, HORIZON-05, HORIZON-06, HORIZON-07
+**Success Criteria** (what must be TRUE):
+  1. Switching to a different chat conversation clears the Crystallize paste banner and paste box — the fallback state does not bleed across conversations
+  2. The "Set Learning Target" button container is compact when the input field is hidden and only expands when the user opens it
+  3. After Horizon generation, ghost node labels are readable and nodes do not overlap or stack on top of each other
+  4. The chat panel remains visible and does not collapse during or after ghost node rendering — the shell preset transition does not fire prematurely
+  5. The "TARGET X" label below the Learning Target controls is absent from the UI
+**Plans**: TBD
+**UI hint**: yes
+
+---
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -71,5 +109,7 @@
 | 11.5. Horizon UI & DAG Wiring | v1.2 | 3/3 | Complete | 2026-03-23 |
 | 12. Chat Analyzer / Bouncer Agent | v1.2 | 2/2 | Complete | 2026-03-23 |
 | 13. Socratic Chat Engine | v1.2 | 2/2 | Complete | 2026-03-24 |
-| 14. Backend AI Correctness | v1.3 | 2/2 | Complete    | 2026-03-24 |
-| 15. UI/UX Polish & Security | v1.3 | 2/2 | Complete    | 2026-03-24 |
+| 14. Backend AI Correctness | v1.3 | 2/2 | Complete | 2026-03-24 |
+| 15. UI/UX Polish & Security | v1.3 | 2/2 | Complete | 2026-03-24 |
+| 16. Socratic Agent Redesign | v1.4 | 0/TBD | Not started | - |
+| 17. Horizon & Crystallize UI Fixes | v1.4 | 0/TBD | Not started | - |

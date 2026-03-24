@@ -35,19 +35,19 @@ Bug fixes and UX frictions from QA round 2.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AGENT-01 | TBD | Pending |
-| AGENT-02 | TBD | Pending |
-| CRYST-04 | TBD | Pending |
-| HORIZON-04 | TBD | Pending |
-| HORIZON-05 | TBD | Pending |
-| HORIZON-06 | TBD | Pending |
-| HORIZON-07 | TBD | Pending |
+| AGENT-01 | Phase 16 | Pending |
+| AGENT-02 | Phase 16 | Pending |
+| CRYST-04 | Phase 17 | Pending |
+| HORIZON-04 | Phase 17 | Pending |
+| HORIZON-05 | Phase 17 | Pending |
+| HORIZON-06 | Phase 17 | Pending |
+| HORIZON-07 | Phase 17 | Pending |
 
 **Coverage:**
 - v1.4 requirements: 7 total
-- Mapped to phases: 0
-- Unmapped: 7
+- Mapped to phases: 7
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-24*
-*Last updated: 2026-03-24 after QA round 2*
+*Last updated: 2026-03-24 after roadmap creation*
