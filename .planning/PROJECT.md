@@ -8,6 +8,17 @@ NeuroGraph 2.0 is a MicroSaaS platform for Active Generative Mastery. It is a co
 
 The system enforces "Active Extraction" and rigorous retention over passive reading; users only create nodes when they reach a "Deep Insight," and the AI acts as a bouncer to prevent hallucinated or disconnected knowledge graphs.
 
+## Current Milestone: v1.4 QA Refinement II
+
+**Goal:** Fix 6 bugs from QA round 2 — critical Socratic agent redesign, Crystallize state leak, Horizon UI polish, ghost node layout.
+
+**Target fixes:**
+- Socratic agent: teach + question (not question-parrot) — CRITICAL
+- Crystallize paste state cleanup on chat switch
+- Learning Target container dynamic sizing
+- Horizon shell preset timing + ghost node layout
+- Remove "TARGET X" label
+
 ## Current State
 
 **Shipped:** v1.3 QA Refinement (2026-03-24)
@@ -104,4 +115,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-24 after v1.3 milestone*
+*Last updated: 2026-03-24 — Milestone v1.4 QA Refinement II started*
