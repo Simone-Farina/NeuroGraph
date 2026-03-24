@@ -467,6 +467,7 @@ function GraphCanvas() {
         nodesConnectable={false}
         fitView
         fitViewOptions={{ padding: 0.3, maxZoom: 0.7 }}
+        onlyRenderVisibleElements
         className="bg-[#0c0c0e]"
         proOptions={{ hideAttribution: true }}
       >
