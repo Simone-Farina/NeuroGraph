@@ -159,4 +159,4 @@ Plans:
 | 18. AI Reliability | v2.0 | 2/2 | Complete    | 2026-03-24 |
 | 19. Enterprise Prompt Engineering | v2.0 | 1/2 | Complete    | 2026-03-24 |
 | 20. Editor Reliability | v2.0 | 1/1 | Complete    | 2026-03-24 |
-| 21. Graph Performance & Bloom UI | v2.0 | 2/2 | Complete   | 2026-03-24 |
+| 21. Graph Performance & Bloom UI | v2.0 | 2/2 | Complete    | 2026-03-24 |
