@@ -8,6 +8,16 @@ NeuroGraph 2.0 is a MicroSaaS platform for Active Generative Mastery. It is a co
 
 The system enforces "Active Extraction" and rigorous retention over passive reading; users only create nodes when they reach a "Deep Insight," and the AI acts as a bouncer to prevent hallucinated or disconnected knowledge graphs.
 
+## Current Milestone: v2.0 MVP Core Stability
+
+**Goal:** Every core feature works flawlessly end-to-end. No new features — make what exists production-grade. Enterprise-level prompt engineering for all AI agents.
+
+**Target areas:**
+- Socratic Chat Agent: enterprise-grade prompt with Bloom cognitive load indicator
+- DAG Agent: enterprise-grade prerequisite linking for all concept types
+- Neuron Markdown Editor: TipTap fully functional (render, save, slash commands, Bouncer)
+- Full E2E flow validation: chat → neurogenesis → graph → review → FSRS
+
 ## Current State
 
 **Shipped:** v1.4 QA Refinement II (2026-03-24)
@@ -104,4 +114,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-24 after v1.4 milestone*
+*Last updated: 2026-03-24 — Milestone v2.0 MVP Core Stability started*
