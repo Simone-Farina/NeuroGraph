@@ -35,6 +35,7 @@ export default function ReviewPage() {
 
   useEffect(() => {
     setShellPreset('deep_read');
+    return () => setShellPreset('standard');
   }, [setShellPreset]);
 
   useEffect(() => {
