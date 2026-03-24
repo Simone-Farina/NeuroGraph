@@ -1,12 +1,13 @@
 'use client';
 
+import React from 'react';
 import { Handle, Node, NodeProps, Position } from '@xyflow/react';
 
 import type { HorizonGhostNodeData } from '@/stores/graphStore';
 
 type GhostNeuronFlowNode = Node<HorizonGhostNodeData, 'ghostNeuron'>;
 
-export function GhostNeuronNode({ data, selected }: NodeProps<GhostNeuronFlowNode>) {
+export const GhostNeuronNode = React.memo(function GhostNeuronNode({ data, selected }: NodeProps<GhostNeuronFlowNode>) {
   return (
     <div
       className={`group relative w-52 rounded-[26px] border border-dashed border-white/14 bg-white/[0.02] px-5 py-4 text-left shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur-sm transition-all duration-300 hover:border-white/24 hover:bg-white/[0.035] ${
@@ -35,4 +36,4 @@ export function GhostNeuronNode({ data, selected }: NodeProps<GhostNeuronFlowNod
       <Handle type="source" position={Position.Bottom} style={{ display: 'none' }} />
     </div>
   );
-}
+});

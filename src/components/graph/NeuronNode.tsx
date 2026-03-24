@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { Handle, Node, NodeProps, Position } from '@xyflow/react';
 
 import { useGraphStore } from '@/stores/graphStore';
@@ -142,7 +143,7 @@ function getGhostStyles(ghostDepth: number | null | undefined) {
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
-export function NeuronNode({ id, data, selected }: NodeProps<NeuronFlowNode>) {
+export const NeuronNode = React.memo(function NeuronNode({ id, data, selected }: NodeProps<NeuronFlowNode>) {
   const isGhost = data.is_ghost ?? false;
   const ghostDepth = data.ghost_depth;
   const retrievability = typeof data.retrievability === 'number' ? data.retrievability : 1.0;
@@ -274,4 +275,4 @@ export function NeuronNode({ id, data, selected }: NodeProps<NeuronFlowNode>) {
       <Handle type="source" position={Position.Bottom} style={{ display: 'none' }} />
     </div>
   );
-}
+});

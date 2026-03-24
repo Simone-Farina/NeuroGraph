@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { BaseEdge, Edge, EdgeProps, getBezierPath } from '@xyflow/react';
 
 type SynapseEdgeData = {
@@ -8,7 +9,7 @@ type SynapseEdgeData = {
 
 type SynapseFlowEdge = Edge<SynapseEdgeData, 'synapseEdge'>;
 
-export function SynapseEdge({
+export const SynapseEdge = React.memo(function SynapseEdge({
   id,
   sourceX,
   sourceY,
@@ -71,4 +72,4 @@ export function SynapseEdge({
       <BaseEdge id={id} path={edgePath} style={edgeStyle} markerEnd={showArrow ? markerEnd : undefined} />
     </>
   );
-}
+});
