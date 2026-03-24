@@ -82,6 +82,51 @@ function findPedagogicalCycle(
   return null;
 }
 
+/**
+ * Kahn's algorithm cycle detection — complementary to DFS.
+ * Returns true if the directed graph of PREREQUISITE/BUILDS_ON edges contains a cycle.
+ * Operates by computing in-degrees and progressively removing zero-in-degree nodes.
+ * If any nodes remain after exhaustion, a cycle exists.
+ */
+function kahnCycleDetection(
+  synapses: Array<z.infer<typeof architectSynapseSchema>>
+): boolean {
+  const directed = synapses.filter(s => s.type !== 'RELATED');
+  if (directed.length === 0) return false;
+
+  // Collect all nodes from directed edges
+  const nodes = new Set<string>();
+  const adjacency = new Map<string, string[]>();
+  const inDegree = new Map<string, number>();
+
+  for (const s of directed) {
+    nodes.add(s.sourceTitle);
+    nodes.add(s.targetTitle);
+    adjacency.set(s.sourceTitle, [...(adjacency.get(s.sourceTitle) ?? []), s.targetTitle]);
+    inDegree.set(s.targetTitle, (inDegree.get(s.targetTitle) ?? 0) + 1);
+    if (!inDegree.has(s.sourceTitle)) inDegree.set(s.sourceTitle, 0);
+  }
+
+  // Initialize queue with zero in-degree nodes
+  const queue: string[] = [];
+  for (const node of Array.from(nodes)) {
+    if ((inDegree.get(node) ?? 0) === 0) queue.push(node);
+  }
+
+  let consumed = 0;
+  while (queue.length > 0) {
+    const node = queue.shift()!;
+    consumed++;
+    for (const next of adjacency.get(node) ?? []) {
+      const deg = (inDegree.get(next) ?? 1) - 1;
+      inDegree.set(next, deg);
+      if (deg === 0) queue.push(next);
+    }
+  }
+
+  return consumed < nodes.size; // true = cycle exists
+}
+
 export const architectResponseSchema = z
   .object({
     isValid: z.boolean(),
@@ -188,6 +233,17 @@ export const architectResponseSchema = z
         message: `Pedagogical cycle detected: ${cycle.join(' -> ')}`,
       });
     }
+
+    // Belt-and-suspenders: Kahn's algorithm as independent cycle check
+    const hasCycleKahn = kahnCycleDetection(value.synapses);
+    if (hasCycleKahn && !cycle) {
+      // Kahn's detected a cycle that DFS missed (edge case with disconnected components)
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['synapses'],
+        message: 'Cycle detected by topological sort validation.',
+      });
+    }
   });
 
 export function buildArchitectPrompt(target: string) {
@@ -213,3 +269,5 @@ export function createGhostNodeId(title: string) {
 export type ArchitectNode = z.infer<typeof architectNodeSchema>;
 export type ArchitectSynapse = z.infer<typeof architectSynapseSchema>;
 export type ArchitectResponse = z.infer<typeof architectResponseSchema>;
+
+export { kahnCycleDetection };
