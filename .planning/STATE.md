@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: MVP Core Stability
 status: Ready to plan
-stopped_at: Completed 18-01-PLAN.md
-last_updated: "2026-03-24T21:10:57.341Z"
+stopped_at: Completed 19-02-PLAN.md
+last_updated: "2026-03-24T21:39:38.739Z"
 progress:
   total_phases: 4
-  completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  completed_phases: 2
+  total_plans: 4
+  completed_plans: 4
 ---
 
 # Project State
@@ -23,7 +23,7 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 
 ## Current Position
 
-Phase: 19
+Phase: 20
 Plan: Not started
 
 ## Performance Metrics
@@ -48,6 +48,8 @@ Plan: Not started
 *Updated after each plan completion*
 | Phase 18-ai-reliability P02 | 8min | 2 tasks | 2 files |
 | Phase 18 P01 | 10m | 2 tasks | 6 files |
+| Phase 19-enterprise-prompt-engineering P01 | 15min | 3 tasks | 3 files |
+| Phase 19 P02 | 2min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -65,6 +67,11 @@ Recent decisions affecting current work:
 - [Phase 18-ai-reliability]: 60s timeout for chat, 30s for ai-action — proportional to expected generation length
 - [Phase 18]: Use NoObjectGeneratedError.isInstance() not instanceof for SDK error discrimination
 - [Phase 18]: Wrap entire post-insert enrichment in a single non-fatal try/catch (crystallize + vector search + inferPrerequisites + ghostProjection)
+- [Phase 19-enterprise-prompt-engineering]: 19-01-khanmigo-sections: Khanmigo patterns placed in dedicated Pedagogical Calibration section preserving A/E/Q structure and Neurogenesis Policy unchanged
+- [Phase 19-enterprise-prompt-engineering]: 19-01-kahn-belt-suspenders: kahnCycleDetection fires only when DFS missed cycle — no redundant errors, covers disconnected-component edge cases
+- [Phase 19-enterprise-prompt-engineering]: 19-01-comprehension-test: Binary 'NEVER encountered A — can B still be understood?' replaces subjective prerequisite judgment in inferPrerequisites
+- [Phase 19]: 19-02-judge-model-pin: Judge model pinned as comment (not llm-rubric provider) — configs use heuristic-only assertions; pin documents intended model without requiring live API calls
+- [Phase 19]: 19-02-behavioral-assertions: Per-case javascript assert blocks validate Khanmigo patterns; default assertions handle Socratic tone and neurogenesis; custom asserts check specific behaviors
 
 ### Pending Todos
 
@@ -77,6 +84,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-24T21:07:51.182Z
-Stopped at: Completed 18-01-PLAN.md
+Last session: 2026-03-24T21:28:49.807Z
+Stopped at: Completed 19-02-PLAN.md
 Resume file: None
