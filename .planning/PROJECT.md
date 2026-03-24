@@ -8,6 +8,16 @@ NeuroGraph 2.0 is a MicroSaaS platform for Active Generative Mastery. It is a co
 
 The system enforces "Active Extraction" and rigorous retention over passive reading; users only create nodes when they reach a "Deep Insight," and the AI acts as a bouncer to prevent hallucinated or disconnected knowledge graphs.
 
+## Current Milestone: v1.3 QA Refinement
+
+**Goal:** Fix bugs, UX frictions, and broken core features discovered during hands-on testing. Pure bug-fix milestone — no new features.
+
+**Target fixes:**
+- Architect API schema error (refusalReason required field)
+- Bloom-gated Neurogenesis not enforced at runtime
+- DAG agent not creating prerequisite connections
+- Layout, UI, and security issues from QA testing
+
 ## Current State
 
 **Shipped:** v1.2 Agent Intelligence (2026-03-24)
@@ -86,5 +96,22 @@ The system enforces "Active Extraction" and rigorous retention over passive read
 | LLM Prerequisite Inference | Epistemological Inquisitor replaces vector-similarity wiring | ✓ Good |
 | Hybrid eval model | Hard pass/fail for structural, scored thresholds for behavioral | ✓ Good |
 
+## Evolution
+
+This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition** (via `/gsd:transition`):
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
+
+**After each milestone** (via `/gsd:complete-milestone`):
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
+
 ---
-*Last updated: 2026-03-24 after v1.2 milestone*
+*Last updated: 2026-03-24 — Milestone v1.3 QA Refinement started*
