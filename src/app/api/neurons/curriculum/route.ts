@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { generateObject } from 'ai';
+import { generateObject, NoObjectGeneratedError, APICallError } from 'ai';
 
 import { createServerSupabaseClient } from '@/lib/auth/supabase';
 import { generateEmbedding } from '@/lib/ai/embeddings';
@@ -86,6 +86,8 @@ export async function POST(request: NextRequest) {
     const { object } = await generateObject({
       model,
       schema: curriculumResponseSchema,
+      maxRetries: 2,
+      abortSignal: AbortSignal.timeout(25_000),
       system: `You are a pedagogical curriculum designer for NeuroGraph.
 Your task is to create a learning path from the user's current knowledge to a target concept.
 
@@ -231,6 +233,17 @@ Order: most foundational first → target concept last.`,
       { status: 201 }
     );
   } catch (error) {
+    if (NoObjectGeneratedError.isInstance(error)) {
+      console.error('[curriculum] NoObjectGeneratedError:', error);
+      return NextResponse.json(
+        { error: 'Could not generate a valid curriculum. Try a more specific topic.' },
+        { status: 422 }
+      );
+    }
+    if (APICallError.isInstance(error)) {
+      console.error('[curriculum] APICallError:', error.statusCode, error.message);
+      return NextResponse.json({ error: 'AI provider error' }, { status: 502 });
+    }
     const message = error instanceof Error ? error.message : 'Unexpected error';
     return NextResponse.json({ error: message }, { status: 500 });
   }

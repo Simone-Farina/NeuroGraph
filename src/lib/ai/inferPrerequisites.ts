@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { generateObject } from 'ai';
+// NoObjectGeneratedError and APICallError are not caught here — errors propagate to the caller (neurons/route.ts)
 import { getModelForRole } from '@/lib/ai/providers';
 import { createServerSupabaseClient } from '@/lib/auth/supabase';
 
@@ -45,6 +46,8 @@ export async function inferPrerequisites(
   const { object } = await generateObject({
     model,
     schema: prerequisiteInferenceSchema,
+    maxRetries: 2,
+    abortSignal: AbortSignal.timeout(25_000),
     system: `You are a pedagogical graph engine for NeuroGraph.
 Your task is to determine which existing concepts are TRUE PREREQUISITES for a newly learned concept.
 

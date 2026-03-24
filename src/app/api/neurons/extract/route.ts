@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { generateObject } from 'ai';
+import { generateObject, NoObjectGeneratedError, APICallError } from 'ai';
 import { createServerSupabaseClient } from '@/lib/auth/supabase';
 import { getModelForRole } from '@/lib/ai/providers';
 
@@ -52,6 +52,8 @@ export async function POST(request: NextRequest) {
     const { object } = await generateObject({
       model,
       schema: extractionResultSchema,
+      maxRetries: 2,
+      abortSignal: AbortSignal.timeout(25_000),
       system: `You are a knowledge graph extraction engine for NeuroGraph.
 Your task is to analyze a free-form note and extract structured metadata.
 
@@ -78,6 +80,17 @@ Extract the definition, core_insight, and bloom_level for this neuron.`,
 
     return NextResponse.json(object);
   } catch (error) {
+    if (NoObjectGeneratedError.isInstance(error)) {
+      console.error('[extract] NoObjectGeneratedError:', error);
+      return NextResponse.json(
+        { error: 'Could not extract metadata from this content. Try adding more detail.' },
+        { status: 422 }
+      );
+    }
+    if (APICallError.isInstance(error)) {
+      console.error('[extract] APICallError:', error.statusCode, error.message);
+      return NextResponse.json({ error: 'AI provider error' }, { status: 502 });
+    }
     const message = error instanceof Error ? error.message : 'Extraction failed';
     console.error('[extract] Error:', error);
     return NextResponse.json({ error: message }, { status: 500 });

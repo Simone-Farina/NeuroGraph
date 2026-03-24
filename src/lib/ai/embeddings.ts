@@ -5,6 +5,7 @@ export async function generateEmbedding(text: string): Promise<number[]> {
   const { embedding } = await embed({
     model: getEmbeddingModel(),
     value: text,
+    maxRetries: 2,
   });
 
   return embedding;
