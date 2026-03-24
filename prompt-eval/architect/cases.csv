@@ -7,3 +7,7 @@ description,target_topic,concepts,constraints,expected_is_valid,required_synapse
 "Mutual dependency cycle trap","Mutual Dependency Pair","Theory A|Theory B","Theory A -> Theory B; Theory B -> Theory A",false,"","cycle"
 "Three node cycle trap","Three Node Loop","Topic A|Topic B|Topic C","Topic A -> Topic B; Topic B -> Topic C; Topic C -> Topic A",false,"","cycle"
 "Pedagogical paradox cycle trap","Pedagogical Paradox","Backpropagation|Neural Networks|Gradient Descent","Backpropagation -> Neural Networks; Neural Networks -> Gradient Descent; Gradient Descent -> Backpropagation",false,"","paradox"
+"RELATED not PREREQUISITE — parallel languages","JavaScript","Python|JavaScript","",true,"Python|JavaScript|RELATED",""
+"BUILDS_ON not PREREQUISITE — enrichment boundary","Design Patterns","Object-Oriented Programming|Design Patterns|SOLID Principles","",true,"Design Patterns|Object-Oriented Programming|BUILDS_ON",""
+"Strong prerequisite — comprehension test positive","Gradient Descent","Calculus|Partial Derivatives|Gradient Descent","",true,"Partial Derivatives|Gradient Descent|PREREQUISITE",""
+"No connection — unrelated domains","Quantum Computing","Quantum Computing|Italian Cuisine","",true,"",""
