@@ -7,6 +7,7 @@ import { DefaultChatTransport, type UIMessage } from 'ai';
 import { ChatInput } from '@/components/chat/ChatInput';
 import { CrystallizeBootstrap } from '@/components/chat/CrystallizeBootstrap';
 import { CrystallizePasteComposer } from '@/components/chat/CrystallizePasteComposer';
+import { GenerateNeuronButton } from '@/components/chat/GenerateNeuronButton';
 import { MessageList } from '@/components/chat/MessageList';
 import { SelectionToolbar } from '@/components/chat/SelectionToolbar';
 import type { CrystallizeMetadata, StartCrystallizeResponse } from '@/lib/crystallize/types';
@@ -75,6 +76,9 @@ export function ChatPanel() {
   const clearCrystallizeIntent = useQueueStore((state) => state.clearCrystallizeIntent);
   const pendingHorizonSeed = useGraphStore((state) => state.pendingHorizonSeed);
   const clearHorizonLearningIntent = useGraphStore((state) => state.clearHorizonLearningIntent);
+  const setBloomEval = useGraphStore((state) => state.setBloomEval);
+  const setBloomPending = useGraphStore((state) => state.setBloomPending);
+  const resetBloomEval = useGraphStore((state) => state.resetBloomEval);
   const [input, setInput] = useState('');
   const [isFetchingTranscript, setIsFetchingTranscript] = useState(false);
   const [isCrystallizing, setIsCrystallizing] = useState(false);
@@ -86,9 +90,50 @@ export function ChatPanel() {
   // When true, the next useEffect trigger is skipped so loadMessages doesn't
   // race with the server-side onFinish DB write and wipe streaming messages.
   const skipNextLoadRef = useRef(false);
+  // Debounce ref for bloom evaluator fire-and-forget calls
+  const bloomDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
   // Keep the ref in sync
   conversationIdRef.current = currentConversationId;
+
+  // Fire-and-forget bloom evaluator with 500ms debounce.
+  // Must be defined before useChat so it can be referenced in onFinish.
+  // Uses messagesRef to access current messages without stale closure.
+  const messagesRef = useRef<UIMessage[]>([]);
+
+  const triggerBloomEval = useCallback(() => {
+    if (bloomDebounceRef.current) clearTimeout(bloomDebounceRef.current);
+
+    bloomDebounceRef.current = setTimeout(() => {
+      setBloomPending(true);
+
+      // Extract last 6 messages (3 user + 3 assistant) for context
+      const last6 = messagesRef.current.slice(-6).map((m) => ({
+        role: m.role as 'user' | 'assistant',
+        content: (m.parts ?? [])
+          .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
+          .map((p) => p.text)
+          .join(' ')
+          .trim(),
+      }));
+
+      fetch('/api/bloom-evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: last6,
+          conversationId: conversationIdRef.current ?? undefined,
+        }),
+      })
+        .then((res) => res.json())
+        .then((result: { bloom_level: string | null; confidence: number }) => {
+          setBloomEval(result.bloom_level, result.confidence);
+        })
+        .catch(() => {
+          setBloomEval(null, 0);
+        });
+    }, 500);
+  }, [setBloomEval, setBloomPending]);
 
   const {
     messages,
@@ -111,11 +156,16 @@ export function ChatPanel() {
       // This intentionally does NOT trigger loadMessages (conversations is not
       // in the useEffect deps) — the SDK already has the correct streamed state.
       await refreshConversations();
+      // Fire bloom evaluator in background — non-blocking, fire-and-forget
+      triggerBloomEval();
     },
     onError: (error) => {
       console.error('Chat error:', error);
     },
   });
+
+  // Keep messagesRef in sync for triggerBloomEval closure access
+  messagesRef.current = messages;
 
   const loadMessages = useCallback(async (id: string) => {
     console.log('[loadMessages] fetching messages for conversation:', id);
@@ -151,12 +201,13 @@ export function ChatPanel() {
   // because refreshConversations() in onFinish would trigger loadMessages before the
   // server-side onFinish DB write completes — wiping the streamed state.
   useEffect(() => {
-    // Always reset Crystallize state when switching conversations.
+    // Always reset Crystallize and Bloom state when switching conversations.
     // Must be unconditional — skipNextLoadRef guard would otherwise
     // let paste banner bleed into the newly-selected conversation.
     setActiveCrystallizeSession(null);
     setIsCrystallizing(false);
     setCrystallizeNotice(null);
+    resetBloomEval();
 
     if (!currentConversationId) {
       setMessages([]);
@@ -172,7 +223,7 @@ export function ChatPanel() {
     }
 
     loadMessages(currentConversationId);
-  }, [currentConversationId, loadMessages, setMessages]);
+  }, [currentConversationId, loadMessages, resetBloomEval, setMessages]);
 
   // Extract conversation ID from the first response (if new chat)
   useEffect(() => {
@@ -352,6 +403,7 @@ Let's break it down. Start by asking me one focused question.`;
           />
         ) : null}
 
+        <GenerateNeuronButton />
         <ChatInput
           value={input}
           onChange={setInput}
