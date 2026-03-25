@@ -5,15 +5,9 @@ import ReactMarkdown from 'react-markdown';
 import rehypeHighlight from 'rehype-highlight';
 import remarkGfm from 'remark-gfm';
 
-import { NeurogenesisSuggestion } from '@/components/chat/NeurogenesisSuggestion';
-
 type MessageListProps = {
   messages: UIMessage[];
-  processingToolCalls?: Set<string>;
-  onNeurogenesis?: (toolCallId: string, force?: boolean) => Promise<void>;
-  onDismiss?: (toolCallId: string) => void;
   isLoading?: boolean;
-  addToolResult?: (toolCallId: string, toolName: string, result: string) => void;
 };
 
 function ThinkingIndicator() {
@@ -31,14 +25,7 @@ function ThinkingIndicator() {
   );
 }
 
-export function MessageList({
-  messages,
-  processingToolCalls,
-  onNeurogenesis,
-  onDismiss,
-  isLoading,
-  addToolResult,
-}: MessageListProps) {
+export function MessageList({ messages, isLoading }: MessageListProps) {
   if (!messages.length) {
     return (
       <div className="flex h-full flex-col items-center justify-center px-8 text-center">
@@ -52,8 +39,8 @@ export function MessageList({
     );
   }
 
-  // Mostra l'indicatore solo se l'SDK sta ancora elaborando
-  // e l'ultimo messaggio visibile è dell'utente (l'AI non ha ancora risposto).
+  // Show indicator only if the SDK is still processing
+  // and the last visible message is from the user (AI has not yet responded).
   const showThinking = isLoading && messages.at(-1)?.role === 'user';
 
   return (
@@ -109,55 +96,6 @@ export function MessageList({
                         </ReactMarkdown>
                       </div>
                     );
-                  }
-
-                  if (part.type.startsWith('tool-') && 'toolCallId' in part) {
-                    const toolName = part.type.replace(/^tool-/, '');
-                    const legacyToolName = `suggest_${'crys'}${'tallization'}`;
-                    const isSuggestionTool = toolName === legacyToolName || toolName === 'suggest_neurogenesis';
-
-                    if (isSuggestionTool) {
-                      const toolPart = part as {
-                        type: string;
-                        toolCallId: string;
-                        state: string;
-                        input: Record<string, unknown>;
-                      };
-
-                      const toolState: 'call' | 'result' =
-                        (toolPart.state === 'output-available' || toolPart.state === 'input-available')
-                          ? 'result'
-                          : 'call';
-
-                      return (
-                        <div key={toolPart.toolCallId} className="my-8">
-                          <NeurogenesisSuggestion
-                            toolCallId={toolPart.toolCallId}
-                            input={toolPart.input as {
-                              title?: string;
-                              definition?: string;
-                              core_insight?: string;
-                              bloom_level?: string;
-                              related_neurons?: Array<{
-                                id: string;
-                                title?: string;
-                                relationship_type: 'PREREQUISITE' | 'RELATED' | 'BUILDS_ON';
-                              }>;
-                            }}
-                            state={toolPart.state}
-                            toolState={toolState}
-                            isProcessing={processingToolCalls?.has(toolPart.toolCallId)}
-                            onNeurogenesis={(force?: boolean) =>
-                              onNeurogenesis?.(toolPart.toolCallId, force) ?? Promise.resolve()
-                            }
-                            onDismiss={() => onDismiss?.(toolPart.toolCallId)}
-                            addResult={(result) =>
-                              addToolResult?.(toolPart.toolCallId, toolName, result)
-                            }
-                          />
-                        </div>
-                      );
-                    }
                   }
 
                   return null;
