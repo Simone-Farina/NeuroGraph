@@ -1,0 +1,6 @@
+description: NeuroGraph Golden Bloom Evaluator suite — Phase 24 cognitive classification contract
+prompts:
+  - file://prompt.txt
+providers:
+  - exec:node ../shared/neurograph-bloom-evaluator-provider.mjs
+tests: cases.yaml
