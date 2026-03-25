@@ -187,8 +187,11 @@ Plans:
   3. The button remains muted after messages that are factual recall or comprehension-level — it does not illuminate prematurely
   4. The Bloom eval suite passes all golden cases distinguishing Understand vs Analyze/Evaluate/Create, with a confidence threshold of 0.75 before the button illuminates
   5. No eval suite ships after the production code it validates — evals are written first and gate the implementation
-**Plans**: TBD
-**UI hint**: yes
+**Plans:** 2 plans
+
+Plans:
+- [ ] 24-01-PLAN.md — Bloom evaluator eval suite: 6 golden cases, system prompt, promptfoo provider (EVAL-02, EVAL-03)
+- [ ] 24-02-PLAN.md — POST /api/bloom-evaluate endpoint, Zustand bloom state, GenerateNeuronButton wiring (AGENT-03, AGENT-04, AGENT-05)
 
 ### Phase 25: Decoupled Architect Pipeline
 **Goal**: Neurogenesis is user-triggered via a dedicated `POST /api/architect` endpoint that runs a traceable 3-step pipeline without freezing the chat UI
@@ -231,5 +234,5 @@ Plans:
 | 21. Graph Performance & Bloom UI | v2.0 | 2/2 | Complete | 2026-03-24 |
 | 22. Observability Foundation | v2.1 | 1/2 | Complete    | 2026-03-25 |
 | 23. Pure Conversationalist | v2.1 | 2/2 | Complete    | 2026-03-25 |
-| 24. Silent Observer | v2.1 | 0/? | Not started | - |
+| 24. Silent Observer | v2.1 | 0/2 | Not started | - |
 | 25. Decoupled Architect Pipeline | v2.1 | 0/? | Not started | - |
