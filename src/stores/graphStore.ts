@@ -30,6 +30,13 @@ type GraphStore = {
   shellPreset: ShellPreset;
   activeNeuronId: string | null;
   activeGhostNodeId: string | null;
+  // Bloom evaluator state — updated silently after each chat message
+  bloomLevel: string | null;       // 'Remember' | 'Understand' | 'Apply' | 'Analyze' | 'Evaluate' | 'Create' | null
+  bloomConfidence: number;          // 0.0-1.0
+  isBloomPending: boolean;          // true while evaluator is running
+  setBloomEval: (level: string | null, confidence: number) => void;
+  setBloomPending: (pending: boolean) => void;
+  resetBloomEval: () => void;
   setGraph: (nodes: Node[], edges: Edge[]) => void;
   addNode: (node: Node) => void;
   addEdge: (edge: Edge) => void;
@@ -119,6 +126,12 @@ export const useGraphStore = create<GraphStore>((set) => ({
   shellPreset: 'standard',
   activeNeuronId: null,
   activeGhostNodeId: null,
+  bloomLevel: null,
+  bloomConfidence: 0,
+  isBloomPending: false,
+  setBloomEval: (level, confidence) => set({ bloomLevel: level, bloomConfidence: confidence, isBloomPending: false }),
+  setBloomPending: (pending) => set({ isBloomPending: pending }),
+  resetBloomEval: () => set({ bloomLevel: null, bloomConfidence: 0, isBloomPending: false }),
   setGraph: (nodes, edges) => set({ nodes, edges }),
   addNode: (node) =>
     set((state) => ({
