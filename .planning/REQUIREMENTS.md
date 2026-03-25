@@ -19,9 +19,9 @@ Requirements for Core Flow Stability, Multi-Agent Architecture & Observability. 
 
 - [x] **AGENT-01**: `/api/chat` stream has zero tool-calling capabilities — pure natural Socratic tutor
 - [x] **AGENT-02**: Chat system prompt never mentions "Neurons", "Crystallization", or "Bloom's Taxonomy" — converses and challenges naturally
-- [ ] **AGENT-03**: Async Bloom Evaluator runs a cheap LLM (Gemini Flash) on the last 3 messages after each user turn, non-blocking
-- [ ] **AGENT-04**: Bloom evaluation result updates Zustand state with `{ bloomLevel, confidence }` without interrupting chat
-- [ ] **AGENT-05**: "Generate Neuron" button illuminates when `bloomLevel >= Analyze` with Danish Computation aesthetic (muted to solid transition, no gamification)
+- [x] **AGENT-03**: Async Bloom Evaluator runs a cheap LLM (Gemini Flash) on the last 3 messages after each user turn, non-blocking
+- [x] **AGENT-04**: Bloom evaluation result updates Zustand state with `{ bloomLevel, confidence }` without interrupting chat
+- [x] **AGENT-05**: "Generate Neuron" button illuminates when `bloomLevel >= Analyze` with Danish Computation aesthetic (muted to solid transition, no gamification)
 - [x] **AGENT-06**: Supabase migration transforms persisted tool-call messages so existing conversations rehydrate correctly
 
 ### Architect Pipeline
@@ -34,8 +34,8 @@ Requirements for Core Flow Stability, Multi-Agent Architecture & Observability. 
 ### Eval Suite
 
 - [x] **EVAL-01**: Conversationalist eval suite updated with golden cases proving no direct answers, no bullet points, no NeuroGraph jargon
-- [ ] **EVAL-02**: Bloom Evaluator eval suite with golden cases distinguishing Understand vs Analyze/Evaluate/Create accurately
-- [ ] **EVAL-03**: Eval suites pass before any production code ships (eval-driven development)
+- [x] **EVAL-02**: Bloom Evaluator eval suite with golden cases distinguishing Understand vs Analyze/Evaluate/Create accurately
+- [x] **EVAL-03**: Eval suites pass before any production code ships (eval-driven development)
 
 ## Future Requirements
 
@@ -73,17 +73,17 @@ Which phases cover which requirements. Updated during roadmap creation.
 | OBS-05 | Phase 22 | Complete |
 | AGENT-01 | Phase 23 | Complete |
 | AGENT-02 | Phase 23 | Complete |
-| AGENT-03 | Phase 24 | Pending |
-| AGENT-04 | Phase 24 | Pending |
-| AGENT-05 | Phase 24 | Pending |
+| AGENT-03 | Phase 24 | Complete |
+| AGENT-04 | Phase 24 | Complete |
+| AGENT-05 | Phase 24 | Complete |
 | AGENT-06 | Phase 23 | Complete |
 | ARCH-01 | Phase 25 | Pending |
 | ARCH-02 | Phase 25 | Pending |
 | ARCH-03 | Phase 25 | Pending |
 | ARCH-04 | Phase 25 | Pending |
 | EVAL-01 | Phase 23 | Complete |
-| EVAL-02 | Phase 24 | Pending |
-| EVAL-03 | Phase 24 | Pending |
+| EVAL-02 | Phase 24 | Complete |
+| EVAL-03 | Phase 24 | Complete |
 
 **Coverage:**
 - v2.1 requirements: 18 total

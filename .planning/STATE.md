@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Core Flow Stability, Multi-Agent Architecture & Observability
-status: Ready to plan
-stopped_at: Completed 23-02-PLAN.md
-last_updated: "2026-03-25T21:35:28.283Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 24-02-PLAN.md
+last_updated: "2026-03-25T22:06:57.572Z"
 progress:
   total_phases: 8
-  completed_phases: 6
-  total_plans: 11
-  completed_plans: 11
+  completed_phases: 7
+  total_plans: 13
+  completed_plans: 13
 ---
 
 # Project State
@@ -23,8 +23,8 @@ See: .planning/PROJECT.md (updated 2026-03-25)
 
 ## Current Position
 
-Phase: 24
-Plan: Not started
+Phase: 24 (silent-observer) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -53,6 +53,8 @@ Plan: Not started
 | Phase 22-observability-foundation P02 | 3min | 2 tasks | 9 files |
 | Phase 23-pure-conversationalist P01 | 3min | 2 tasks | 4 files |
 | Phase 23-pure-conversationalist P02 | 4min | 2 tasks | 4 files |
+| Phase 24-silent-observer P01 | 3min | 2 tasks | 4 files |
+| Phase 24-silent-observer P02 | 15min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -80,6 +82,12 @@ Recent decisions affecting current work:
 - [Phase 23-pure-conversationalist]: 23-02-depth-encouragement: Depth Encouragement directive pushes users to analyze mechanisms and tradeoffs without naming Bloom's Taxonomy or cognitive levels — strict separation of concerns
 - [Phase 23-pure-conversationalist]: 23-02-reference-catalog: Renamed Existing Neuron Catalog to Reference Catalog in system prompt construction — strips internal architecture language from AI context
 - [Phase 23-pure-conversationalist]: 23-02-loadMessages-text-only: loadMessages simplified to text-only parts — no tool part rehydration since TRUNCATE migration wiped all legacy tool_invocations metadata
+- [Phase 24-silent-observer]: 24-01: Provider uses google:gemini-2.5-flash as primary Bloom evaluator (best cost/speed), falls back to heuristic keyword-count offline mode for CI
+- [Phase 24-silent-observer]: 24-01: Chain-of-thought reasoning field mandatory in Bloom evaluator output — prevents hallucinated classifications (checked in every assertion block)
+- [Phase 24-silent-observer]: 24-01: generateText used over generateObject — provider parses JSON manually with code-fence stripping for robustness
+- [Phase 24-silent-observer]: 24-02-inline-prompt: BLOOM_EVALUATOR_PROMPT defined inline in route.ts — evaluator is self-contained, no import from prompts.ts
+- [Phase 24-silent-observer]: 24-02-never-500: bloom-evaluate route returns 200 even on parse/timeout failure — better false positive than blocked user
+- [Phase 24-silent-observer]: 24-02-messagesref: messagesRef pattern for closure-safe message access in triggerBloomEval without adding messages to useCallback deps
 
 ### Pending Todos
 
@@ -93,6 +101,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-25T21:29:32.612Z
-Stopped at: Completed 23-02-PLAN.md
+Last session: 2026-03-25T22:06:57.570Z
+Stopped at: Completed 24-02-PLAN.md
 Resume file: None
