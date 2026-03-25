@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Core Flow Stability, Multi-Agent Architecture & Observability
-status: Milestone complete
+status: v2.1 milestone complete
 stopped_at: Completed 25-02-PLAN.md
-last_updated: "2026-03-25T22:58:48.804Z"
+last_updated: "2026-03-25T23:08:14.881Z"
 progress:
   total_phases: 8
   completed_phases: 8

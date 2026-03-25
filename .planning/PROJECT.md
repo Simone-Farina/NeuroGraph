@@ -8,22 +8,13 @@ NeuroGraph 2.0 is a MicroSaaS platform for Active Generative Mastery. It is a co
 
 The system enforces "Active Extraction" and rigorous retention over passive reading; users only create nodes when they reach a "Deep Insight," and the AI acts as a bouncer to prevent hallucinated or disconnected knowledge graphs.
 
-## Current Milestone: v2.1 Core Flow Stability, Multi-Agent Architecture & Observability
-
-**Goal:** Deconstruct the monolithic chat endpoint into an Asynchronous Multi-Agent Architecture with deep LLM observability — fix the core loop, no new product features.
-
-**Target features:**
-- LLM Observability (Langfuse) — trace system prompts, RAG docs, and JSON output for every agent interaction
-- Pure Conversationalist — strip tool-calling from /api/chat, rewrite as natural Socratic tutor
-- Silent Observer (Async Bloom Evaluator) — background cheap-LLM evaluates cognitive state, illuminates Generate Neuron button
-- Decoupled Architect Endpoint — user-triggered POST /api/architect runs Synthesizer → RAG → Epistemological Inquisitor
-
 ## Current State
 
-**Shipped:** v2.0 MVP Core Stability (2026-03-24)
-**Codebase:** ~19,100 LOC TypeScript/TSX
-**Tech Stack:** Next.js 14, React Flow, Zustand, Vercel AI SDK v6, Supabase (pgvector), TipTap v3, ts-fsrs, promptfoo
-**Eval Suite:** 31 golden cases (bouncer 13 + architect 8 + conversationalist 10) — 100% pass
+**Shipped:** v2.1 Core Flow Stability, Multi-Agent Architecture & Observability (2026-03-25)
+**Codebase:** ~19,800 LOC TypeScript/TSX
+**Tech Stack:** Next.js 14, React Flow, Zustand, Vercel AI SDK v6, Supabase (pgvector), TipTap v3, ts-fsrs, promptfoo, Langfuse
+**Eval Suite:** 4 agent suites (bouncer 13 + architect 8 + conversationalist 4 + bloom-evaluator 6 = 31 golden cases)
+**Architecture:** Multi-agent (Pure Conversationalist + Silent Observer + Decoupled Architect Pipeline) with full Langfuse OTel tracing
 
 ## Requirements
 
@@ -55,12 +46,15 @@ The system enforces "Active Extraction" and rigorous retention over passive read
 - ✓ Bouncer dual-purpose contract (duplicate rejection + definition/insight extraction) — v1.2
 - ✓ Socratic Chat Engine with Bloom-gated Neurogenesis (Analyze+ only) — v1.2
 
-### Active
+<!-- Shipped in v2.1 Core Flow Stability -->
+- ✓ LLM Observability via Langfuse OTel tracing on all 11 AI call sites — v2.1
+- ✓ Pure Conversationalist agent (tool-free Socratic text streamer) — v2.1
+- ✓ Async Bloom Evaluator (background Gemini Flash cognitive state detection) — v2.1
+- ✓ Decoupled Architect Endpoint (user-triggered POST /api/neurogenesis pipeline) — v2.1
+- ✓ Generate Neuron button with Danish Computation illumination at Analyze+ — v2.1
+- ✓ Bloom evaluator eval suite (6 golden cases) + conversationalist eval rebuild (4 cases) — v2.1
 
-- [ ] LLM Observability via Langfuse tracing on all AI call sites
-- [ ] Pure Conversationalist agent (strip tool-calling from /api/chat)
-- [ ] Async Bloom Evaluator (background cheap-LLM cognitive state detection)
-- [ ] Decoupled Architect Endpoint (user-triggered neurogenesis via dedicated REST route)
+### Active
 
 ### Deferred (from previous milestones)
 
@@ -102,8 +96,10 @@ The system enforces "Active Extraction" and rigorous retention over passive read
 | Bloom-Gated Neurogenesis | Only Analyze/Evaluate/Create level insights trigger node proposals | ✓ Good |
 | LLM Prerequisite Inference | Epistemological Inquisitor replaces vector-similarity wiring | ✓ Good |
 | Hybrid eval model | Hard pass/fail for structural, scored thresholds for behavioral | ✓ Good |
-| Multi-Agent Architecture | Decouple chat/bloom/neurogenesis into separate agents | — Pending |
-| Observability First | Langfuse tracing before any AI logic changes | — Pending |
+| Multi-Agent Architecture | Decouple chat/bloom/neurogenesis into separate agents | ✓ Good |
+| Observability First | Langfuse tracing before any AI logic changes | ✓ Good |
+| Separate POST /api/neurogenesis | User-triggered pipeline vs AI-triggered tool call | ✓ Good |
+| Chain-of-thought Bloom evaluation | Force LLM reasoning before classification | ✓ Good |
 
 ## Evolution
 
@@ -123,4 +119,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-25 after v2.1 milestone start*
+*Last updated: 2026-03-25 after v2.1 milestone complete*

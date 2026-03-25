@@ -1,5 +1,28 @@
 # Milestones
 
+## v2.1 Core Flow Stability, Multi-Agent Architecture & Observability (Shipped: 2026-03-25)
+
+**Phases completed:** 8 phases, 15 plans, 31 tasks
+
+**Key accomplishments:**
+
+- onError callbacks and AbortSignal timeouts added to both streamText call sites, eliminating silent mid-stream provider failures in /api/chat (60s) and /api/neurons/ai-action (30s)
+- Khanmigo-proven calibration patterns added to CHAT_SYSTEM_PROMPT, comprehension-test heuristic with 4 boundary examples in inferPrerequisites, and Kahn's topological sort cycle detection added to architect.ts superRefine
+- Expanded promptfoo eval suite from 34 to 42 cases with behavioral assertions for all 4 Khanmigo patterns and judge model pinned to gpt-4o-2024-08-06 across all three configs
+- Race-free TipTap neuron content sync via single neuron.id-keyed effect, and lossless JSON serialization replacing HTML in all save paths
+- React.memo applied to NeuronNode, GhostNeuronNode, and SynapseEdge, plus onlyRenderVisibleElements enabled on ReactFlow to prevent cascading re-renders and cull off-screen DOM nodes at scale.
+- Real-time 6-segment Bloom cognitive depth meter added to chat interface using client-side keyword analysis of user messages — zero API calls, ambient editorial aesthetic
+- Langfuse OTel stack installed with NodeTracerProvider + LangfuseSpanProcessor, shared buildTelemetry() helper, and RAG span wrapper ready for 8 AI call site instrumentation
+- All 8 AI call sites instrumented with named Langfuse traces — conversationalist, architect, bouncer-extract, ai-action, curriculum, synthesize, inquisitor, and crystallize-seed — every trace carrying userId; chat trace also carries conversationId and RAG span
+- 4 new golden eval cases with hard jargon-ban, bullet-point, and Socratic question assertions replace 17 legacy tool-call cases; TRUNCATE migration eliminates legacy chat data
+- CHAT_SYSTEM_PROMPT
+- 6-case Bloom classifier eval suite with Gemini Flash provider, chain-of-thought prompt, and tiered JavaScript assertions covering the full Remember-to-Create spectrum
+- Async Bloom evaluator API route + Zustand bloom state + GenerateNeuronButton that illuminates at Analyze-level cognitive depth, firing silently after each chat stream without blocking the user
+- POST /api/neurogenesis with 3-step Synthesizer -> RAG -> Epistemological Inquisitor pipeline, each step independently traced in Langfuse
+- GenerateNeuronButton wired to POST /api/neurogenesis with real fetch call, graphStore atomic addNeurogenesisResult action, inline success/error feedback, and Bloom state reset on success
+
+---
+
 ## v2.0 MVP Core Stability (Shipped: 2026-03-24)
 
 **Phases completed:** 4 phases, 7 plans, 15 tasks
