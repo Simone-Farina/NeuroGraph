@@ -17,8 +17,8 @@ Requirements for Core Flow Stability, Multi-Agent Architecture & Observability. 
 
 ### Multi-Agent Architecture
 
-- [ ] **AGENT-01**: `/api/chat` stream has zero tool-calling capabilities — pure natural Socratic tutor
-- [ ] **AGENT-02**: Chat system prompt never mentions "Neurons", "Crystallization", or "Bloom's Taxonomy" — converses and challenges naturally
+- [x] **AGENT-01**: `/api/chat` stream has zero tool-calling capabilities — pure natural Socratic tutor
+- [x] **AGENT-02**: Chat system prompt never mentions "Neurons", "Crystallization", or "Bloom's Taxonomy" — converses and challenges naturally
 - [ ] **AGENT-03**: Async Bloom Evaluator runs a cheap LLM (Gemini Flash) on the last 3 messages after each user turn, non-blocking
 - [ ] **AGENT-04**: Bloom evaluation result updates Zustand state with `{ bloomLevel, confidence }` without interrupting chat
 - [ ] **AGENT-05**: "Generate Neuron" button illuminates when `bloomLevel >= Analyze` with Danish Computation aesthetic (muted to solid transition, no gamification)
@@ -71,8 +71,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | OBS-03 | Phase 22 | Complete |
 | OBS-04 | Phase 22 | Complete |
 | OBS-05 | Phase 22 | Complete |
-| AGENT-01 | Phase 23 | Pending |
-| AGENT-02 | Phase 23 | Pending |
+| AGENT-01 | Phase 23 | Complete |
+| AGENT-02 | Phase 23 | Complete |
 | AGENT-03 | Phase 24 | Pending |
 | AGENT-04 | Phase 24 | Pending |
 | AGENT-05 | Phase 24 | Pending |

@@ -79,7 +79,7 @@
 **Milestone Goal:** Deconstruct the monolithic chat endpoint into an Asynchronous Multi-Agent Architecture with deep LLM observability — fix the core loop, no new product features.
 
 - [x] **Phase 22: Observability Foundation** - Langfuse Cloud integration, OpenTelemetry spans across all AI call sites, session/user trace correlation (completed 2026-03-25)
-- [ ] **Phase 23: Pure Conversationalist** - Strip tool-calling from /api/chat, rewrite as natural Socratic tutor, DB migration for persisted tool-call messages, conversationalist eval suite
+- [x] **Phase 23: Pure Conversationalist** - Strip tool-calling from /api/chat, rewrite as natural Socratic tutor, DB migration for persisted tool-call messages, conversationalist eval suite (completed 2026-03-25)
 - [ ] **Phase 24: Silent Observer** - Async Bloom Evaluator (Gemini Flash), Zustand bloomLevel state, Generate Neuron button illumination, Bloom eval suite
 - [ ] **Phase 25: Decoupled Architect Pipeline** - POST /api/architect 3-step pipeline (Synthesizer → RAG → Inquisitor), independent Langfuse spans per step, non-blocking React Flow update
 
@@ -171,11 +171,11 @@ Plans:
   2. The chat system prompt contains no references to "Neurons," "Crystallization," or "Bloom's Taxonomy" — it reads as a natural conversation partner
   3. Loading an existing conversation session that previously contained tool-call messages renders without errors — no blank chat, no corrupted message arrays
   4. The conversationalist promptfoo eval suite passes all golden cases proving no direct answers, no bullet points, and no NeuroGraph jargon in responses
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 - [x] 23-01-PLAN.md — Rebuild conversationalist eval suite + DB truncate migration (EVAL-01, AGENT-06)
-- [ ] 23-02-PLAN.md — Strip tools from chat route, rewrite prompt, clean up ChatPanel (AGENT-01, AGENT-02)
+- [x] 23-02-PLAN.md — Strip tools from chat route, rewrite prompt, clean up ChatPanel (AGENT-01, AGENT-02)
 
 ### Phase 24: Silent Observer
 **Goal**: A non-blocking Bloom Evaluator runs in the background after each user message and illuminates the "Generate Neuron" button when the conversation reaches Analyze-level cognitive depth
@@ -230,6 +230,6 @@ Plans:
 | 20. Editor Reliability | v2.0 | 1/1 | Complete | 2026-03-24 |
 | 21. Graph Performance & Bloom UI | v2.0 | 2/2 | Complete | 2026-03-24 |
 | 22. Observability Foundation | v2.1 | 1/2 | Complete    | 2026-03-25 |
-| 23. Pure Conversationalist | v2.1 | 1/2 | In Progress|  |
+| 23. Pure Conversationalist | v2.1 | 2/2 | Complete   | 2026-03-25 |
 | 24. Silent Observer | v2.1 | 0/? | Not started | - |
 | 25. Decoupled Architect Pipeline | v2.1 | 0/? | Not started | - |

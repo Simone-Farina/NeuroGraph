@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Core Flow Stability, Multi-Agent Architecture & Observability
-status: Ready to execute
-stopped_at: Completed 23-01-PLAN.md
-last_updated: "2026-03-25T21:22:19.795Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 23-02-PLAN.md
+last_updated: "2026-03-25T21:29:32.614Z"
 progress:
   total_phases: 8
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 11
-  completed_plans: 10
+  completed_plans: 11
 ---
 
 # Project State
@@ -52,6 +52,7 @@ Plan: 2 of 2
 | Phase 22-observability-foundation P01 | 3min | 2 tasks | 4 files |
 | Phase 22-observability-foundation P02 | 3min | 2 tasks | 9 files |
 | Phase 23-pure-conversationalist P01 | 3min | 2 tasks | 4 files |
+| Phase 23-pure-conversationalist P02 | 4min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -76,6 +77,9 @@ Recent decisions affecting current work:
 - [Phase 23-pure-conversationalist]: 23-01-socratic-threshold: Socratic tone threshold lowered from 0.8 to 0.7 — natural paragraph-form responses score lower on teach-then-ask heuristic
 - [Phase 23-pure-conversationalist]: 23-01-tool-removal-eval: Eval provider generateText call stripped of all tools — provider must mirror production chat architecture exactly
 - [Phase 23-pure-conversationalist]: 23-01-truncate-migration: TRUNCATE TABLE messages/conversations CASCADE — no JSON parsing migration needed, single-user beta data is disposable
+- [Phase 23-pure-conversationalist]: 23-02-depth-encouragement: Depth Encouragement directive pushes users to analyze mechanisms and tradeoffs without naming Bloom's Taxonomy or cognitive levels — strict separation of concerns
+- [Phase 23-pure-conversationalist]: 23-02-reference-catalog: Renamed Existing Neuron Catalog to Reference Catalog in system prompt construction — strips internal architecture language from AI context
+- [Phase 23-pure-conversationalist]: 23-02-loadMessages-text-only: loadMessages simplified to text-only parts — no tool part rehydration since TRUNCATE migration wiped all legacy tool_invocations metadata
 
 ### Pending Todos
 
@@ -89,6 +93,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-25T21:22:19.793Z
-Stopped at: Completed 23-01-PLAN.md
+Last session: 2026-03-25T21:29:32.612Z
+Stopped at: Completed 23-02-PLAN.md
 Resume file: None
