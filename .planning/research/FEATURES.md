@@ -1,360 +1,310 @@
-# Feature Landscape: Production-Grade AI Tutoring Agents
+# Feature Landscape: Multi-Agent Architecture & LLM Observability
 
-**Domain:** Enterprise AI tutoring — Socratic coaching, Bloom cognition detection, DAG prerequisite reasoning
-**Researched:** 2026-03-24
-**Milestone scope:** v2.0 MVP Core Stability — making existing features production-grade (no new features)
-
----
-
-## Research Context: What Already Exists in NeuroGraph
-
-Before mapping table stakes vs. differentiators, the existing code was audited directly.
-
-**`src/lib/ai/prompts.ts` — CHAT_SYSTEM_PROMPT (current state):**
-- Three-step structure: Acknowledge → Enrich → Question — correct
-- Neurogenesis gating: calls `suggest_neurogenesis` tool at Analyze/Evaluate/Create — correct
-- Bloom-level behavioral signals documented in the prompt — present but improvable
-- Anti-answer-giving directive present but not strongly specified for edge cases
-
-**`src/lib/ai/inferPrerequisites.ts` — DAG Agent (current state):**
-- Uses `generateObject` with a Zod schema
-- Pedagogically grounded system prompt with prerequisite vs. related distinction
-- No timeout or retry handling — bare `await generateObject(...)` call
-- Confidence threshold filter at 0.6 before synapse creation
-
-**`src/lib/ai/architect.ts` — Architect/DAG Planner (current state):**
-- Server-side cycle detection via DFS (correct and thorough)
-- Three synapse types: PREREQUISITE, RELATED, BUILDS_ON with clear semantics
-- No fallback if LLM returns invalid JSON — schema parse failure surfaces as uncaught exception
-
-**`src/lib/ai/tools.ts` — Neurogenesis tool:**
-- bloom_level enum correctly restricted to Analyze/Evaluate/Create only
-
-**Gap summary:** The prompts are structurally sound but lack: (a) calibrated difficulty and mistake-handling rules from Khanmigo's proven playbook, (b) Bloom-level detection as a real-time visual signal in the UI, (c) structured output resilience across all three LLM call sites, (d) DAG prompt hardening for common failure modes that trip LLMs on prerequisite inference.
+**Domain:** LLM Observability + Multi-Agent Edtech Architecture
+**Researched:** 2026-03-25
+**Milestone scope:** v2.1 Core Flow Stability — decompose monolith, add Langfuse tracing
+**Confidence:** MEDIUM-HIGH (Langfuse official docs HIGH; async UX patterns MEDIUM; edtech-specific multi-agent MEDIUM)
 
 ---
 
-## 1. Socratic Chat Agent — Table Stakes vs. Differentiators
+## Research Context: What This Milestone Changes
+
+v2.0 shipped a **monolithic chat endpoint**: one stream handles Socratic conversation AND inline Bloom evaluation AND neurogenesis tool-calling AND architect suggestions. This creates four compounding problems:
+
+1. **Observability blindspot** — No trace data means prompt regressions are invisible in production.
+2. **Latency coupling** — Bloom evaluation blocks the user-facing response stream.
+3. **Prompt contamination** — A single prompt tries to be a tutor, an evaluator, and a curriculum planner simultaneously.
+4. **Untestable contracts** — The monolith cannot be eval-tested at the agent boundary because there are no boundaries.
+
+The v2.1 goal is architectural, not feature-adding: make the existing loop observable, decompose it into agents with clean contracts, and let the async evaluator drive UI state rather than block the stream.
+
+---
+
+## 1. LLM Observability (Langfuse)
 
 ### Table Stakes
 
-Features the Socratic chat agent MUST have to work correctly. Missing = broken tutoring loop.
+Features that a production Langfuse integration MUST have. Missing any of these means the dashboard is unusable for debugging or cost management.
 
-| Feature | Why Expected | Complexity | Existing State |
-|---------|--------------|------------|----------------|
-| Never-give-answers enforcement | Core Socratic contract; users will exploit loopholes without explicit rules | Low (prompt) | Partially there — improvable |
-| One-question-at-a-time discipline | Multiple questions paralyze learners; single question per turn is proven practice | Low (prompt) | Present but not strictly enforced |
-| Acknowledge → Enrich → Question structure | Prevents lectures; forces agent to add new value before asking | Low (prompt) | Present and working |
-| Calibrated question difficulty | Khanmigo's core: break down to the right level, assume difficulty unknown | Medium (prompt) | Missing — prompt doesn't calibrate to confusion signals |
-| Anti-loop variation | LLMs default to the same question type across turns; explicit variation instruction needed | Low (prompt) | Missing |
-| Mistake-handling without correction | "Ask how they got there, not what the answer is" — the corrector pattern breaks Socratic flow | Low (prompt) | Missing explicit handling |
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| Trace per user request | One trace = one logical unit of user activity; without this, spans are orphaned and unnavigable | LOW | Set via `functionId` + `metadata.userId` in `experimental_telemetry` |
+| Session grouping | Groups traces by conversation; allows replay of a full learning session | LOW | Pass `sessionId` (conversation ID) on every trace |
+| Generation spans with model + tokens | Cost and latency visibility impossible without model name + prompt/completion token counts | LOW | AI SDK OpenTelemetry middleware captures this automatically |
+| User ID propagation | Required for per-user cost analysis; "who is spending what?" | LOW | Pass `userId` in trace metadata |
+| Input/output capture | The entire value of observability is seeing what the LLM was given and what it returned | LOW | AI SDK traces this by default; do not disable |
+| Latency per span | P50/P95 latency per agent is the primary bottleneck signal | LOW | Automatic via OpenTelemetry timing |
+| Environment tagging | `production` vs `development` traces must be separable | LOW | Pass `tags: [process.env.NODE_ENV]` |
 
 ### Differentiators
 
-Features that make NeuroGraph's agent distinct from Khanmigo and Duolingo.
+Features that elevate a basic Langfuse integration into a production-quality observability layer.
 
-| Feature | Value Proposition | Complexity | Existing State |
-|---------|-------------------|------------|----------------|
-| Knowledge-graph-aware enrichment | "You already have a neuron on X — how does that apply here?" creates genuinely personalized dialogue | Low (RAG context already injected) | Present in context injection, not explicitly instructed in prompt |
-| Bloom-level-aware question escalation | Agent detects user is at "Understand" and asks an "Analyze" question to escalate depth | Medium (requires inline signal) | Absent |
-| Neurogenesis priming | Agent signals approaching threshold: "That's an insight worth preserving — want to extract it?" | Low (prompt) | Absent |
-| Cross-domain connection surfacing | Agent bridges user's concept to an adjacent field (physics ↔ economics, biology ↔ software architecture) | Low (prompt instruction) | Present in Enrich step — needs explicit reinforcement |
-| 14-day TTL urgency framing | Agent can surface the conversation expiry as gentle productive pressure | Low (date injection + prompt) | Absent |
-| Meta-question technique | Occasionally go one level up: "What assumption are you making when you say X?" | Low (prompt) | Absent |
+| Feature | Value Proposition | Complexity | Notes |
+|---------|-------------------|------------|-------|
+| Agent-level span naming | "conversationalist", "bloom-evaluator", "architect", "bouncer" — one span per agent makes the dashboard readable | LOW | Set `functionId` per call site, not per route |
+| Bloom level as custom metadata | Attach `bloom_level` to the evaluator generation span — enables filtering "all Analyze+ evaluations" | LOW | Add `metadata: { bloom_level }` to evaluator span after result is known |
+| Prompt version tagging | When prompts change, version tag makes before/after comparison possible | LOW | Add `metadata: { promptVersion: 'v2.1.0' }` |
+| Cost estimation via token math | Langfuse does not auto-estimate cost unless model pricing is configured; missing this makes cost analysis incomplete | MEDIUM | Configure model prices in Langfuse project settings |
+| LLM-as-Judge scores via Langfuse API | Attach evaluator scores (bloom_level scores, bouncer pass/fail) as Langfuse `score` objects on the trace | MEDIUM | Requires POST to /api/scores after generation; enables historical eval dashboards |
+| Flush before serverless function exits | Vercel cloud functions kill the process after response is sent; unflushed spans are silently lost | LOW | Use Vercel `after()` utility to schedule `langfuseSpanProcessor.flush()` after response |
 
 ### Anti-Features
 
 | Anti-Feature | Why Avoid | What to Do Instead |
 |--------------|-----------|-------------------|
-| Summarize this conversation | Creates passive-ingestion shortcut; defeats extraction | "What's the most important thing you discovered? That's your summary." |
-| Just give me the answer | Destroys cognitive depth signal before neurogenesis gate | Lean into Socratic refusal: "What part feels blocked? Let's go there." |
-| Rate my understanding | LLM self-assessments of mastery are unreliable | Use neurogenesis suggestion as the implicit mastery signal |
-| Multi-question turns | More than one question overwhelms; reduces engagement quality | Strict one-question rule even when agent has multiple things to ask |
+| Tracing every token in a stream | Micro-spans per token create noise without signal; Langfuse is not a per-token debugger | Trace the full generation span (input + output + latency) per LLM call |
+| PII in trace payloads | User message content may contain sensitive data; full logging in production is a GDPR risk | Evaluate whether to mask user inputs; at minimum document the data retention policy |
+| Disabling input/output capture | Some teams disable this to reduce payload size — it eliminates 80% of the debug value | Keep input/output on; reduce noise via session/user filters instead |
+| Custom trace exporter without Vercel `after()` | Synchronous flush blocks response time; async flush without `after()` drops traces on cold exits | Always use `after(async () => await processor.flush())` in serverless |
 
-### Proven Prompt Patterns from Khanmigo
+### Langfuse Data Model for NeuroGraph
 
-Source: publicly disclosed Khanmigo Lite system prompt (GitHub, multiple corroborating references) — HIGH confidence.
+Based on official Langfuse documentation (HIGH confidence):
 
-**Pattern 1: Calibrated Difficulty with Unknown Baseline**
+```
+Trace: one per user request
+  ├── sessionId: conversationId
+  ├── userId: supabase user id
+  ├── tags: [env, agent_name]
+  ├── metadata: { promptVersion }
+  │
+  ├── Span: "rag-retrieval"          (vector search for relevant neurons)
+  ├── Generation: "conversationalist" (main chat response — model, tokens, latency)
+  ├── Span: "bloom-evaluation"       (wraps the async evaluator call)
+  │     └── Generation: "bloom-eval-generation" (cheap LLM call — gpt-4o-mini)
+  │           metadata: { bloom_level, conversation_id }
+  └── Score: "bloom_confidence"      (0.0–1.0 attached to bloom-eval-generation)
 
-> "Always tune your question to the knowledge of the student, breaking down the problem into simpler parts until it's at just the right level for them, but always assume they're having difficulties and you don't know where yet."
+Separate traces for non-chat agents:
+  Trace: "architect-run"
+    ├── Generation: "epistemological-inquisitor"
+    ├── Generation: "synthesizer"
+    └── Span: "rag-prerequisite-search"
 
-Implication for NeuroGraph: Add to CHAT_SYSTEM_PROMPT — "Assume the user is stuck even if their message seems confident. Your question should probe the assumption beneath what they said."
+  Trace: "bouncer-check"
+    └── Generation: "bouncer"
+          metadata: { decision: "accept|reject", reason }
+```
 
-**Pattern 2: Mistake Handling Without Correction**
-
-> "If they make a mistake, do not tell them the answer, just ask them how they figured out that step and help them realize their mistake on their own."
-
-Implication for NeuroGraph: Add an explicit mistake-response rule: "If the user states something factually incorrect, do NOT correct it directly. Ask: 'How did you arrive at that?' and guide from there."
-
-**Pattern 3: Socratic Funnel (meta-questioning)**
-
-From independent research (Towards AI, corroborated by multiple practitioner sources): "Question → questions about the question → questions about the assumptions → questions about the evidence." The stance is "don't answer me yet, ask me what I mean."
-
-Implication for NeuroGraph: CHAT_SYSTEM_PROMPT currently stops at question. Add periodic meta-question instruction: "Occasionally ask about the user's reasoning process itself, not just the content: 'What made you think that?' or 'What assumption is underneath that claim?'"
-
-**Pattern 4: Goldilocks Edge**
-
-> "Keep students at their Goldilocks learning edge — pushing students at any level to clear up misconceptions and engage in active learning."
-
-Implication for NeuroGraph: Add: "Monitor the user's engagement trajectory. If their answers are getting shorter or more vague, simplify your question. If they're elaborating confidently and analytically, escalate the cognitive demand."
-
-**Duolingo's Conversation Memory Pattern (MEDIUM confidence — Duolingo engineering blog):**
-
-After each conversation, Duolingo's AI (Lily) analyzes the transcript to extract facts about the user and injects them into subsequent sessions as a "List of Facts." This creates continuity across sessions.
-
-Implication for NeuroGraph: The existing RAG context injection (relevant neurons + existing catalog) already performs this function. The gap is that the prompt doesn't explicitly instruct the agent to reference this context in the Enrich step by name.
+This maps exactly to Langfuse's recommended structure: one trace per user-visible action, spans for retrieval and orchestration, generations for LLM calls, scores for eval results.
 
 ---
 
-## 2. Bloom's Taxonomy Cognitive Load Detection
+## 2. Pure Conversationalist (Stripped /api/chat)
 
 ### Table Stakes
 
-| Feature | Why Expected | Complexity | Existing State |
-|---------|--------------|------------|----------------|
-| Bloom level assignment at neurogenesis | Required for the Analyze+ gating mechanism | Low (tool schema) | Present — tool enforces Analyze/Evaluate/Create only |
-| Behavioral signals for Bloom detection in chat prompt | Agent needs specific language, not just category names | Low (prompt) | Present but under-specified |
-| Remember/Understand vs. Analyze+ binary gate | Core neurogenesis gating logic | Low | Present and working |
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| Socratic response only — no tool calls | The chat route should stream text, nothing else; tool-calling in a stream adds latency and complexity that belongs in the evaluator | LOW (remove tools from streamText call) | Already instrumented via Vercel AI SDK `useChat` |
+| System prompt focused on tutoring only | Current prompt tries to be tutor + evaluator + curriculum suggester; separation of concerns makes each better | LOW (prompt rewrite) | Split the cognitive work: tutor knows nothing about Bloom thresholds |
+| RAG context injection unchanged | The chat agent should still receive relevant neurons as context — this is the personalization layer | LOW | No change required |
+| Conversation history pass-through | The tutor needs the full turn history to maintain Socratic coherence | LOW | Already handled by `useChat` messages array |
+| Langfuse trace on every call | Non-negotiable for debugging regressions | LOW | See Section 1 |
 
 ### Differentiators
 
-| Feature | Value Proposition | Complexity | Existing State |
-|---------|-------------------|------------|----------------|
-| Real-time Bloom depth indicator in UI | Learner sees current cognitive engagement level during the conversation | Medium (client-side signal + UI component) | Absent |
-| Bloom escalation prompting | Agent actively attempts to pull user from Understand to Analyze through question design | Low (prompt only) | Absent |
+| Feature | Value Proposition | Complexity | Notes |
+|---------|-------------------|------------|-------|
+| Reduced model size for conversationalist | With Bloom eval decoupled, the chat model can be cheapened: gpt-4o vs gpt-4o-mini tradeoff is worth exploring | LOW (config change) | Measure quality delta with promptfoo before switching |
+| Streaming unblocked by eval | User sees first token while evaluator runs independently — perceived latency drops significantly | LOW (architectural change already separates the two) | Main benefit of decoupling |
+| Explicit "I don't know about your curriculum" stance | Tutor should not know about Architect output; clean boundary prevents prompt contamination | LOW (prompt instruction) | Reinforces the multi-agent contract |
 
-### How to Detect Bloom Level — Research Findings
+### Anti-Features
 
-**Approach A: Heuristic keyword signals — LOW accuracy (25–75%)**
-
-Academic research (EDM 2022, automatic Bloom classification paper) built keyword dictionaries mapped to each level. Performance: ~75% at Remember level, 25–59% at higher levels. Adequate only as a pre-filter or UI approximation, not as a gate.
-
-Keyword anchors (use these for the real-time UI indicator):
-- Remember: "what is", "define", "list", "name", "who", "when"
-- Understand: "explain", "describe", "summarize", "give an example", "what does"
-- Apply: "how would you", "use", "demonstrate", "solve", "calculate"
-- Analyze: "why", "compare", "contrast", "what causes", "break down", "distinguish", "because"
-- Evaluate: "judge", "argue", "which is better", "critique", "justify", "is it valid", "I think"
-- Create: "design", "propose", "combine", "I realized", "what if we", "novel approach", "I wonder"
-
-**Approach B: LLM inline classification — MEDIUM-HIGH accuracy, adds latency**
-
-From the MDPI paper on Socratic chatbot dialogue classification (2024): fine-tuned GPT-4o-mini achieved micro-F1 of 0.814 for Bloom-level classification on real chatbot utterances. Calibrated classical models (SentenceTransformer embeddings) showed stronger balance across levels.
-
-Practical conclusion: A separate LLM classification call per user message would add 300–800ms latency. This is too expensive for real-time chat. Reserve LLM-based Bloom classification for the neurogenesis gate (already done).
-
-**Recommended production approach for NeuroGraph (combining both):**
-1. Client-side keyword scan of the last 2–3 user messages drives the UI indicator. Approximate, fast, zero latency.
-2. The `suggest_neurogenesis` tool call result (when it fires) gives a ground-truth Bloom level. Use this to update the UI indicator state with high confidence.
-3. Do not add a parallel LLM Bloom classification call. The existing gating is sufficient for the neurogenesis contract.
-
-### Visual Cognitive Load Indicator — Design Pattern
-
-Research on edtech UI did not find a standardized real-time Bloom depth widget in any production platform. Existing platforms use:
-- Duolingo: XP + streak (effort proxy, not cognitive depth)
-- Khan Academy: exercise mastery levels (mastery proxy, not real-time depth)
-- Academic research dashboards: post-hoc Bloom annotation in analytics views
-
-NeuroGraph's opportunity is novel — there is no established pattern to copy. The design must avoid performance anxiety and gaming behavior.
-
-**Recommended pattern (original design based on research):**
-
-A subtle 6-step depth indicator in the chat interface — six small dots or segments, one per Bloom level, with the current level softly highlighted. Color progression communicates elevation, not evaluation:
-- grey: no activity yet
-- cool blue: Remember
-- teal: Understand
-- green: Apply
-- amber: Analyze (neurogenesis threshold begins here)
-- orange: Evaluate
-- gold: Create
-
-The indicator pulses briefly when it advances. It does NOT show a label by default (tooltip on hover only). It advances via keyword scan; it advances with high confidence when the neurogenesis tool fires.
-
-Critical constraint: The indicator is informational, not evaluative. It communicates "you are thinking deeply" not "you scored X." Never show it as a score or grade.
+| Anti-Feature | Why Avoid | What to Do Instead |
+|--------------|-----------|-------------------|
+| Inline Bloom classification in the stream | Puts a classifier call in the hot path; adds 300–800ms to every response | Run Bloom eval as a background POST after the stream completes |
+| Neurogenesis suggestion as a streamed tool | Tool calls in the main stream make the conversationalist stateful; removes architectural cleanness | Bloom evaluator fires the neurogenesis signal via separate state channel |
+| Session memory summarization in chat | Creates passive ingestion shortcut; user should do extraction work | Keep the 14-day TTL discipline; no AI-generated summaries |
 
 ---
 
-## 3. DAG Prerequisite Reasoning — Production Hardening
+## 3. Async Bloom Evaluator (Silent Observer)
 
 ### Table Stakes
 
-| Feature | Why Expected | Complexity | Existing State |
-|---------|--------------|------------|----------------|
-| Strict prerequisite vs. related discrimination | The entire graph degrades if the LLM conflates them | Medium (prompt) | Present but can be sharpened |
-| Cycle detection with refusal | LLMs introduce cycles; must be caught before DB write | Low | Present — DFS cycle detection in architect.ts |
-| Confidence threshold filtering | Low-confidence suggestions degrade graph quality | Low | Present — 0.6 threshold in inferPrerequisites |
-| Self-referential synapse prevention | LLM occasionally generates A→A edges | Low | Present — Zod schema validates sourceTitle != targetTitle |
-| Duplicate synapse deduplication | LLM may propose the same edge twice | Low | Present — Zod schema dedup key |
-
-### Differentiators (Production-Grade Improvements)
-
-| Feature | Value Proposition | Complexity | Existing State |
-|---------|-------------------|------------|----------------|
-| The "comprehension test" formulation | More reliable than semantic judgment; explicit test to apply per candidate | Low (prompt) | Absent |
-| Boundary example set in the system prompt | LLMs generalize better with 4 worked examples covering all three relation types | Low (prompt) | Only 1 example currently (linear algebra → neural networks) |
-| Pedagogical irreversibility constraint | "Prerequisite is directional AND irreversible — if removing source makes target incomprehensible, it's a prerequisite" | Low (prompt) | Absent |
-| Domain-aware confidence calibration | Technical domains have strict prerequisites; humanistic domains have contextual ones | Low (prompt) | Absent |
-| Topological self-check instruction | Ask the LLM to verify its own output with a mental topological sort before finalizing | Low (prompt) | Absent |
-
-### Proven Prompt Patterns for DAG Reasoning
-
-**Pattern 1: The Comprehension Test (most important addition)**
-
-Replace the current subjective prerequisite definition with this testable formulation:
-
-> "A prerequisite has ONE test: if a learner has NEVER encountered concept A, can they still meaningfully understand concept B? If no — A is a PREREQUISITE. If yes — A is merely RELATED. Apply this test to every candidate before deciding."
-
-This is more reliable than semantic importance judgments because it has a clear binary outcome.
-
-**Pattern 2: Boundary Examples for All Three Relation Types**
-
-The current prompt has one example. Add a complete example set covering all three types and common failure modes:
-
-```
-PREREQUISITE (correct):
-  "TCP/IP" → "HTTP" (HTTP cannot function without TCP/IP — learner blocked without it)
-  "Derivatives" → "Integrals" (integration requires understanding what differentiation is)
-
-RELATED not PREREQUISITE (common wrong call):
-  "Python" is NOT a prerequisite for "JavaScript" — they are parallel alternatives
-  "Renaissance Art" is NOT a prerequisite for "Baroque Art" — historical context, not logical dependency
-
-BUILDS_ON (correct):
-  "Advanced Calculus" builds on "Calculus" — extends the foundation, does not gate entry-level use
-  "Design Patterns" builds on "Object-Oriented Programming" — enriches but OOP works without patterns
-
-RELATED (lateral bridge, no direction):
-  "TCP/IP" is related to "UDP" — both transport protocols, neither depends on the other
-```
-
-**Pattern 3: Topological Self-Check**
-
-Add as a final instruction in the inferPrerequisites system prompt:
-
-> "Before returning your response, mentally trace a topological sort: can every concept in your response be learned by traversing PREREQUISITE edges from source to target in sequence? If any cycle exists, refuse the entire response rather than silently removing edges."
-
-This mirrors research from DAG-Math (ICLR 2025) showing that structuring LLM reasoning as explicit topological traversal reduces graph errors significantly.
-
-**Pattern 4: Domain Calibration**
-
-> "Technical domains (mathematics, computer science, physics, programming) tend to have strict, verifiable prerequisites where comprehension is genuinely blocked without the foundation. Humanistic domains (philosophy, literature, history, management) tend to have contextual or optional dependencies. Calibrate prerequisite confidence accordingly: prefer RELATED over PREREQUISITE in humanistic domains unless the dependency is unambiguous."
-
----
-
-## 4. Structured Output Reliability — generateObject Production Patterns
-
-### Table Stakes
-
-| Feature | Why Expected | Complexity | Existing State |
-|---------|--------------|------------|----------------|
-| Zod schema validation on all output | LLMs produce malformed JSON regularly; schema is the only reliable gate | Low | Present on all three call sites |
-| NoObjectGeneratedError handling | SDK v6 throws this when schema parsing fails; must be caught at each call site | Low | Absent — bare calls will surface as 500s |
-| maxRetries configuration | Default is 2; explicit config signals production intent | Low | Absent — SDK default only |
-| Graceful degradation on failure | User must not see a 500 on AI failures | Medium | Absent |
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| Fires after each user message, not during | Background evaluation must not block the stream | MEDIUM | POST to /api/bloom-eval after `onFinish` callback in `useChat` |
+| Uses a cheap model | Bloom classification does not require gpt-4o; gpt-4o-mini achieves 81% F1 on this task per MDPI 2024 study | LOW | Cost reduction is significant at scale |
+| Returns bloom_level + confidence | The UI needs both the level and a confidence score to decide whether to illuminate the button | LOW | Zod schema: `{ bloom_level, confidence, reasoning }` |
+| Langfuse trace on evaluator call | The evaluator is the most cost-sensitive call; tracing it enables "bloom eval cost per user" analysis | LOW | See Section 1 |
+| Stores result in React state (Zustand or local) | Frontend needs to hold the bloom_level between renders to drive button state | LOW | Store `{ bloomLevel, confidence, isPending }` |
+| Does NOT block the user from typing | Async means the user can keep conversing while eval runs | LOW | Architecture constraint, not feature — enforce at design time |
 
 ### Differentiators
 
-| Feature | Value Proposition | Complexity | Existing State |
-|---------|-------------------|------------|----------------|
-| Timeout via AbortSignal | Prevents Next.js route handlers from hanging past Vercel function limits | Low | Absent |
-| Request signal propagation | Pass `request.signal` so client navigation cancels in-flight LLM calls | Low | Absent |
-| Retry with schema clarification | On first failure, retry once with: "Your previous response could not be parsed. Return ONLY valid JSON." | Medium | Absent |
-| Partial result salvage | NoObjectGeneratedError exposes `.text` — attempt JSON.parse on partial output before giving up | Medium | Absent |
+| Feature | Value Proposition | Complexity | Notes |
+|---------|-------------------|------------|-------|
+| Illuminated "Generate Neuron" button on Analyze+ | Progressive disclosure driven by cognitive state — only show the action when it makes sense | MEDIUM | Button transitions from dim/disabled to lit/enabled when bloom_level >= Analyze AND confidence >= 0.7 |
+| Pending state indicator during eval | Users notice when the button is "thinking" — a brief pulse or shimmer while eval runs prevents confusion | LOW | CSS animation on the button during `isPending: true` |
+| Confidence threshold as a UX gate | Don't illuminate the button on LOW confidence eval results — reduces false positive "you're ready" signals | LOW | Threshold tunable; start at 0.7 |
+| Bloom level as context for neurogenesis route | Pass the `bloom_level` from the evaluator to the /api/architect call so the Architect knows the cognitive entry point | LOW | Add to POST body |
+| Evaluation result visible in Langfuse | Attaching the bloom_level as a Langfuse score enables historical "depth over time" dashboards | MEDIUM | POST score to Langfuse after eval |
 
-### Recommended Resilience Wrapper
+### Anti-Features
 
-Based on Vercel AI SDK v6 official documentation (HIGH confidence):
+| Anti-Feature | Why Avoid | What to Do Instead |
+|--------------|-----------|-------------------|
+| Polling for eval result | Polling adds unnecessary requests; the eval completes in 1–3 seconds — a single POST with optimistic state is sufficient | Fire POST, update state on response, no polling loop needed |
+| Showing the raw Bloom level label to users | "You are at Analyze level" creates grading anxiety and gaming behavior | Use the button illumination as the implicit signal; Bloom label is internal only |
+| Eval on every assistant turn | The evaluator should read user messages, not assistant messages — the user's cognitive state is what matters | Fire evaluator on user message + preceding assistant context, not on assistant response |
+| Hard-blocking neurogenesis on eval failure | If the eval POST fails (network error, timeout), the user should not be locked out of neurogenesis | Fall back to showing the button as available; better false positive than blocked user |
 
-Three active call sites that need this wrapper:
-1. `src/lib/ai/inferPrerequisites.ts` — `generateObject` call, no error handling
-2. Any future API route calling the Architect (currently eval-only)
-3. Future Bouncer migration from raw JSON to `generateObject`
+### UX Pattern: Async Readiness Signal
 
-The `AbortSignal.timeout()` approach is documented in AI SDK Core Settings. For Next.js App Router routes: `AbortSignal.any([request.signal, AbortSignal.timeout(25_000)])` cancels on either client disconnect or 25-second wall-clock timeout.
+Based on research into progressive disclosure and async background job patterns (MEDIUM confidence — no direct edtech precedent found; pattern synthesized from general async UX literature):
 
-The `NoObjectGeneratedError` in AI SDK v6 exposes `.text` (raw LLM output) and `.response` (metadata). On validation failure, attempt `JSON.parse(error.text)` as a salvage step before returning the fallback.
+**The illuminate-on-readiness pattern:**
 
-### Timeout Guidance for Vercel + Next.js
+```
+User sends message
+  → Chat stream starts immediately (non-blocking)
+  → Background: POST /api/bloom-eval (fire-and-forget from client perspective)
 
-- Vercel hobby tier: 10s function limit — set AbortSignal to 8s
-- Vercel pro tier: 60s function limit — set AbortSignal to 25s (LLM calls should complete in under 10s; 25s gives headroom for retries)
-- Always set timeout to ~80% of the route limit to allow the handler to return a clean error response
+While eval is pending:
+  → "Generate Neuron" button: visible but dimmed, shimmer animation
+  → State: { bloomLevel: null, isPending: true }
+
+Eval returns (1–3s):
+  → If bloom_level >= Analyze AND confidence >= 0.7:
+       Button transitions: dimmed → illuminated (CSS transition, 300ms ease)
+       State: { bloomLevel: "Analyze", isPending: false, ready: true }
+  → If below threshold:
+       Button stays dimmed (no animation, no label)
+       State: { bloomLevel: "Understand", isPending: false, ready: false }
+
+User clicks illuminated button:
+  → Triggers /api/architect with bloom_level context
+  → Resets evaluator state for next round
+```
+
+This pattern is used in production by tools like Notion AI (which illuminates "Improve writing" only after detecting editable text) and GitHub Copilot (which shows suggestions only when context is sufficient). The principle is: **show the action only when the system has enough confidence the action is meaningful.**
+
+---
+
+## 4. Decoupled Architect Endpoint
+
+### Table Stakes
+
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| User-triggered POST /api/architect | Neurogenesis is a deliberate user action, not AI-initiated; the endpoint fires only when the user clicks the illuminated button | LOW (route already partially exists) | Remove any auto-trigger logic |
+| Accepts bloom_level in request body | Architect should know the cognitive entry point to calibrate curriculum depth | LOW | Add to Zod input schema |
+| Runs Synthesizer → RAG → Epistemological Inquisitor in sequence | Established chain; the synthesis step grounds the curriculum in the user's actual insight | MEDIUM (orchestration already exists; needs sequencing contract) | Order matters: synthesize insight first, then infer prerequisites |
+| Returns neuron proposal (title + body + prerequisites) | The user must review and confirm before anything writes to the DB | LOW | Existing flow — no change |
+| Langfuse traces the full chain | Three LLM calls in one route = three generations in one trace | LOW | Wrap entire route in a Langfuse trace, add sub-spans per agent |
+| Graceful error handling | If any step fails, return a partial result with a clear error; do not 500 | MEDIUM | Wrap each agent call in try/catch, return what succeeded |
+
+### Differentiators
+
+| Feature | Value Proposition | Complexity | Notes |
+|---------|-------------------|------------|-------|
+| Bloom-calibrated Synthesizer prompt | If user is at Create level, Synthesizer asks for a novel combination; if at Analyze, asks for pattern identification | LOW (prompt switch based on bloom_level) | Two prompt variants, same contract |
+| Prerequisite inference uses conversation as context | The Epistemological Inquisitor should receive the last N turns as context, not just the proposed neuron title | MEDIUM | Improves prerequisite accuracy — existing inferPrerequisites call only gets the title |
+| Idempotency via conversation_id | If user clicks the button twice quickly, deduplicate the request server-side | LOW | Check conversation_id + recent timestamp before firing |
+| Conversation excerpt in Langfuse trace | Attach the last 3 turns as metadata on the architect trace — makes debugging prerequisite inference much easier | LOW | Add to trace metadata |
+
+### Anti-Features
+
+| Anti-Feature | Why Avoid | What to Do Instead |
+|--------------|-----------|-------------------|
+| AI-initiated neurogenesis | AI auto-creating nodes violates the core "Active Extraction" value proposition | User must always click; the evaluator only illuminates the button, never clicks it |
+| Auto-writing to the knowledge graph without review | Trust is broken if the graph fills with AI-generated content the user didn't consciously confirm | Always require the review/confirm step before DB write |
+| Architect endpoint as a streaming route | The architect chain is synchronous by design — three sequential LLM calls; streaming adds complexity without UX benefit | Return JSON when the full chain completes |
+| Triggering Architect from chat (inline) | Chat stream should have no side effects; neurogenesis via chat conflates the tutor and architect roles | Keep the explicit button → POST /api/architect flow |
 
 ---
 
 ## 5. Feature Dependencies
 
 ```
-Bloom real-time UI indicator
-  → needs: client-side keyword classifier (new, ~50 lines)
-  → OR uses: last neurogenesis tool call result (already in React state)
-  → zero new API calls required
+Langfuse observability
+  → required by: ALL agents (no conditional dependency; add to every call site)
+  → needs: instrumentation.ts OpenTelemetry setup (new file)
+  → needs: LANGFUSE_PUBLIC_KEY + LANGFUSE_SECRET_KEY env vars
+  → blocks nothing (additive instrumentation)
 
-Bloom escalation prompting
-  → needs: CHAT_SYSTEM_PROMPT update only
-  → no new API calls
+Pure Conversationalist
+  → requires: Bloom evaluator decoupled (cannot strip tools from chat until eval is elsewhere)
+  → enhances: Langfuse tracing (cleaner span = conversationalist generation only)
 
-Structured output retry wrapper
-  → needs: one shared helper function
-  → update 3 call sites (inferPrerequisites, future architect route, future bouncer)
+Async Bloom Evaluator
+  → requires: new POST /api/bloom-eval route (new)
+  → requires: Zustand store update or React state for { bloomLevel, isPending, ready }
+  → enhances: Architect endpoint (passes bloom_level as context)
+  → blocks: "Generate Neuron" button illumination
 
-DAG prompt hardening
-  → needs: ARCHITECT_SYSTEM_PROMPT update + inferPrerequisites system prompt update
-  → depends on: existing Zod schema and cycle detection (already present, no changes)
+Decoupled Architect Endpoint
+  → requires: Async Bloom Evaluator (needs bloom_level input)
+  → requires: /api/architect POST route hardened with Langfuse tracing
+  → requires: Conversationalist stripped (chat no longer triggers neurogenesis)
+  → depends on: existing Synthesizer + RAG + Epistemological Inquisitor chain (already built)
 
-Chat prompt hardening (Khanmigo patterns)
-  → needs: CHAT_SYSTEM_PROMPT update only
-  → testable immediately with existing promptfoo golden suite (10 conversationalist cases)
-  → promptfoo suite must be extended with new cases for mistake-handling and calibration
-
-Neurogenesis priming language
-  → needs: CHAT_SYSTEM_PROMPT update only
+Build order:
+  1. Langfuse instrumentation.ts (no dependencies, additive)
+  2. Pure Conversationalist (strip tools, update prompt)
+  3. Async Bloom Evaluator route + frontend state
+  4. Decoupled Architect endpoint + button wiring
 ```
 
 ---
 
-## 6. MVP Recommendation for v2.0 Core Stability
+## 6. Feature Prioritization Matrix
 
-**Prioritize — high value, low complexity, directly in scope:**
+| Feature | User Value | Implementation Cost | Priority |
+|---------|------------|---------------------|----------|
+| Langfuse trace on every LLM call | HIGH (debugging, cost visibility) | LOW (OpenTelemetry middleware) | P1 |
+| Strip tool-calling from /api/chat | HIGH (latency reduction, clean contract) | LOW (remove tools array from streamText) | P1 |
+| POST /api/bloom-eval async route | HIGH (unblocks streaming, separates concerns) | MEDIUM (new route + Zod schema + cheap LLM call) | P1 |
+| "Generate Neuron" button illumination | HIGH (core UX feedback loop) | MEDIUM (Zustand state + CSS transition) | P1 |
+| Langfuse session + userId propagation | MEDIUM (per-user cost analysis) | LOW (metadata fields) | P1 |
+| Architect endpoint Langfuse tracing | MEDIUM (debug prerequisite inference) | LOW (wrap existing route) | P2 |
+| Bloom-calibrated Architect prompt variants | MEDIUM (curriculum quality) | LOW (two prompt variants) | P2 |
+| LLM-as-Judge scores via Langfuse API | MEDIUM (historical eval dashboards) | MEDIUM (POST to /api/scores) | P2 |
+| Conversation context in prerequisite inference | MEDIUM (prerequisite accuracy) | MEDIUM (pass last N turns to Inquisitor) | P2 |
+| Pending shimmer animation on button | LOW (polish) | LOW (CSS only) | P3 |
+| Cost estimation in Langfuse dashboard | LOW (nice to have) | LOW (configure model prices) | P3 |
 
-1. **CHAT_SYSTEM_PROMPT hardening** — Add: calibrated difficulty, mistake handling without correction, anti-loop variation, meta-question technique, Khanmigo Goldilocks pattern, neurogenesis priming. Pure prompt change, testable with existing promptfoo suite.
+**Priority key:**
+- P1: Must have — this is the milestone definition
+- P2: Should have — adds meaningful quality without scope risk
+- P3: Nice to have — defer if velocity slows
 
-2. **Structured output resilience** — Wrap all `generateObject` calls with timeout + NoObjectGeneratedError handler + maxRetries. Prevents silent production 500s. Only 3 call sites.
+---
 
-3. **DAG prompt hardening** — Add: comprehension test definition, 4 worked boundary examples, topological self-check, domain calibration. Pure prompt changes to ARCHITECT_SYSTEM_PROMPT and inferPrerequisites system prompt.
+## 7. Competitor/Reference Analysis
 
-4. **Bloom real-time UI indicator** — Lightweight client-side keyword scan + last neurogenesis tool-call bloom_level as signal source → 6-step depth indicator. Zero additional API calls. Subtle visual design to avoid gamification.
+There is no direct competitor using this exact stack combination. Reference patterns from adjacent domains:
 
-**Defer — valuable but outside v2.0 scope:**
-
-- Per-session Bloom trajectory log: requires new data model and schema migration
-- Multi-model fallback (ai-fallback npm package): adds dependency, unclear need without production failure data
-- Fine-tuned Bloom classifier: requires curated training data pipeline
-- Duolingo-style persistent "List of Facts" across sessions: significant architecture change, current RAG context covers the core need
+| Feature | How Others Do It | NeuroGraph Approach |
+|---------|-----------------|---------------------|
+| LLM observability | Datadog APM (expensive), Helicone (limited), LangSmith (OpenAI-centric) | Langfuse (open source, self-hostable, framework-agnostic) — strongest option for Next.js + multi-model |
+| Async cognitive evaluation | No edtech product found using async background Bloom eval; Khanmigo is fully synchronous | Novel: async eval on every user turn, illuminate UI on confidence threshold |
+| Multi-agent chat decomposition | LangChain agent executors (heavy), CrewAI (Python), OpenAI Agents SDK (new, March 2025) | Direct function calls + Vercel AI SDK — avoid orchestration frameworks that add latency and opacity |
+| User-initiated knowledge creation | Roam Research: manual; Notion AI: AI-suggested but auto-inserts; Obsidian: manual | Hybrid: AI detects readiness, user initiates creation — the highest-friction, highest-quality model |
 
 ---
 
 ## Sources
 
-- [Khan Academy's 7-Step Approach to Prompt Engineering for Khanmigo](https://blog.khanacademy.org/khan-academys-7-step-approach-to-prompt-engineering-for-khanmigo/) — MEDIUM confidence (official blog, not primary source document)
-- [The system prompt for Khanmigo Lite — GitHub Gist](https://gist.github.com/25yeht/c940f47e8658912fc185595c8903d1ec) — HIGH confidence (publicly disclosed system prompt, corroborated by multiple GitHub repositories)
-- [Learning Analytics with Scalable Bloom's Taxonomy Labeling of Socratic Chatbot Dialogues — MDPI Computers](https://www.mdpi.com/2073-431X/14/12/555) — HIGH confidence (peer-reviewed, 2024)
-- [LLMs meet Bloom's Taxonomy: A Cognitive View on LLM Evaluations — ACL 2025](https://aclanthology.org/2025.coling-main.350/) — HIGH confidence (peer-reviewed)
-- [Mechanistic Interpretability of Cognitive Complexity in LLMs via Linear Probing — arXiv 2025](https://arxiv.org/html/2602.17229) — HIGH confidence (preprint, corroborates classification approach)
-- [DAG-Math: Graph-Guided Mathematical Reasoning in LLMs — ICLR 2025 Workshop](https://arxiv.org/html/2510.19842v1) — HIGH confidence (peer-reviewed)
-- [Graph of Verification: Structured Verification of LLM Reasoning with DAGs — arXiv 2025](https://arxiv.org/html/2506.12509v3) — HIGH confidence (preprint)
-- [In-Context Learning with Topological Information for LLM KG Completion](https://arxiv.org/html/2412.08742) — HIGH confidence (peer-reviewed)
-- [LLM-Powered Construction of Course Knowledge-Competency Graphs — ACM ETAI 2025](https://dl.acm.org/doi/10.1145/3766557.3766569) — HIGH confidence (peer-reviewed)
-- [AI SDK Core: generateObject — Official Vercel AI Docs](https://ai-sdk.dev/docs/reference/ai-sdk-core/generate-object) — HIGH confidence (official)
-- [AI SDK Errors: AI_NoObjectGeneratedError — Official Vercel AI Docs](https://ai-sdk.dev/docs/reference/ai-sdk-errors/ai-no-object-generated-error) — HIGH confidence (official)
-- [AI SDK 6 Release Notes — Vercel Blog](https://vercel.com/blog/ai-sdk-6) — HIGH confidence (official)
-- [AI SDK Core: Settings (timeout, abortSignal) — Official Vercel AI Docs](https://ai-sdk.dev/docs/ai-sdk-core/settings) — HIGH confidence (official)
-- [How Duolingo uses AI to Create Speaking Practice (Lily AI tutor)](https://blog.duolingo.com/ai-and-video-call/) — MEDIUM confidence (vendor engineering blog)
-- [Add timeout option to generateObject — Vercel AI GitHub Issue #3169](https://github.com/vercel/ai/issues/3169) — MEDIUM confidence (community issue, confirmed pattern by official docs)
-- [The Socratic Prompt — Towards AI](https://pub.towardsai.net/the-socratic-prompt-how-to-make-a-language-model-stop-guessing-and-start-thinking-07279858abad) — LOW confidence (single practitioner article)
-- [AI tutoring exploratory RCT in UK classrooms — arXiv 2024](https://arxiv.org/html/2512.23633v1) — HIGH confidence (academic study)
+- [Langfuse Observability Concepts — Official Docs](https://langfuse.com/docs/observability/data-model) — HIGH confidence
+- [Langfuse Vercel AI SDK Integration — Official Docs](https://langfuse.com/integrations/frameworks/vercel-ai-sdk) — HIGH confidence
+- [Langfuse Sessions — Official Docs](https://langfuse.com/docs/observability/features/sessions) — HIGH confidence
+- [Langfuse Metadata — Official Docs](https://langfuse.com/docs/observability/features/metadata) — HIGH confidence
+- [Langfuse Next.js + Vercel AI SDK Example — GitHub](https://github.com/langfuse/langfuse-vercel-ai-nextjs-example) — HIGH confidence
+- [AI SDK 6 Release — Vercel Blog](https://vercel.com/blog/ai-sdk-6) — HIGH confidence (useChat Zustand decoupling confirmed)
+- [Vercel AI SDK Langfuse Observability Integration](https://ai-sdk.dev/providers/observability/langfuse) — HIGH confidence (official AI SDK docs)
+- [UI Patterns for Async Workflows — LogRocket](https://blog.logrocket.com/ux-design/ui-patterns-for-async-workflows-background-jobs-and-data-pipelines) — MEDIUM confidence
+- [LLM Observability Best Practices 2025 — Maxim AI](https://www.getmaxim.ai/articles/llm-observability-best-practices-for-2025/) — MEDIUM confidence
+- [Progressive Disclosure — AI UX Design Patterns](https://www.aiuxdesign.guide/patterns/progressive-disclosure) — MEDIUM confidence
+- [Multi-Agent Architecture Patterns — Google Developers Blog](https://developers.googleblog.com/architecting-efficient-context-aware-multi-agent-framework-for-production/) — MEDIUM confidence
+- [The Multi-Agent Trap — Towards Data Science](https://towardsdatascience.com/the-multi-agent-trap/) — MEDIUM confidence (warning: multi-agent complexity amplifies errors 17x without structured contracts)
+- [Learning Analytics with Bloom's Taxonomy Labeling — MDPI Computers 2024](https://www.mdpi.com/2073-431X/14/12/555) — HIGH confidence (gpt-4o-mini achieves 81% F1 on Bloom classification)
+- [Granular LLM Monitoring per User and Feature — Traceloop](https://www.traceloop.com/blog/granular-llm-monitoring-for-tracking-token-usage-and-latency-per-user-and-feature) — MEDIUM confidence
 
 ---
-*Feature research for: v2.0 MVP Core Stability — Enterprise AI Tutoring Agents (NeuroGraph)*
-*Researched: 2026-03-24*
+*Feature research for: v2.1 Multi-Agent Architecture & LLM Observability (NeuroGraph)*
+*Researched: 2026-03-25*

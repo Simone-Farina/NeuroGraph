@@ -1,8 +1,291 @@
 # Stack Research
 
 **Domain:** Cognitive MicroSaaS / Graph-based Knowledge Management
-**Researched:** 2026-03-21 (updated 2026-03-22 for v1.1 Staging Area milestone; updated 2026-03-24 for v2.0 MVP Core Stability — production hardening)
+**Researched:** 2026-03-21 (updated 2026-03-22 for v1.1 Staging Area milestone; updated 2026-03-24 for v2.0 MVP Core Stability — production hardening; updated 2026-03-25 for v2.1 Multi-Agent Architecture & Observability)
 **Confidence:** HIGH
+
+---
+
+## v2.1 Multi-Agent Architecture & Observability (2026-03-25)
+
+This section covers **new dependencies and integration patterns** for:
+1. Langfuse LLM observability (tracing all agent calls)
+2. Async Bloom Evaluator (background cheap-LLM cognitive state detection)
+3. Decoupled Architect endpoint (no new packages needed — architecture change only)
+
+All version numbers verified against npm registry as of 2026-03-25.
+
+---
+
+### New Dependencies Required
+
+| Package | Version | Purpose | Why |
+|---------|---------|---------|-----|
+| `@langfuse/otel` | `^5.0.1` | `LangfuseSpanProcessor` — receives OTel spans from AI SDK and exports them to Langfuse | Current GA package (v5.0.1 published March 2026). The old `langfuse-vercel` package is explicitly deprecated. `@vercel/otel` is incompatible (does not support OTel JS SDK v2). |
+| `@langfuse/tracing` | `^5.0.1` | `observe()` wrapper for adding user IDs, session metadata, and custom attributes to spans | Required for RAG context logging and enriching auto-generated spans from `experimental_telemetry`. Must be kept at same major.minor as `@langfuse/otel`. |
+| `@opentelemetry/sdk-node` | `^0.214.0` | `NodeTracerProvider` — bootstraps the OTel pipeline and registers `LangfuseSpanProcessor` | Required peer of `@langfuse/otel`. Must be initialized before any `streamText`/`generateObject` call. |
+
+**No new packages for multi-agent or async evaluation.** The existing `@ai-sdk/google` and `@ai-sdk/openai` providers already support the `evaluator` role. Async execution uses a pattern described below.
+
+---
+
+### Installation
+
+```bash
+# All three required together — Langfuse observability stack
+npm install @langfuse/otel @langfuse/tracing @opentelemetry/sdk-node
+```
+
+No dev-only observability dependencies are needed. Traces are sent in both production and development environments.
+
+---
+
+### Integration Pattern 1: OTel Initialization (`src/instrumentation.ts`)
+
+Create `src/instrumentation.ts` at the project root. Next.js 14 automatically loads this file once on server startup before any route handler runs (no config needed — it is a Next.js convention).
+
+```typescript
+// src/instrumentation.ts
+import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
+import { LangfuseSpanProcessor } from '@langfuse/otel';
+
+// Export the processor so route handlers can call forceFlush() directly
+export const langfuseProcessor = new LangfuseSpanProcessor({
+  // Suppress internal Next.js infrastructure spans (reduces noise in Langfuse dashboard)
+  shouldExport: (span) => !span.name.startsWith('next.'),
+});
+
+export async function register() {
+  // Only run on Node.js runtime (not Edge runtime)
+  if (process.env.NEXT_RUNTIME === 'nodejs') {
+    const provider = new NodeTracerProvider({
+      spanProcessors: [langfuseProcessor],
+    });
+    provider.register();
+  }
+}
+```
+
+Required environment variables:
+- `LANGFUSE_PUBLIC_KEY` — from Langfuse project settings
+- `LANGFUSE_SECRET_KEY` — from Langfuse project settings
+- `LANGFUSE_BASEURL` — omit to use Langfuse Cloud (`https://cloud.langfuse.com`)
+
+---
+
+### Integration Pattern 2: Enabling Telemetry on AI SDK Calls
+
+Add `experimental_telemetry` to every `streamText` and `generateObject` call. The `LangfuseSpanProcessor` automatically captures the spans.
+
+**In `/api/chat/route.ts`:**
+
+```typescript
+const response = streamText({
+  model,
+  system: systemPrompt,
+  messages: modelMessages,
+  tools: { suggest_neurogenesis: suggestNeurogenesisTool },
+  experimental_telemetry: {
+    isEnabled: true,
+    metadata: {
+      userId: user.id,
+      conversationId,
+    },
+  },
+  maxRetries: 1,
+  abortSignal: AbortSignal.timeout(60_000),
+  onError: ({ error }) => {
+    console.error('[chat/stream] Provider error during stream:', error);
+  },
+  onFinish: async (event) => {
+    // ... existing DB persistence unchanged
+  },
+});
+```
+
+**In `/api/architect/route.ts`:**
+
+```typescript
+const { object } = await generateObject({
+  model,
+  schema: architectResponseSchema,
+  system: ARCHITECT_SYSTEM_PROMPT,
+  prompt: buildArchitectPrompt(target),
+  experimental_telemetry: {
+    isEnabled: true,
+    metadata: { userId: user.id, target },
+  },
+  maxRetries: 2,
+  abortSignal: AbortSignal.timeout(25_000),
+});
+```
+
+Apply `experimental_telemetry: { isEnabled: true }` to all other `generateObject` calls (bouncer in `/api/neurons/extract`, synthesizer in `/api/neurons/[id]/synthesize`, etc.).
+
+---
+
+### Integration Pattern 3: RAG Context Logging (Custom Spans)
+
+Use `observe()` from `@langfuse/tracing` to wrap the RAG retrieval and attach the retrieved documents as span metadata. This is the primary value-add over raw OTel — it logs what context the model actually received.
+
+```typescript
+// In /api/chat/route.ts — replace the plain getRelevantContext() call with:
+import { observe } from '@langfuse/tracing';
+
+const { ragContext, ragCatalog } = await observe(
+  {
+    name: 'rag-retrieval',
+    userId: user.id,
+    sessionId: conversationId,
+    metadata: { query: latestUserText },
+  },
+  () => getRelevantContext(latestUserText, user.id, supabase)
+);
+```
+
+---
+
+### Integration Pattern 4: Flushing Traces in Next.js 14
+
+**Critical constraint:** The project uses Next.js 14.2.35. The `after()` / `unstable_after` API (for scheduling work after the response completes) is only available in Next.js 15+. Do NOT attempt to import it.
+
+**Correct pattern for Next.js 14:** Use `immediateExport: true` in the `LangfuseSpanProcessor` configuration to flush spans synchronously at completion, or call `langfuseProcessor.forceFlush()` inside `onFinish` for the streaming chat endpoint.
+
+```typescript
+// Option A (recommended): Immediate export — configure in instrumentation.ts
+export const langfuseProcessor = new LangfuseSpanProcessor({
+  immediateExport: true,  // flushes each span as it completes; slight latency overhead
+  shouldExport: (span) => !span.name.startsWith('next.'),
+});
+
+// Option B: Manual flush in streamText onFinish (for streaming routes only)
+onFinish: async (event) => {
+  // flush BEFORE returning — in Next.js 14 there is no post-response hook
+  await langfuseProcessor.forceFlush();
+  // ... existing DB persistence
+}
+```
+
+Option A is simpler and works for all routes. Option B gives more control but requires importing `langfuseProcessor` from `instrumentation.ts` into each route.
+
+---
+
+### Integration Pattern 5: Async Bloom Evaluator (No New Packages)
+
+The evaluator runs as a non-blocking Promise inside the `streamText` `onFinish` callback. It uses the existing `evaluator` model role from `getModelForRole()`. No new dependencies, no new API route.
+
+**Why `onFinish` and not a separate endpoint:** `onFinish` already runs server-side after the stream completes. Adding a separate `/api/bloom-eval` route adds an auth round-trip and network hop for a purely internal background job.
+
+```typescript
+// In /api/chat/route.ts onFinish callback (after DB persistence):
+onFinish: async (event) => {
+  const assistantText = event.text.trim();
+
+  // 1. Persist assistant message (awaited — must complete)
+  if (assistantText || event.toolCalls.length > 0) {
+    await supabase.from('messages').insert({ ... });
+  }
+
+  // 2. Fire-and-forget Bloom evaluation (NOT awaited)
+  // In Next.js 14, unawaited Promises inside onFinish complete because
+  // the streamText runtime awaits onFinish itself before the function exits.
+  // This is safe for serverless (Vercel) — the promise resolves within the
+  // existing request lifecycle.
+  runBloomEvaluation({
+    userId: user.id,
+    conversationId: conversationId!,
+    assistantText,
+    userText: latestUserText,
+  }).catch((err) => console.error('[bloom-eval] Error:', err));
+},
+```
+
+The `runBloomEvaluation` function:
+- Calls `generateObject` with `getModelForRole('evaluator')` (Gemini Flash or GPT-4o-mini)
+- Uses `maxRetries: 0` and `AbortSignal.timeout(15_000)` — failure is acceptable, never block chat
+- Writes Bloom level result to a `bloom_evaluations` table or updates `conversations.metadata`
+- Sets `experimental_telemetry: { isEnabled: true }` for observability
+
+---
+
+### Recommended Evaluator Model for Bloom Assessment
+
+Set `AI_MODEL_EVALUATOR=google:gemini-2.5-flash` in `.env`. The `@ai-sdk/google` provider is already installed and `providers.ts` already handles the `evaluator` role. No code changes needed in `providers.ts`.
+
+| Model | Cost (per 1M tokens input/output) | Latency | Notes |
+|-------|-----------------------------------|---------|-------|
+| `gemini-2.5-flash` | ~$0.075 / $0.30 | Very fast | GA March 2026; best price-performance for high-volume background evaluation |
+| `gpt-4o-mini` | $0.15 / $0.60 | Fast | Already wired as default in `providers.ts`; viable fallback if Google quota issues |
+
+Gemini 2.5 Flash is ~2x cheaper than GPT-4o-mini and faster for single-classification tasks. For Bloom level detection (a 6-class classification with brief reasoning), the quality difference from GPT-4o is negligible.
+
+---
+
+### Alternatives Considered
+
+| Recommended | Alternative | Why Not |
+|-------------|-------------|---------|
+| `@langfuse/otel` + `@opentelemetry/sdk-node` | `langfuse-vercel` | Explicitly deprecated by Langfuse; migration guide redirects to `@langfuse/otel` |
+| `@langfuse/otel` + `@opentelemetry/sdk-node` | `@vercel/otel` | Incompatible with OTel JS SDK v2, which `@langfuse/otel` v5 requires |
+| `observe()` from `@langfuse/tracing` for RAG | Raw OTel span API | `observe()` automatically propagates Langfuse context (userId, sessionId) without boilerplate |
+| Unawaited Promise inside `onFinish` | Separate `/api/bloom-eval` endpoint | Extra auth roundtrip and network overhead for an internal background job |
+| Unawaited Promise inside `onFinish` | `unstable_after` from `next/server` | Only available in Next.js 15+; project is on 14.2.35 |
+| Unawaited Promise inside `onFinish` | Inngest / Trigger.dev / queues | Bloom evaluation is lightweight (<2s, single generateObject call) — full queue infrastructure is overkill |
+
+---
+
+### What NOT to Add
+
+| Avoid | Why | Use Instead |
+|-------|-----|-------------|
+| `langfuse-vercel` | Deprecated since Langfuse TypeScript SDK v4 (Aug 2025). Docs explicitly say to migrate. | `@langfuse/otel` + `@langfuse/tracing` |
+| `@vercel/otel` | Incompatible with OTel JS SDK v2 that `@langfuse/otel` v5 requires. Using both causes span processor conflicts. | `@opentelemetry/sdk-node` directly |
+| Any job queue (Inngest, BullMQ, Trigger.dev) | Bloom evaluation is a fast, non-critical background classification. Queue infrastructure adds infra complexity for a <2s task. | Unawaited Promise pattern inside `onFinish` |
+| Next.js upgrade to v15 as part of this milestone | Upgrading Next.js is a separate milestone. v2.1 does not require any Next.js 15 features. | Use the `immediateExport: true` flush pattern for Next.js 14 compatibility |
+| Separate Bloom evaluator API route | Extra network round-trip, auth overhead, and cold start risk for an internal background computation already on the server | Run inside `onFinish` callback |
+
+---
+
+### Version Compatibility
+
+| Package | Compatible With | Notes |
+|---------|-----------------|-------|
+| `@langfuse/otel@5.0.1` | `@opentelemetry/sdk-node@^0.214.0` | Requires OTel JS SDK v2. Do NOT use with `@vercel/otel`. |
+| `@langfuse/otel@5.0.1` | `ai@6.0.82` | Known active issue #12643: trace-level input/output may appear empty in the Langfuse Traces tab. Data IS correctly visible in the Observations tab. Severity: LOW (data is present, just not surfaced at trace root). Monitor `@langfuse/otel` 5.x changelog for fix. |
+| `@langfuse/tracing@5.0.1` | `@langfuse/otel@5.0.1` | Always keep these at the same major.minor version. |
+| `@ai-sdk/google@^3.0.26` | `gemini-2.5-flash` model string | GA model as of March 2026. Model string: `google:gemini-2.5-flash`. |
+
+---
+
+### New Environment Variables (v2.1)
+
+```bash
+# Langfuse observability (required)
+LANGFUSE_PUBLIC_KEY=pk-lf-...
+LANGFUSE_SECRET_KEY=sk-lf-...
+# Optional — defaults to Langfuse Cloud if omitted
+# LANGFUSE_BASEURL=https://cloud.langfuse.com
+
+# Evaluator model — use Gemini 2.5 Flash for cost efficiency
+AI_MODEL_EVALUATOR=google:gemini-2.5-flash
+# GOOGLE_GENERATIVE_AI_API_KEY must also be set (already required for @ai-sdk/google)
+```
+
+---
+
+### v2.1 Sources
+
+- [Langfuse Vercel AI SDK Integration](https://langfuse.com/integrations/frameworks/vercel-ai-sdk) — Official integration guide; confirms `langfuse-vercel` deprecated — HIGH confidence
+- [Vercel AI SDK Observability: Langfuse](https://ai-sdk.dev/providers/observability/langfuse) — Official AI SDK docs on Langfuse OTel setup, `experimental_telemetry` usage — HIGH confidence
+- [Langfuse TypeScript SDK v4 GA announcement](https://langfuse.com/changelog/2025-08-28-typescript-sdk-v4-ga) — v4 architecture, `@langfuse/otel` package structure — HIGH confidence
+- [@langfuse/otel on npm](https://www.npmjs.com/package/@langfuse/otel) — Version 5.0.1 (published ~12 days ago, March 2026) — HIGH confidence
+- [@langfuse/tracing on npm](https://www.npmjs.com/package/@langfuse/tracing) — Version 5.0.1 (same release cadence) — HIGH confidence
+- [Langfuse TypeScript Instrumentation docs](https://langfuse.com/docs/observability/sdk/typescript/instrumentation) — `instrumentation.ts` setup pattern, `forceFlush()` pattern — HIGH confidence
+- [AI SDK v6 + Langfuse v5: Trace input/output empty — Issue #12643](https://github.com/langfuse/langfuse/issues/12643) — Active known issue (reported ~1 week ago); data present in Observations — MEDIUM confidence (issue may be fixed in future patch)
+- [Next.js 15 blog: `unstable_after`](https://nextjs.org/blog/next-15) — Confirms `after()` is Next.js 15+ only; not available in 14.2.x — HIGH confidence
+- [Next.js fire-and-forget discussion](https://github.com/vercel/next.js/discussions/14077) — Community patterns for background work in Next.js 14 — MEDIUM confidence
+- [Gemini 2.5 Flash GA on Vertex AI](https://cloud.google.com/blog/products/ai-machine-learning/gemini-2-5-flash-lite-flash-pro-ga-vertex-ai) — Model availability confirmed March 2026 — HIGH confidence
+- [AI API Pricing Comparison 2026](https://intuitionlabs.ai/articles/ai-api-pricing-comparison-grok-gemini-openai-claude) — Gemini 2.5 Flash vs GPT-4o-mini pricing — MEDIUM confidence (third-party source)
 
 ---
 
@@ -538,7 +821,13 @@ Add `is_borderline: true` to the relevant test cases in `bouncer/cases.csv`.
 
 | File | Change | Impact |
 |------|--------|--------|
-| `src/app/api/architect/route.ts` | Add `maxRetries`, `abortSignal`, `repairText`, typed error narrowing | Eliminates silent 500s on provider hiccup |
+| `src/instrumentation.ts` | NEW — OTel init with `LangfuseSpanProcessor` | Enables all Langfuse tracing |
+| `src/app/api/chat/route.ts` | Add `experimental_telemetry`, `observe()` for RAG, `forceFlush()` in `onFinish`, Bloom evaluator fire-and-forget | Full chat observability + async evaluation |
+| `src/app/api/architect/route.ts` | Add `experimental_telemetry` | Architect traces visible in Langfuse |
+| `src/app/api/neurons/extract/route.ts` | Add `experimental_telemetry` | Bouncer traces visible in Langfuse |
+| `src/app/api/neurons/[id]/synthesize/route.ts` | Add `experimental_telemetry` | Synthesizer traces visible in Langfuse |
+| `src/lib/ai/bloom-evaluator.ts` | NEW — `runBloomEvaluation()` function | Async Bloom evaluator implementation |
+| `src/app/api/architect/route.ts` | Add `maxRetries`, `abortSignal`, typed error narrowing | Eliminates silent 500s on provider hiccup |
 | `src/app/api/chat/route.ts` | Add `maxRetries`, `abortSignal`, `onError` callback, `onFinish` guard | Eliminates silent stream failures |
 | `src/app/api/neurons/extract/route.ts` | Add `abortSignal` to bouncer generateObject call | Prevents hanging requests |
 | `src/app/api/neurons/ai-action/route.ts` | Add `onError`, `abortSignal` to streamText | Surfaces slash command failures |
@@ -557,9 +846,9 @@ Add `is_borderline: true` to the relevant test cases in `bouncer/cases.csv`.
 
 ---
 
-## No New Packages Required
+## No New Packages Required (v2.0)
 
-All changes use the existing installed packages. No new installs needed.
+All v2.0 changes use the existing installed packages. No new installs needed.
 
 | Capability | Already Available In |
 |-----------|---------------------|
@@ -572,7 +861,7 @@ All changes use the existing installed packages. No new installs needed.
 
 ---
 
-## Sources
+## v2.0 Sources
 
 - [AI SDK Core: generateObject reference](https://ai-sdk.dev/docs/reference/ai-sdk-core/generate-object) — `maxRetries`, `abortSignal`, `experimental_repairText`, `NoObjectGeneratedError` — HIGH confidence
 - [AI SDK 4.1 release: NoObjectGeneratedError](https://vercel.com/blog/ai-sdk-4-1) — error type guard API shape — HIGH confidence
@@ -598,5 +887,5 @@ All changes use the existing installed packages. No new installs needed.
 *(Sections below are from prior milestones and remain valid. See git history for full context.)*
 
 ---
-*Stack research for: Cognitive MicroSaaS — v2.0 MVP Core Stability milestone*
-*Researched: 2026-03-24*
+*Stack research for: Cognitive MicroSaaS — v2.1 Multi-Agent Architecture & Observability milestone*
+*Researched: 2026-03-25*
