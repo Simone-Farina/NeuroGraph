@@ -5,8 +5,7 @@ import { z } from 'zod';
 import { createServerSupabaseClient } from '@/lib/auth/supabase';
 import { CHAT_SYSTEM_PROMPT, MAX_CONTEXT_MESSAGES } from '@/lib/ai/prompts';
 import { getModelForRole } from '@/lib/ai/providers';
-import { suggestNeurogenesisTool } from '@/lib/ai/tools';
-
+import { getRelevantContext } from '@/lib/ai/rag';
 import { buildTelemetry, wrapRagWithObserve } from '@/lib/ai/tracing';
 
 function createConversationTitle(input: string) {
@@ -184,7 +183,7 @@ export async function POST(request: NextRequest) {
 
     const { ragContext, ragCatalog } = await wrapRagWithObserve(latestUserText, user.id, supabase, conversationId);
 
-    const systemPrompt = `${CHAT_SYSTEM_PROMPT}${ragContext}\n\n## Existing Neuron Catalog\nThe following neurons already exist in the user's graph. The Epistemological Inquisitor will determine prerequisite connections automatically — you do not need to suggest them.\n${ragCatalog}`;
+    const systemPrompt = `${CHAT_SYSTEM_PROMPT}${ragContext}\n\n## Reference Catalog\nThe following concepts already exist in the user's knowledge base. Reference them when relevant to connect new ideas to established understanding.\n${ragCatalog}`;
 
     const model = getModelForRole('chat');
 
@@ -194,9 +193,6 @@ export async function POST(request: NextRequest) {
       model,
       system: systemPrompt,
       messages: modelMessages,
-      tools: {
-        suggest_neurogenesis: suggestNeurogenesisTool,
-      },
       experimental_telemetry: buildTelemetry('conversationalist', {
         userId: user.id,
         conversationId: conversationId!,
@@ -208,37 +204,20 @@ export async function POST(request: NextRequest) {
         console.error('[chat/stream] Provider error during stream:', error);
       },
       onFinish: async (event) => {
-        // event.text is the SDK's own accumulation — reliable regardless of chunk field names.
         const assistantText = event.text.trim();
-
-        // Serialise tool calls from this step (toolCallId, toolName, args only — safe for JSON).
-        // StaticToolCall has `args`; DynamicToolCall does not — guard with `in` to satisfy TS.
-        const toolInvocations = event.toolCalls.map((tc) => ({
-          toolCallId: tc.toolCallId,
-          toolName: tc.toolName,
-          args: 'args' in tc ? tc.args : undefined,
-        }));
-        console.log('[onFinish] text length:', assistantText.length, '| toolCalls:', toolInvocations.length, toolInvocations.map(t => t.toolName));
-
-        // Nothing to persist if there's neither text nor tool calls.
-        if (!assistantText && toolInvocations.length === 0) return;
-        if (!conversationId) return;
-
+        if (!assistantText || !conversationId) return;
         try {
           const { error } = await supabase.from('messages').insert({
             conversation_id: conversationId,
             role: 'assistant',
             content: assistantText,
-            metadata: toolInvocations.length > 0 ? { tool_invocations: toolInvocations } : null,
+            metadata: null,
           });
-
           if (error) {
-            console.error('[onFinish] DB SAVE ERROR (assistant message):', error.message);
-          } else {
-            console.log('[onFinish] assistant message saved OK (metadata:', toolInvocations.length > 0 ? `${toolInvocations.length} tool_invocations` : 'null', ')');
+            console.error('[onFinish] DB SAVE ERROR:', error.message);
           }
         } catch (err) {
-          console.error('DB SAVE ERROR (assistant message):', err);
+          console.error('[onFinish] DB SAVE ERROR:', err);
         }
       },
     });
