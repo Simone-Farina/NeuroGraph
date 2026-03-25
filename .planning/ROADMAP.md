@@ -239,4 +239,4 @@ Plans:
 | 22. Observability Foundation | v2.1 | 1/2 | Complete    | 2026-03-25 |
 | 23. Pure Conversationalist | v2.1 | 2/2 | Complete    | 2026-03-25 |
 | 24. Silent Observer | v2.1 | 2/2 | Complete    | 2026-03-25 |
-| 25. Decoupled Architect Pipeline | v2.1 | 2/2 | Complete   | 2026-03-25 |
+| 25. Decoupled Architect Pipeline | v2.1 | 2/2 | Complete    | 2026-03-25 |

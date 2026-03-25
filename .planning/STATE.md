@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Core Flow Stability, Multi-Agent Architecture & Observability
-status: Phase complete — ready for verification
+status: Milestone complete
 stopped_at: Completed 25-02-PLAN.md
-last_updated: "2026-03-25T22:54:50.731Z"
+last_updated: "2026-03-25T22:58:48.804Z"
 progress:
   total_phases: 8
   completed_phases: 8
@@ -23,8 +23,8 @@ See: .planning/PROJECT.md (updated 2026-03-25)
 
 ## Current Position
 
-Phase: 25 (decoupled-architect-pipeline) — EXECUTING
-Plan: 2 of 2
+Phase: 25
+Plan: Not started
 
 ## Performance Metrics
 
