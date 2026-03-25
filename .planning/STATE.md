@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Core Flow Stability, Multi-Agent Architecture & Observability
-status: Ready to plan
-stopped_at: Completed 22-02-PLAN.md
-last_updated: "2026-03-25T20:30:37.115Z"
+status: Ready to execute
+stopped_at: Completed 23-01-PLAN.md
+last_updated: "2026-03-25T21:22:19.795Z"
 progress:
   total_phases: 8
   completed_phases: 5
-  total_plans: 9
-  completed_plans: 9
+  total_plans: 11
+  completed_plans: 10
 ---
 
 # Project State
@@ -23,8 +23,8 @@ See: .planning/PROJECT.md (updated 2026-03-25)
 
 ## Current Position
 
-Phase: 23
-Plan: Not started
+Phase: 23 (pure-conversationalist) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -51,6 +51,7 @@ Plan: Not started
 *Updated after each plan completion*
 | Phase 22-observability-foundation P01 | 3min | 2 tasks | 4 files |
 | Phase 22-observability-foundation P02 | 3min | 2 tasks | 9 files |
+| Phase 23-pure-conversationalist P01 | 3min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -71,6 +72,10 @@ Recent decisions affecting current work:
 - [Phase 22-observability-foundation]: wrapRagWithObserve uses startActiveObservation (v5 API) not observe(options, fn) — observe() is a decorator in v5
 - [Phase 22-observability-foundation]: 22-02: inferPrerequisites userId? is optional — existing crystallize callers compile unchanged; neurons/route.ts updated to pass user.id
 - [Phase 22-observability-foundation]: 22-02: GenerateCrystallizeSeedInput.userId? optional to avoid breaking crystallize/route.ts and manual/route.ts call sites
+- [Phase 23-pure-conversationalist]: 23-01-cases-full-replace: All 17 old eval cases replaced with 4 new ones — neurogenesis_triggered no longer exists in pure-text architecture
+- [Phase 23-pure-conversationalist]: 23-01-socratic-threshold: Socratic tone threshold lowered from 0.8 to 0.7 — natural paragraph-form responses score lower on teach-then-ask heuristic
+- [Phase 23-pure-conversationalist]: 23-01-tool-removal-eval: Eval provider generateText call stripped of all tools — provider must mirror production chat architecture exactly
+- [Phase 23-pure-conversationalist]: 23-01-truncate-migration: TRUNCATE TABLE messages/conversations CASCADE — no JSON parsing migration needed, single-user beta data is disposable
 
 ### Pending Todos
 
@@ -84,6 +89,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-25T20:25:45.620Z
-Stopped at: Completed 22-02-PLAN.md
+Last session: 2026-03-25T21:22:19.793Z
+Stopped at: Completed 23-01-PLAN.md
 Resume file: None

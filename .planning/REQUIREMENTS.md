@@ -9,10 +9,10 @@ Requirements for Core Flow Stability, Multi-Agent Architecture & Observability. 
 
 ### Observability
 
-- [ ] **OBS-01**: All AI call sites (streamText, generateObject) emit OpenTelemetry traces to Langfuse Cloud
+- [x] **OBS-01**: All AI call sites (streamText, generateObject) emit OpenTelemetry traces to Langfuse Cloud
 - [x] **OBS-02**: Each agent (Conversationalist, Bloom Evaluator, Synthesizer, Inquisitor) produces a named span in Langfuse
-- [ ] **OBS-03**: Traces are correlated by conversation session ID and authenticated user ID
-- [ ] **OBS-04**: RAG context (retrieved neurons/vectors) is logged as span metadata so debugging can confirm what the LLM actually saw
+- [x] **OBS-03**: Traces are correlated by conversation session ID and authenticated user ID
+- [x] **OBS-04**: RAG context (retrieved neurons/vectors) is logged as span metadata so debugging can confirm what the LLM actually saw
 - [x] **OBS-05**: Langfuse Cloud integration with proper environment variables (no self-hosting)
 
 ### Multi-Agent Architecture
@@ -22,7 +22,7 @@ Requirements for Core Flow Stability, Multi-Agent Architecture & Observability. 
 - [ ] **AGENT-03**: Async Bloom Evaluator runs a cheap LLM (Gemini Flash) on the last 3 messages after each user turn, non-blocking
 - [ ] **AGENT-04**: Bloom evaluation result updates Zustand state with `{ bloomLevel, confidence }` without interrupting chat
 - [ ] **AGENT-05**: "Generate Neuron" button illuminates when `bloomLevel >= Analyze` with Danish Computation aesthetic (muted to solid transition, no gamification)
-- [ ] **AGENT-06**: Supabase migration transforms persisted tool-call messages so existing conversations rehydrate correctly
+- [x] **AGENT-06**: Supabase migration transforms persisted tool-call messages so existing conversations rehydrate correctly
 
 ### Architect Pipeline
 
@@ -33,7 +33,7 @@ Requirements for Core Flow Stability, Multi-Agent Architecture & Observability. 
 
 ### Eval Suite
 
-- [ ] **EVAL-01**: Conversationalist eval suite updated with golden cases proving no direct answers, no bullet points, no NeuroGraph jargon
+- [x] **EVAL-01**: Conversationalist eval suite updated with golden cases proving no direct answers, no bullet points, no NeuroGraph jargon
 - [ ] **EVAL-02**: Bloom Evaluator eval suite with golden cases distinguishing Understand vs Analyze/Evaluate/Create accurately
 - [ ] **EVAL-03**: Eval suites pass before any production code ships (eval-driven development)
 
@@ -66,22 +66,22 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| OBS-01 | Phase 22 | Pending |
+| OBS-01 | Phase 22 | Complete |
 | OBS-02 | Phase 22 | Complete |
-| OBS-03 | Phase 22 | Pending |
-| OBS-04 | Phase 22 | Pending |
+| OBS-03 | Phase 22 | Complete |
+| OBS-04 | Phase 22 | Complete |
 | OBS-05 | Phase 22 | Complete |
 | AGENT-01 | Phase 23 | Pending |
 | AGENT-02 | Phase 23 | Pending |
 | AGENT-03 | Phase 24 | Pending |
 | AGENT-04 | Phase 24 | Pending |
 | AGENT-05 | Phase 24 | Pending |
-| AGENT-06 | Phase 23 | Pending |
+| AGENT-06 | Phase 23 | Complete |
 | ARCH-01 | Phase 25 | Pending |
 | ARCH-02 | Phase 25 | Pending |
 | ARCH-03 | Phase 25 | Pending |
 | ARCH-04 | Phase 25 | Pending |
-| EVAL-01 | Phase 23 | Pending |
+| EVAL-01 | Phase 23 | Complete |
 | EVAL-02 | Phase 24 | Pending |
 | EVAL-03 | Phase 24 | Pending |
 

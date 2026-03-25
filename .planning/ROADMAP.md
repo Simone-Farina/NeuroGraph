@@ -171,10 +171,10 @@ Plans:
   2. The chat system prompt contains no references to "Neurons," "Crystallization," or "Bloom's Taxonomy" — it reads as a natural conversation partner
   3. Loading an existing conversation session that previously contained tool-call messages renders without errors — no blank chat, no corrupted message arrays
   4. The conversationalist promptfoo eval suite passes all golden cases proving no direct answers, no bullet points, and no NeuroGraph jargon in responses
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
-- [ ] 23-01-PLAN.md — Rebuild conversationalist eval suite + DB truncate migration (EVAL-01, AGENT-06)
+- [x] 23-01-PLAN.md — Rebuild conversationalist eval suite + DB truncate migration (EVAL-01, AGENT-06)
 - [ ] 23-02-PLAN.md — Strip tools from chat route, rewrite prompt, clean up ChatPanel (AGENT-01, AGENT-02)
 
 ### Phase 24: Silent Observer
@@ -230,6 +230,6 @@ Plans:
 | 20. Editor Reliability | v2.0 | 1/1 | Complete | 2026-03-24 |
 | 21. Graph Performance & Bloom UI | v2.0 | 2/2 | Complete | 2026-03-24 |
 | 22. Observability Foundation | v2.1 | 1/2 | Complete    | 2026-03-25 |
-| 23. Pure Conversationalist | v2.1 | 0/2 | Not started | - |
+| 23. Pure Conversationalist | v2.1 | 1/2 | In Progress|  |
 | 24. Silent Observer | v2.1 | 0/? | Not started | - |
 | 25. Decoupled Architect Pipeline | v2.1 | 0/? | Not started | - |
