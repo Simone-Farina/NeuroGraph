@@ -78,7 +78,7 @@
 
 **Milestone Goal:** Deconstruct the monolithic chat endpoint into an Asynchronous Multi-Agent Architecture with deep LLM observability — fix the core loop, no new product features.
 
-- [ ] **Phase 22: Observability Foundation** - Langfuse Cloud integration, OpenTelemetry spans across all AI call sites, session/user trace correlation
+- [x] **Phase 22: Observability Foundation** - Langfuse Cloud integration, OpenTelemetry spans across all AI call sites, session/user trace correlation (completed 2026-03-25)
 - [ ] **Phase 23: Pure Conversationalist** - Strip tool-calling from /api/chat, rewrite as natural Socratic tutor, DB migration for persisted tool-call messages, conversationalist eval suite
 - [ ] **Phase 24: Silent Observer** - Async Bloom Evaluator (Gemini Flash), Zustand bloomLevel state, Generate Neuron button illumination, Bloom eval suite
 - [ ] **Phase 25: Decoupled Architect Pipeline** - POST /api/architect 3-step pipeline (Synthesizer → RAG → Inquisitor), independent Langfuse spans per step, non-blocking React Flow update
@@ -156,7 +156,7 @@ Plans:
   3. Clicking any trace shows the conversation session ID and authenticated user ID in the span metadata — enabling per-user cost analysis and filtering
   4. The RAG context injected into a prompt (retrieved neurons, vector results) is visible as span metadata in the trace — confirming exactly what the model received
   5. The `instrumentation.ts` file initializes `LangfuseSpanProcessor` with `immediateExport: true` so traces are not silently dropped on Vercel serverless termination
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 - [x] 22-01-PLAN.md — OTel infrastructure: install packages, create instrumentation.ts + tracing.ts helper (OBS-05, OBS-02)
@@ -226,7 +226,7 @@ Plans:
 | 19. Enterprise Prompt Engineering | v2.0 | 1/2 | Complete | 2026-03-24 |
 | 20. Editor Reliability | v2.0 | 1/1 | Complete | 2026-03-24 |
 | 21. Graph Performance & Bloom UI | v2.0 | 2/2 | Complete | 2026-03-24 |
-| 22. Observability Foundation | v2.1 | 1/2 | In Progress|  |
+| 22. Observability Foundation | v2.1 | 1/2 | Complete    | 2026-03-25 |
 | 23. Pure Conversationalist | v2.1 | 0/? | Not started | - |
 | 24. Silent Observer | v2.1 | 0/? | Not started | - |
 | 25. Decoupled Architect Pipeline | v2.1 | 0/? | Not started | - |
