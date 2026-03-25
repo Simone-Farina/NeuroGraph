@@ -1,0 +1,304 @@
+# NeuroGraph Bloom Evaluator Golden Cases
+# Phase 24 Plan 01 — 6 hand-curated Bloom classification golden cases
+#
+# Case Distribution:
+#   Below Threshold (2): cases 1-2 — Remember/Understand, must score below Analyze
+#   At Threshold (2):    cases 3-4 — Analyze, must score Analyze or higher with confidence >= 0.75
+#   Above Threshold (2): cases 5-6 — Evaluate/Create, must score Evaluate or Create with confidence >= 0.80
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Below Threshold — Remember / Understand
+# Must classify as Remember or Understand. FAIL if Analyze, Evaluate, or Create.
+# ──────────────────────────────────────────────────────────────────────────────
+
+- description: "factual-recall — pure recall discourse scores Remember or Understand"
+  vars:
+    messages:
+      - role: user
+        content: "What is photosynthesis?"
+      - role: assistant
+        content: "Photosynthesis is the process by which plants use sunlight, water, and carbon dioxide to produce glucose and oxygen. What do you already know about how this process works inside a plant cell?"
+      - role: user
+        content: "It converts sunlight into energy that plants can use."
+      - role: assistant
+        content: "Good — you have the core idea. What part of the plant cell do you think is responsible for capturing that sunlight? Have you heard of chlorophyll?"
+      - role: user
+        content: "Plants use chlorophyll to absorb light."
+  assert:
+    - type: javascript
+      value: |
+        // Below-threshold case: user messages are pure factual recall and paraphrase.
+        // Must classify as Remember or Understand — FAIL if Analyze, Evaluate, or Create.
+        const result = JSON.parse(output);
+        const forbiddenLevels = ['Analyze', 'Evaluate', 'Create'];
+        const allowedLevels = ['Remember', 'Understand', 'Apply'];
+        if (forbiddenLevels.includes(result.bloom_level)) {
+          return {
+            pass: false,
+            score: 0,
+            reason: `Over-classified: got "${result.bloom_level}" but factual recall should be Remember/Understand. Reasoning: ${result.reasoning}`,
+          };
+        }
+        if (typeof result.reasoning !== 'string' || result.reasoning.trim().length === 0) {
+          return { pass: false, score: 0, reason: 'reasoning field is missing or empty — chain-of-thought enforcement failed' };
+        }
+        if (typeof result.confidence !== 'number') {
+          return { pass: false, score: 0, reason: 'confidence field is not a number' };
+        }
+        if (result.confidence < 0.5) {
+          return { pass: false, score: 0.5, reason: `Confidence too low: ${result.confidence} — evaluator is uncertain about a clear recall case` };
+        }
+        return {
+          pass: true,
+          score: 1,
+          reason: `Correctly classified as "${result.bloom_level}" (confidence: ${result.confidence.toFixed(2)})`,
+        };
+
+- description: "paraphrase-comprehension — textbook paraphrase scores Remember or Understand"
+  vars:
+    messages:
+      - role: user
+        content: "I'm learning about networking protocols."
+      - role: assistant
+        content: "Great topic. Where would you like to start — the physical layer, or how higher-level protocols like TCP handle reliable delivery?"
+      - role: user
+        content: "TCP uses a three-way handshake to establish a connection."
+      - role: assistant
+        content: "Exactly right. Can you walk me through the three steps? What does each party send?"
+      - role: user
+        content: "The client sends a SYN packet to start the connection."
+      - role: assistant
+        content: "Good — that's the first step. What does the server send back, and then what does the client do next?"
+      - role: user
+        content: "Then the server responds with a SYN-ACK, and the client sends an ACK to confirm."
+  assert:
+    - type: javascript
+      value: |
+        // Below-threshold case: user messages paraphrase textbook networking content.
+        // Must classify as Remember or Understand — FAIL if Analyze, Evaluate, or Create.
+        const result = JSON.parse(output);
+        const forbiddenLevels = ['Analyze', 'Evaluate', 'Create'];
+        if (forbiddenLevels.includes(result.bloom_level)) {
+          return {
+            pass: false,
+            score: 0,
+            reason: `Over-classified: got "${result.bloom_level}" but textbook paraphrase should be Remember/Understand. Reasoning: ${result.reasoning}`,
+          };
+        }
+        if (typeof result.reasoning !== 'string' || result.reasoning.trim().length === 0) {
+          return { pass: false, score: 0, reason: 'reasoning field is missing or empty — chain-of-thought enforcement failed' };
+        }
+        if (typeof result.confidence !== 'number') {
+          return { pass: false, score: 0, reason: 'confidence field is not a number' };
+        }
+        if (result.confidence < 0.5) {
+          return { pass: false, score: 0.5, reason: `Confidence too low: ${result.confidence} — evaluator is uncertain about a clear paraphrase case` };
+        }
+        return {
+          pass: true,
+          score: 1,
+          reason: `Correctly classified as "${result.bloom_level}" (confidence: ${result.confidence.toFixed(2)})`,
+        };
+
+# ──────────────────────────────────────────────────────────────────────────────
+# At Threshold — Analyze
+# Must classify as Analyze or higher with confidence >= 0.75.
+# FAIL if Remember or Understand.
+# ──────────────────────────────────────────────────────────────────────────────
+
+- description: "tradeoff-analysis — explicit tradeoff comparison scores Analyze or higher"
+  vars:
+    messages:
+      - role: user
+        content: "I'm deciding between SQL and NoSQL for my project."
+      - role: assistant
+        content: "Good question to think through carefully. What are the main characteristics of your data — are the relationships between entities complex, or mostly flat records?"
+      - role: user
+        content: "SQL vs NoSQL really depends on the access patterns — you need to know how your data is queried before choosing."
+      - role: assistant
+        content: "Exactly. You're identifying a key design principle. What specific access patterns push you toward one or the other?"
+      - role: user
+        content: "Normalization reduces data redundancy but increases join complexity, and that tradeoff shifts when you have read-heavy workloads that need low latency."
+  assert:
+    - type: javascript
+      value: |
+        // At-threshold case: user compares tradeoffs explicitly.
+        // Must classify as Analyze, Evaluate, or Create. FAIL if Remember or Understand.
+        // Confidence must be >= 0.75 — clear Analyze signals present.
+        const result = JSON.parse(output);
+        const forbiddenLevels = ['Remember', 'Understand', 'Apply'];
+        const requiredLevels = ['Analyze', 'Evaluate', 'Create'];
+        if (forbiddenLevels.includes(result.bloom_level)) {
+          return {
+            pass: false,
+            score: 0,
+            reason: `Under-classified: got "${result.bloom_level}" but explicit tradeoff analysis should be Analyze+. Reasoning: ${result.reasoning}`,
+          };
+        }
+        if (typeof result.reasoning !== 'string' || result.reasoning.trim().length === 0) {
+          return { pass: false, score: 0, reason: 'reasoning field is missing or empty — chain-of-thought enforcement failed' };
+        }
+        if (typeof result.confidence !== 'number') {
+          return { pass: false, score: 0, reason: 'confidence field is not a number' };
+        }
+        if (result.confidence < 0.75) {
+          return {
+            pass: false,
+            score: 0.5,
+            reason: `Confidence too low: ${result.confidence.toFixed(2)} (need >= 0.75) for clear tradeoff analysis case`,
+          };
+        }
+        return {
+          pass: true,
+          score: 1,
+          reason: `Correctly classified as "${result.bloom_level}" with confidence ${result.confidence.toFixed(2)}`,
+        };
+
+- description: "mechanism-dissection — causal mechanism with novel hypothesis scores Analyze or higher"
+  vars:
+    messages:
+      - role: user
+        content: "I'm trying to understand garbage collection in depth."
+      - role: assistant
+        content: "Good topic. What do you already know about how the garbage collector decides what memory to reclaim? Have you thought about what 'reachable' means in this context?"
+      - role: user
+        content: "The garbage collector marks reachable objects first, then sweeps unreachable ones — but the pause time depends on heap size."
+      - role: assistant
+        content: "Good — you've described the mark-and-sweep cycle. What's the consequence of a large heap for application latency? And do you see a way to mitigate that?"
+      - role: user
+        content: "What if we used generational collection to reduce full-GC frequency? Short-lived objects die young, so collecting the young generation more often reduces the full-heap pause."
+  assert:
+    - type: javascript
+      value: |
+        // At-threshold case: user dissects a mechanism and proposes a novel hypothesis.
+        // Must classify as Analyze, Evaluate, or Create. FAIL if Remember or Understand.
+        // Confidence must be >= 0.75 — clear mechanism dissection + hypothesis present.
+        const result = JSON.parse(output);
+        const forbiddenLevels = ['Remember', 'Understand', 'Apply'];
+        if (forbiddenLevels.includes(result.bloom_level)) {
+          return {
+            pass: false,
+            score: 0,
+            reason: `Under-classified: got "${result.bloom_level}" but mechanism dissection with hypothesis should be Analyze+. Reasoning: ${result.reasoning}`,
+          };
+        }
+        if (typeof result.reasoning !== 'string' || result.reasoning.trim().length === 0) {
+          return { pass: false, score: 0, reason: 'reasoning field is missing or empty — chain-of-thought enforcement failed' };
+        }
+        if (typeof result.confidence !== 'number') {
+          return { pass: false, score: 0, reason: 'confidence field is not a number' };
+        }
+        if (result.confidence < 0.75) {
+          return {
+            pass: false,
+            score: 0.5,
+            reason: `Confidence too low: ${result.confidence.toFixed(2)} (need >= 0.75) for clear mechanism dissection case`,
+          };
+        }
+        return {
+          pass: true,
+          score: 1,
+          reason: `Correctly classified as "${result.bloom_level}" with confidence ${result.confidence.toFixed(2)}`,
+        };
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Above Threshold — Evaluate / Create
+# Must classify as Evaluate or Create with confidence >= 0.80.
+# FAIL if Remember, Understand, Apply, or Analyze.
+# ──────────────────────────────────────────────────────────────────────────────
+
+- description: "critical-evaluation — argued position with evidence scores Evaluate or Create"
+  vars:
+    messages:
+      - role: user
+        content: "I'm thinking through microservices vs monolithic architecture."
+      - role: assistant
+        content: "A classic tension. What's your current context — team size, deployment frequency, and how tightly coupled is the domain?"
+      - role: user
+        content: "Microservices solve team autonomy but introduce distributed system complexity — you trade one class of problems for another."
+      - role: assistant
+        content: "That's the core tradeoff. When does the complexity cost outweigh the autonomy benefit? What factors would tip you one way or the other?"
+      - role: user
+        content: "I'd argue that for a solo developer, a modular monolith is strictly better because the coordination cost of distributed services exceeds the deployment flexibility benefit — you gain nothing from the network boundary when there's no team boundary to enforce."
+  assert:
+    - type: javascript
+      value: |
+        // Above-threshold case: user argues a definitive position with explicit evidence.
+        // Must classify as Evaluate or Create. FAIL if anything lower.
+        // Confidence must be >= 0.80 — unambiguous evaluative stance.
+        const result = JSON.parse(output);
+        const requiredLevels = ['Evaluate', 'Create'];
+        const forbiddenLevels = ['Remember', 'Understand', 'Apply', 'Analyze'];
+        if (forbiddenLevels.includes(result.bloom_level)) {
+          return {
+            pass: false,
+            score: 0,
+            reason: `Under-classified: got "${result.bloom_level}" but an argued position with explicit evidence should be Evaluate or Create. Reasoning: ${result.reasoning}`,
+          };
+        }
+        if (typeof result.reasoning !== 'string' || result.reasoning.trim().length === 0) {
+          return { pass: false, score: 0, reason: 'reasoning field is missing or empty — chain-of-thought enforcement failed' };
+        }
+        if (typeof result.confidence !== 'number') {
+          return { pass: false, score: 0, reason: 'confidence field is not a number' };
+        }
+        if (result.confidence < 0.8) {
+          return {
+            pass: false,
+            score: 0.5,
+            reason: `Confidence too low: ${result.confidence.toFixed(2)} (need >= 0.80) for clear evaluative stance case`,
+          };
+        }
+        return {
+          pass: true,
+          score: 1,
+          reason: `Correctly classified as "${result.bloom_level}" with confidence ${result.confidence.toFixed(2)}`,
+        };
+
+- description: "novel-synthesis — original cross-domain framework scores Create or Evaluate"
+  vars:
+    messages:
+      - role: user
+        content: "I've been thinking about how spaced repetition and knowledge graphs could work together."
+      - role: assistant
+        content: "Interesting intersection. What would be the core mechanism — how would the graph structure change how you schedule reviews?"
+      - role: user
+        content: "What if the graph structure weighted edges by retention decay? Nodes that share a weak prerequisite link would naturally cluster in review sessions."
+      - role: assistant
+        content: "You're proposing a topology-driven scheduling system. How would you define the weight — is it a function of both nodes' FSRS stability, or just the prerequisite?"
+      - role: user
+        content: "You could auto-generate review sessions that traverse weak prerequisite chains first — starting from the most decayed foundation node and working up the DAG so that prerequisite review strengthens dependent recall automatically."
+  assert:
+    - type: javascript
+      value: |
+        // Above-threshold case: user proposes an original system design — novel synthesis.
+        // Must classify as Create or Evaluate. FAIL if anything lower.
+        // Confidence must be >= 0.80 — unambiguous creative synthesis.
+        const result = JSON.parse(output);
+        const requiredLevels = ['Create', 'Evaluate'];
+        const forbiddenLevels = ['Remember', 'Understand', 'Apply', 'Analyze'];
+        if (forbiddenLevels.includes(result.bloom_level)) {
+          return {
+            pass: false,
+            score: 0,
+            reason: `Under-classified: got "${result.bloom_level}" but original system design should be Create or Evaluate. Reasoning: ${result.reasoning}`,
+          };
+        }
+        if (typeof result.reasoning !== 'string' || result.reasoning.trim().length === 0) {
+          return { pass: false, score: 0, reason: 'reasoning field is missing or empty — chain-of-thought enforcement failed' };
+        }
+        if (typeof result.confidence !== 'number') {
+          return { pass: false, score: 0, reason: 'confidence field is not a number' };
+        }
+        if (result.confidence < 0.8) {
+          return {
+            pass: false,
+            score: 0.5,
+            reason: `Confidence too low: ${result.confidence.toFixed(2)} (need >= 0.80) for clear novel synthesis case`,
+          };
+        }
+        return {
+          pass: true,
+          score: 1,
+          reason: `Correctly classified as "${result.bloom_level}" with confidence ${result.confidence.toFixed(2)}`,
+        };
