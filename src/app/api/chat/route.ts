@@ -5,7 +5,6 @@ import { z } from 'zod';
 import { createServerSupabaseClient } from '@/lib/auth/supabase';
 import { CHAT_SYSTEM_PROMPT, MAX_CONTEXT_MESSAGES } from '@/lib/ai/prompts';
 import { getModelForRole } from '@/lib/ai/providers';
-import { getRelevantContext } from '@/lib/ai/rag';
 import { buildTelemetry, wrapRagWithObserve } from '@/lib/ai/tracing';
 
 function createConversationTitle(input: string) {
