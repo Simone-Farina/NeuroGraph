@@ -202,10 +202,10 @@ Plans:
   2. The Langfuse dashboard shows three independent spans for each architect call: one for the Synthesizer, one for RAG retrieval, and one for the Epistemological Inquisitor
   3. The Synthesizer output contains a canonical `title`, `definition`, and `core_insight` derived from the conversation history — not hallucinated from thin air
   4. The resulting neuron and DAG edges appear in the React Flow graph without a page reload or UI freeze
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
-- [ ] 25-01-PLAN.md — POST /api/neurogenesis 3-step pipeline: Synthesizer + RAG + Inquisitor (ARCH-01, ARCH-02, ARCH-03)
+- [x] 25-01-PLAN.md — POST /api/neurogenesis 3-step pipeline: Synthesizer + RAG + Inquisitor (ARCH-01, ARCH-02, ARCH-03)
 - [ ] 25-02-PLAN.md — GenerateNeuronButton wiring + graphStore update (ARCH-04)
 
 ---
@@ -239,4 +239,4 @@ Plans:
 | 22. Observability Foundation | v2.1 | 1/2 | Complete    | 2026-03-25 |
 | 23. Pure Conversationalist | v2.1 | 2/2 | Complete    | 2026-03-25 |
 | 24. Silent Observer | v2.1 | 2/2 | Complete    | 2026-03-25 |
-| 25. Decoupled Architect Pipeline | v2.1 | 0/2 | In progress | - |
+| 25. Decoupled Architect Pipeline | v2.1 | 1/2 | In Progress|  |

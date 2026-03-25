@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Core Flow Stability, Multi-Agent Architecture & Observability
-status: Ready to plan
-stopped_at: Completed 24-02-PLAN.md
-last_updated: "2026-03-25T22:12:41.103Z"
+status: Ready to execute
+stopped_at: Completed 25-01-PLAN.md
+last_updated: "2026-03-25T22:49:25.238Z"
 progress:
   total_phases: 8
   completed_phases: 7
-  total_plans: 13
-  completed_plans: 13
+  total_plans: 15
+  completed_plans: 14
 ---
 
 # Project State
@@ -23,8 +23,8 @@ See: .planning/PROJECT.md (updated 2026-03-25)
 
 ## Current Position
 
-Phase: 25
-Plan: Not started
+Phase: 25 (decoupled-architect-pipeline) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -55,6 +55,7 @@ Plan: Not started
 | Phase 23-pure-conversationalist P02 | 4min | 2 tasks | 4 files |
 | Phase 24-silent-observer P01 | 3min | 2 tasks | 4 files |
 | Phase 24-silent-observer P02 | 15min | 2 tasks | 4 files |
+| Phase 25-decoupled-architect-pipeline P01 | 3min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -88,6 +89,9 @@ Recent decisions affecting current work:
 - [Phase 24-silent-observer]: 24-02-inline-prompt: BLOOM_EVALUATOR_PROMPT defined inline in route.ts — evaluator is self-contained, no import from prompts.ts
 - [Phase 24-silent-observer]: 24-02-never-500: bloom-evaluate route returns 200 even on parse/timeout failure — better false positive than blocked user
 - [Phase 24-silent-observer]: 24-02-messagesref: messagesRef pattern for closure-safe message access in triggerBloomEval without adding messages to useCallback deps
+- [Phase 25-decoupled-architect-pipeline]: 25-01-observe-hof: observe() from @langfuse/tracing is a HOF decorator; call pattern is const pipeline = observe(fn, opts); await pipeline()
+- [Phase 25-decoupled-architect-pipeline]: 25-01-bloom-level-analyze: Synthesizer-created neurons receive bloom_level='Analyze' as the minimum neurogenesis threshold
+- [Phase 25-decoupled-architect-pipeline]: 25-01-evaluator-model: Synthesizer uses getModelForRole('evaluator') for cheap/fast distillation
 
 ### Pending Todos
 
@@ -101,6 +105,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-25T22:06:57.570Z
-Stopped at: Completed 24-02-PLAN.md
+Last session: 2026-03-25T22:49:25.236Z
+Stopped at: Completed 25-01-PLAN.md
 Resume file: None
