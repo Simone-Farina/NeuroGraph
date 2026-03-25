@@ -8,6 +8,16 @@ NeuroGraph 2.0 is a MicroSaaS platform for Active Generative Mastery. It is a co
 
 The system enforces "Active Extraction" and rigorous retention over passive reading; users only create nodes when they reach a "Deep Insight," and the AI acts as a bouncer to prevent hallucinated or disconnected knowledge graphs.
 
+## Current Milestone: v2.1 Core Flow Stability, Multi-Agent Architecture & Observability
+
+**Goal:** Deconstruct the monolithic chat endpoint into an Asynchronous Multi-Agent Architecture with deep LLM observability — fix the core loop, no new product features.
+
+**Target features:**
+- LLM Observability (Langfuse) — trace system prompts, RAG docs, and JSON output for every agent interaction
+- Pure Conversationalist — strip tool-calling from /api/chat, rewrite as natural Socratic tutor
+- Silent Observer (Async Bloom Evaluator) — background cheap-LLM evaluates cognitive state, illuminates Generate Neuron button
+- Decoupled Architect Endpoint — user-triggered POST /api/architect runs Synthesizer → RAG → Epistemological Inquisitor
+
 ## Current State
 
 **Shipped:** v2.0 MVP Core Stability (2026-03-24)
@@ -47,6 +57,13 @@ The system enforces "Active Extraction" and rigorous retention over passive read
 
 ### Active
 
+- [ ] LLM Observability via Langfuse tracing on all AI call sites
+- [ ] Pure Conversationalist agent (strip tool-calling from /api/chat)
+- [ ] Async Bloom Evaluator (background cheap-LLM cognitive state detection)
+- [ ] Decoupled Architect Endpoint (user-triggered neurogenesis via dedicated REST route)
+
+### Deferred (from previous milestones)
+
 - [ ] Implement Canvas Mode for freeform dragging and media organization
 - [ ] Implement Downward FIRe cascading logic
 - [ ] Connect robust AI auto-healing recommendations for FSRS decay
@@ -85,6 +102,8 @@ The system enforces "Active Extraction" and rigorous retention over passive read
 | Bloom-Gated Neurogenesis | Only Analyze/Evaluate/Create level insights trigger node proposals | ✓ Good |
 | LLM Prerequisite Inference | Epistemological Inquisitor replaces vector-similarity wiring | ✓ Good |
 | Hybrid eval model | Hard pass/fail for structural, scored thresholds for behavioral | ✓ Good |
+| Multi-Agent Architecture | Decouple chat/bloom/neurogenesis into separate agents | — Pending |
+| Observability First | Langfuse tracing before any AI logic changes | — Pending |
 
 ## Evolution
 
@@ -104,4 +123,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-24 after v2.0 milestone*
+*Last updated: 2026-03-25 after v2.1 milestone start*

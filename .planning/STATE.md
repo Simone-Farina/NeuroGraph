@@ -1,30 +1,32 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.0
-milestone_name: MVP Core Stability
-status: v2.0 milestone complete
-stopped_at: Completed 21-02-PLAN.md
-last_updated: "2026-03-24T21:59:54.319Z"
+milestone: v2.1
+milestone_name: Core Flow Stability, Multi-Agent Architecture & Observability
+status: Defining requirements
+stopped_at: —
+last_updated: "2026-03-25"
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 7
-  completed_plans: 7
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-24)
+See: .planning/PROJECT.md (updated 2026-03-25)
 
 **Core value**: The system enforces "Active Extraction" and rigorous retention over passive reading; users only create nodes when they reach a "Deep Insight," and the AI acts as a bouncer to prevent hallucinated or disconnected knowledge graphs.
-**Current focus**: Phase 18 — AI Reliability
+**Current focus**: Not started (defining requirements)
 
 ## Current Position
 
-Phase: 21
-Plan: Not started
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-25 — Milestone v2.1 started
 
 ## Performance Metrics
 
