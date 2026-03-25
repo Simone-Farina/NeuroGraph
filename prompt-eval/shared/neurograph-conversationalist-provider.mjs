@@ -8,39 +8,6 @@ import { generateText } from 'ai';
 
 const [, , prompt = '', optionsJson = '{}', contextJson = '{}'] = process.argv;
 
-// JSON Schema for suggest_neurogenesis tool (mirrors neurogenesisSchema in tools.ts).
-// Duplicated as plain JSON Schema because this .mjs file cannot import TypeScript directly.
-const neurogenesisJsonSchema = {
-  type: 'object',
-  properties: {
-    title: { type: 'string', minLength: 3, maxLength: 120 },
-    definition: { type: 'string', minLength: 10, maxLength: 280 },
-    core_insight: { type: 'string', minLength: 10, maxLength: 500 },
-    bloom_level: {
-      type: 'string',
-      enum: ['Remember', 'Understand', 'Apply', 'Analyze', 'Evaluate', 'Create'],
-    },
-  },
-  required: ['title', 'definition', 'core_insight', 'bloom_level'],
-};
-
-// Bloom's Taxonomy Analyze/Evaluate/Create level detection signals.
-// Per Research Pattern 3: causal reasoning, comparisons, evaluations, and personal insights.
-const BLOOM_ANALYZE_SIGNALS = [
-  /\bbecause\b.{5,}/i, // "X because Y" — causal reasoning
-  /\bsince\b.{5,}/i, // "X since Y" — causal reasoning
-  /\bcompared? to\b/i, // comparison
-  /\bbetter than\b/i, // evaluation
-  /\bi think.{5,}because\b/i, // opinionated reasoning
-  /\bi realized\b/i, // personal insight
-  /\bthe (key|main|real) (difference|reason|point)\b/i, // analytical framing
-  /\bthis (means|implies|shows)\b/i, // inference
-];
-
-// Per Research Pitfall 5: if the message ends with a question mark it is Understand-level,
-// not Analyze-level, regardless of other signals.
-const BLOOM_QUESTION_EXEMPTION = /\?[\s]*$/;
-
 /**
  * Extracts CHAT_SYSTEM_PROMPT from src/lib/ai/prompts.ts using the canonical regex pattern.
  * Per Research Pitfall 3: uses backtick+semicolon terminator to avoid early match on
@@ -221,18 +188,6 @@ function scoreSocraticTone(text) {
 }
 
 /**
- * Detects whether a user message demonstrates Analyze/Evaluate/Create level engagement
- * per Bloom's Taxonomy keyword heuristic.
- * Per Research Pitfall 5: messages ending with '?' are Understand-level regardless of signals.
- */
-function detectsAnalyzeLevel(text) {
-  if (BLOOM_QUESTION_EXEMPTION.test(text.trim())) {
-    return false;
-  }
-  return BLOOM_ANALYZE_SIGNALS.some((pattern) => pattern.test(text));
-}
-
-/**
  * Converts the vars.messages array and vars.final_user_message into the AI SDK messages format.
  * The messages array contains prior conversation turns as { role, content } objects.
  * The final user message is appended as the last turn for the model to respond to.
@@ -253,11 +208,9 @@ function buildMessages(vars) {
  * Heuristic offline fallback for conversationalist evaluation.
  * Generates a coaching-style response without calling a real model.
  * Computes socratic_score from heuristic response text.
- * Computes neurogenesis_triggered from detectsAnalyzeLevel of the final user message.
- * This ensures offline/live behavior is consistent at the assertion level (per Research Open Q 1).
+ * This ensures offline/live behavior is consistent at the assertion level.
  */
 function heuristicConversationalist(vars) {
-  const finalMessage = String(vars.final_user_message || '').trim();
   const messages = Array.isArray(vars.messages) ? vars.messages : [];
 
   // Extract topic from first user message or use generic placeholder
@@ -267,7 +220,7 @@ function heuristicConversationalist(vars) {
   // Build a teach-then-ask coaching response (per D-05: teaching content + question).
   // Calibration: "Interestingly,..." fires teachingSignals[7] (+0.2), "consider that" fires
   // teachingSignals[6] (+0.2) → 2 teaching hits = 0.4; 1 question mark = 0.25; coaching
-  // "consider" = 0.15. Total = 0.80 — satisfies the >= 0.8 heuristic threshold.
+  // "consider" = 0.15. Total = 0.80 — satisfies the >= 0.7 heuristic threshold.
   const response = [
     `Interestingly, ${topic} connects to several foundational ideas worth exploring.`,
     `Consider that this concept has important implications for how we understand the subject more broadly.`,
@@ -277,7 +230,6 @@ function heuristicConversationalist(vars) {
   return {
     response,
     socratic_score: scoreSocraticTone(response),
-    neurogenesis_triggered: detectsAnalyzeLevel(finalMessage),
   };
 }
 
@@ -296,31 +248,18 @@ async function main() {
   const systemPrompt = extractChatPrompt();
 
   try {
-    const { text, toolCalls } = await generateText({
+    const { text } = await generateText({
       model,
       system: systemPrompt,
       messages: buildMessages(vars),
-      tools: {
-        suggest_neurogenesis: {
-          description:
-            'Suggest generating a durable neuron from the conversation. ' +
-            'Call this when the user demonstrates genuine analytical depth, not for surface-level facts.',
-          parameters: neurogenesisJsonSchema,
-        },
-      },
       temperature: 0,
       maxOutputTokens: 600,
     });
-
-    const neurogenesisTriggered = Array.isArray(toolCalls)
-      ? toolCalls.some((tc) => tc.toolName === 'suggest_neurogenesis')
-      : false;
 
     process.stdout.write(
       JSON.stringify({
         response: text,
         socratic_score: scoreSocraticTone(text),
-        neurogenesis_triggered: neurogenesisTriggered,
       })
     );
   } catch {

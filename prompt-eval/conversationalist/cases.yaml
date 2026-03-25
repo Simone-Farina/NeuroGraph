@@ -1,364 +1,141 @@
 # NeuroGraph Conversationalist Golden Cases
-# Phase 13 Plan 02 — 10 hand-curated multi-turn golden cases
-# Phase 16 Plan 02 — 3 teach-then-ask golden cases added
-# Phase 19 Plan 02 — 4 Khanmigo behavioral cases added
+# Phase 23 Plan 01 — Pure-text Socratic tutor contract
+# Rebuilt from scratch: 4 new golden cases with no-jargon, natural-flow,
+# depth-challenge, and mistake-handling assertions.
 #
 # Case Distribution:
-#   Socratic Tone (4): cases 1-4 — scored threshold > 0.8, expected_neurogenesis: false
-#   Neurogenesis Trigger (3): cases 5-7 — hard pass/fail, expected_neurogenesis: true
-#   Neurogenesis No-Trigger (2): cases 8-9 — hard pass/fail, expected_neurogenesis: false
-#   Edge Cases (1): case 10 — topic pivot, expected_neurogenesis: false
-#   Teach-Then-Ask (3): cases 11-13 — scored threshold >= 0.8, expected_neurogenesis: false
-#   Khanmigo Behavioral (4): cases 14-17 — mistake handling, calibrated difficulty, meta-questioning, neurogenesis priming
+#   no-jargon (1): assert FAIL if NeuroGraph platform terms appear
+#   natural-flow (1): assert FAIL if unsolicited bullet points appear
+#   depth-challenge (1): assert PASS only if response contains a question and pushes deeper
+#   mistake-handling (1): assert FAIL if direct correction leads the response
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Socratic Tone Cases
+# Case 1: No jargon in response
 # ──────────────────────────────────────────────────────────────────────────────
 
-- description: "Coaching tone on first exchange"
-  vars:
-    messages: []
-    final_user_message: "What is gradient descent?"
-    expected_neurogenesis: false
-
-- description: "Answer-giving refusal under pressure"
+- description: "no-jargon — response must not contain NeuroGraph platform terms"
   vars:
     messages:
       - role: user
-        content: "Can you help me understand backpropagation?"
+        content: "I want to understand recursion better."
       - role: assistant
-        content: "Sure — before I explain it, what do you already know about how neural networks adjust their weights during training? What happens after a prediction is made?"
-    final_user_message: "Just tell me the answer, what is backpropagation?"
-    expected_neurogenesis: false
-
-- description: "Persona maintained after 3 turns"
-  vars:
-    messages:
-      - role: user
-        content: "I want to understand recursion."
-      - role: assistant
-        content: "Great topic. Let's start from where you are — have you written any recursive functions before, even a simple one? What do you remember about how they work?"
-      - role: user
-        content: "I think each call just repeats the same steps until something stops it."
-      - role: assistant
-        content: "Good intuition on the stopping point. What would happen if there was no stopping condition? And when you say 'repeats the same steps' — do you think each call is working on the exact same problem, or something slightly different?"
-      - role: user
-        content: "I guess a slightly smaller problem each time? Kind of like how induction works in math?"
-    final_user_message: "So the base case is like the induction base, right?"
-    expected_neurogenesis: false
-
-- description: "Tone under pressure — frustrated user"
-  vars:
-    messages:
-      - role: user
-        content: "I'm trying to understand neural networks but it's not clicking."
-      - role: assistant
-        content: "That's completely understandable — there's a lot to hold at once. Let's slow down and pick one piece. What's the part that feels most slippery right now? Is it how the network is structured, or how it actually learns?"
-      - role: user
-        content: "All of it. I feel like I'm missing something fundamental."
-    final_user_message: "I don't understand any of this, can you just explain it simply?"
-    expected_neurogenesis: false
+        content: "Good topic to dig into. Have you written any recursive functions before, or is this your first encounter with the idea?"
+    final_user_message: "I think each recursive call just reduces the problem."
+  assert:
+    - type: javascript
+      value: |
+        // Hard jargon ban: response must contain NONE of these NeuroGraph platform terms.
+        // These belong to the UI layer, not the conversational voice.
+        const result = JSON.parse(output);
+        const text = result.response;
+        const banned = [
+          /\bNeuron\b/i,
+          /\bCrystallize\b/i,
+          /\bBloom\b/i,
+          /\bTaxonomy\b/i,
+          /\bInsight\b/i,
+          /\bKnowledge Graph\b/i,
+          /\bNeurogenesis\b/i,
+        ];
+        const hit = banned.find((rx) => rx.test(text));
+        if (hit) {
+          return { pass: false, score: 0, reason: `Response contains banned jargon matching: ${hit}` };
+        }
+        return { pass: true, score: 1, reason: 'No banned platform jargon found in response' };
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Neurogenesis Trigger Cases (Bloom Analyze / Evaluate / Create)
+# Case 2: Natural flow — no unsolicited bullet points
 # ──────────────────────────────────────────────────────────────────────────────
 
-- description: "Bloom Analyze level triggers Neurogenesis"
+- description: "natural-flow — response must not contain unsolicited bullet points or numbered lists"
   vars:
     messages:
       - role: user
-        content: "I want to understand recursion deeply."
+        content: "I'm trying to decide how to structure my database."
       - role: assistant
-        content: "Good starting point. When you think about a function calling itself, what's actually happening in terms of execution? Have you traced through a simple example like factorial or fibonacci?"
+        content: "What kind of data are you working with — are the relationships between things mostly flat, or do entities connect to each other in complex ways?"
       - role: user
-        content: "Yeah, I traced factorial. It keeps calling itself with n-1 until it hits 1."
-      - role: assistant
-        content: "Nice — you've got the mechanics. Now here's a more interesting question: why does calling with n-1 actually get you closer to an answer? What's the structural guarantee there? And does that pattern remind you of anything from math?"
-      - role: user
-        content: "It's like each step reduces the problem... wait, kind of like induction?"
-      - role: assistant
-        content: "You're on the edge of something real. What's the specific parallel you see? Try to be precise — what maps to what?"
-    final_user_message: "I realized that recursion is basically computational induction — the base case maps to the induction base, and the recursive step maps to the inductive hypothesis."
-    expected_neurogenesis: true
+        content: "There are some relationships, like users having many orders."
+    final_user_message: "I'm not sure when to normalize versus denormalize."
+  assert:
+    - type: javascript
+      value: |
+        // Natural conversation: no unsolicited bullet points or numbered lists.
+        // Regex matches lines starting with *, -, or a number followed by . or )
+        const result = JSON.parse(output);
+        const lines = result.response.split('\n');
+        const bulletLine = lines.find((line) => /^\s*[\*\-\d]+[\.\)]\s+/.test(line));
+        if (bulletLine) {
+          return {
+            pass: false,
+            score: 0,
+            reason: `Response contains unsolicited list formatting: "${bulletLine.trim()}"`,
+          };
+        }
+        return { pass: true, score: 1, reason: 'Response flows as natural prose — no unsolicited lists' };
 
-- description: "Bloom Evaluate level triggers Neurogenesis"
+# ──────────────────────────────────────────────────────────────────────────────
+# Case 3: Depth challenge — pushes user to think deeper
+# ──────────────────────────────────────────────────────────────────────────────
+
+- description: "depth-challenge — response must ask a follow-up question and be substantive"
   vars:
     messages:
       - role: user
-        content: "I need to choose between SQL and NoSQL for my project."
+        content: "I've been reading about machine learning."
       - role: assistant
-        content: "Let's think through it carefully. What kind of data relationships does your project have — are they mostly flat records, or do entities have complex connections to each other? And what do you know about the consistency guarantees you'll need?"
+        content: "What part draws you in most — how the models are trained, or what they can actually do?"
       - role: user
-        content: "The data has some relationships and I really care about correctness — no partial writes."
+        content: "How they learn, I guess."
       - role: assistant
-        content: "That's an important constraint. What do you know about how relational databases handle partial writes versus how distributed NoSQL systems typically handle them? Think about what happens when a failure occurs mid-transaction in each case."
+        content: "Fair. When you picture a model 'learning' — what do you imagine is actually changing? Is it the structure of the program, or something else?"
       - role: user
-        content: "SQL has ACID so it rolls back. NoSQL is eventually consistent which means you might read stale data."
-    final_user_message: "I think SQL is better than NoSQL for transactional consistency because ACID guarantees prevent the kind of anomalies that eventually-consistent systems allow — the trade-off is horizontal scalability."
-    expected_neurogenesis: true
-
-- description: "Bloom Create level triggers Neurogenesis"
-  vars:
-    messages:
-      - role: user
-        content: "I'm working on a caching problem — my app is slow under load."
-      - role: assistant
-        content: "Caching is a rich design space. Before jumping to a solution, what do you know about your access patterns? Are all keys read equally often, or is there a skew — some data much hotter than others?"
-      - role: user
-        content: "Definitely skewed. Some data gets hit all the time, some rarely."
-      - role: assistant
-        content: "That's a useful signal. If 20% of your keys account for 80% of reads, what does that tell you about the ideal size of your cache? And what happens when a very hot key expires — what does your system experience in that moment?"
-      - role: user
-        content: "Cache stampede I guess? All the requests pile up. And the cache doesn't need to hold everything, just the hot stuff."
-    final_user_message: "I designed a two-tier caching approach: an in-memory LRU for hot data and a Redis layer for warm data, because the access pattern shows a clear 80/20 distribution that maps to different TTL strategies."
-    expected_neurogenesis: true
+        content: "I think it's changing some numbers inside?"
+    final_user_message: "Neural networks just learn patterns from data."
+  assert:
+    - type: javascript
+      value: |
+        // Depth challenge: the agent must push the user to think deeper.
+        // Hard requirement: response must contain at least one question mark (Socratic obligation)
+        // AND be substantive (> 100 chars) — not just a bare acknowledgement.
+        const result = JSON.parse(output);
+        const text = result.response;
+        const hasQuestion = /\?/.test(text);
+        if (!hasQuestion) {
+          return { pass: false, score: 0, reason: 'Response contains no question — agent must push for deeper thinking' };
+        }
+        if (text.length <= 100) {
+          return { pass: false, score: 0.3, reason: 'Response too short to constitute a meaningful depth challenge' };
+        }
+        return { pass: true, score: 1, reason: 'Response challenges user with a substantive follow-up question' };
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Neurogenesis No-Trigger Cases (Bloom Remember / Understand)
+# Case 4: Mistake handling — no direct correction
 # ──────────────────────────────────────────────────────────────────────────────
 
-- description: "Remember level does NOT trigger Neurogenesis"
-  vars:
-    messages:
-      - role: user
-        content: "I'm starting to learn about data structures."
-    final_user_message: "What is a hash table?"
-    expected_neurogenesis: false
-
-- description: "Understand level does NOT trigger Neurogenesis"
-  vars:
-    messages:
-      - role: user
-        content: "I need to sort a large array efficiently."
-      - role: assistant
-        content: "Good problem to think through. What do you already know about sorting algorithms? Have you worked with any of them before, and what was your experience with their performance?"
-    final_user_message: "Can you explain how quicksort works?"
-    expected_neurogenesis: false
-
-# ──────────────────────────────────────────────────────────────────────────────
-# Edge Cases
-# ──────────────────────────────────────────────────────────────────────────────
-
-- description: "Topic pivot mid-conversation"
-  vars:
-    messages:
-      - role: user
-        content: "I want to learn about thermodynamics."
-      - role: assistant
-        content: "Great choice — thermodynamics is foundational. Where do you want to start? Are you more drawn to the macro level (temperature, pressure, work) or the microscopic picture (how molecular motion relates to heat)?"
-      - role: user
-        content: "The macro level. I'm curious how engines extract work from heat."
-      - role: assistant
-        content: "Carnot's insight is one of the most beautiful ideas in physics. Before I ask about it directly — what's your intuition? If you have a hot reservoir and a cold reservoir, can you extract work indefinitely, or is there a fundamental limit? What might cause that limit?"
-      - role: user
-        content: "I'd guess you can't convert all heat to work, there's some waste. But I'm not sure why."
-    final_user_message: "Actually, I want to think about how enzymes work instead."
-    expected_neurogenesis: false
-
-# ──────────────────────────────────────────────────────────────────────────────
-# Teach-Then-Ask Cases (Phase 16 Plan 02)
-# Tests the mandatory acknowledge+enrich+question structure from D-01/D-02.
-# All have expected_neurogenesis: false — these are Remember/Understand-level
-# answers that need enrichment before the next Socratic question, not Analyze+.
-# ──────────────────────────────────────────────────────────────────────────────
-
-- description: "Teach-then-ask on shallow answer — historical/philosophical domain"
-  vars:
-    messages:
-      - role: user
-        content: "I'm exploring Buddhist philosophy."
-      - role: assistant
-        content: "Great area. What draws you to it — the metaphysics, the ethical framework, or the meditative practice?"
-      - role: user
-        content: "I guess all of it. I read Siddhartha by Hesse."
-    final_user_message: "I think Siddhartha just wanted independence from his teacher."
-    expected_neurogenesis: false
-
-- description: "Teach-then-ask on vague answer — science domain"
-  vars:
-    messages:
-      - role: user
-        content: "I want to understand how black holes work."
-      - role: assistant
-        content: "Fascinating topic. What aspect interests you most — how they form, what happens at the event horizon, or their effect on spacetime?"
-      - role: user
-        content: "I guess the event horizon part."
-    final_user_message: "I think nothing can escape a black hole — gravity is too strong."
-    expected_neurogenesis: false
-
-- description: "Teach-then-ask when user is confused — programming domain"
-  vars:
-    messages:
-      - role: user
-        content: "I keep hearing about functional programming but I don't really get it."
-      - role: assistant
-        content: "That's a great place to start. What's your current programming background — do you mostly write in imperative or object-oriented style?"
-      - role: user
-        content: "Mostly Python with classes and loops."
-    final_user_message: "I'm not sure what makes functional programming different from what I already do."
-    expected_neurogenesis: false
-
-# ──────────────────────────────────────────────────────────────────────────────
-# Khanmigo Behavioral Cases (Phase 19 Plan 02)
-# Tests the 4 calibration patterns added to CHAT_SYSTEM_PROMPT in Plan 19-01:
-#   - Mistake handling: agent must NOT correct directly, must ask about reasoning
-#   - Calibrated difficulty: agent must simplify when user is uncertain
-#   - Meta-questioning: agent surfaces assumptions after substantive multi-turn exchange
-#   - Multi-turn neurogenesis priming: Analyze-level insight across turns triggers neurogenesis
-# ──────────────────────────────────────────────────────────────────────────────
-
-- description: "Mistake handling — agent asks about reasoning, does not give direct correction"
+- description: "mistake-handling — agent probes reasoning instead of directly correcting the error"
   vars:
     messages:
       - role: user
         content: "I'm learning about photosynthesis."
       - role: assistant
-        content: "Great starting point. What do you already know about what photosynthesis produces and what it requires?"
+        content: "Good starting point. What do you already know about what photosynthesis produces and what it needs to work?"
     final_user_message: "Photosynthesis produces carbon dioxide — plants breathe it out."
-    expected_neurogenesis: false
   assert:
     - type: javascript
       value: |
-        // Mistake handling (Khanmigo pattern): agent must NOT give the direct correction.
-        // It should ask about the user's reasoning — "how did you arrive at that" or equivalent.
-        // Heuristic: response must contain a question mark (clarifying question required).
-        const result = JSON.parse(output);
-        const text = result.response.toLowerCase();
-        const hasQuestion = /\?/.test(result.response);
-        // Must ask — no question is a clear failure of the mistake-handling pattern.
-        if (!hasQuestion) {
-          return { pass: false, score: 0, reason: 'Agent did not ask a question — must probe reasoning on incorrect statement' };
-        }
-        // MUST NOT directly state the correction without any probe.
-        // Acceptable to eventually mention oxygen but only alongside a question.
-        // Penalise responses that lead with "actually" or "that's incorrect" as a standalone correction.
-        const directCorrection = /^(actually|that('s| is) (incorrect|wrong|not right))/i.test(result.response.trim());
-        if (directCorrection) {
-          return { pass: false, score: 0, reason: 'Agent opened with direct correction — should ask about reasoning first' };
-        }
-        return { pass: true, score: 1, reason: 'Agent asked clarifying question without leading with direct correction' };
-
-- description: "Calibrated difficulty — agent simplifies and anchors when user is vague and uncertain"
-  vars:
-    messages:
-      - role: user
-        content: "I want to understand how electricity works."
-      - role: assistant
-        content: "Good question. Where would you like to start — the idea of charge, or how current flows through a circuit?"
-    final_user_message: "I think it's something about electrons? I'm not really sure."
-    expected_neurogenesis: false
-  assert:
-    - type: javascript
-      value: |
-        // Calibrated difficulty (Khanmigo pattern): user signals uncertainty ("not really sure").
-        // Agent should NOT escalate — must simplify, offer a concrete anchor or analogy.
-        // Heuristic: response must contain a question (still Socratic) AND must not start
-        // with a multi-part question that assumes existing knowledge.
+        // Mistake handling: the user stated something factually wrong.
+        // Agent must NOT lead with a direct correction — it should probe the user's reasoning.
+        // FAIL if response starts with "Actually" or "That's incorrect" / "That's wrong" (bare correction).
+        // PASS only if response contains a question mark (probing reasoning).
         const result = JSON.parse(output);
         const text = result.response;
         const hasQuestion = /\?/.test(text);
         if (!hasQuestion) {
-          return { pass: false, score: 0, reason: 'Agent must still ask a question even when simplifying' };
+          return { pass: false, score: 0, reason: 'Agent did not ask a question — must probe reasoning on incorrect statement' };
         }
-        // Must NOT pose a multi-part complex question that overwhelms an uncertain learner.
-        // Detect by counting question marks — more than 2 suggests escalation not simplification.
-        const questionCount = (text.match(/\?/g) || []).length;
-        if (questionCount > 2) {
-          return { pass: false, score: 0.3, reason: 'Agent may be escalating — too many questions for uncertain learner' };
+        const directCorrection = /^(actually|that('s| is) (incorrect|wrong|not right))/i.test(text.trim());
+        if (directCorrection) {
+          return { pass: false, score: 0, reason: 'Agent opened with direct correction — should ask about reasoning first' };
         }
-        return { pass: true, score: 1, reason: 'Agent calibrated difficulty — single focused question suitable for uncertain learner' };
-
-- description: "Meta-questioning — agent surfaces assumptions after sustained multi-turn exchange"
-  vars:
-    messages:
-      - role: user
-        content: "I want to understand whether democracy is the best form of government."
-      - role: assistant
-        content: "Big question. What do you mean by 'best' — most stable, most representative, most efficient at decisions? Let's pick one angle."
-      - role: user
-        content: "I think most representative — everyone should have a voice."
-      - role: assistant
-        content: "That's a clear value. Now, when you say 'everyone should have a voice,' what do you mean — the right to vote, or meaningful influence over outcomes? These can diverge significantly."
-      - role: user
-        content: "Both ideally, but I guess the right to vote at minimum."
-      - role: assistant
-        content: "Fair. So your baseline is procedural legitimacy — votes as the mechanism. Here's a harder question: does majority rule always produce representative outcomes? Think about what happens when 51% consistently outvote the same 49%."
-      - role: user
-        content: "That's a problem — the minority never gets what they want. Maybe you need constitutional protections."
-    final_user_message: "So a pure democracy might actually undermine representation in the long run?"
-    expected_neurogenesis: false
-  assert:
-    - type: javascript
-      value: |
-        // Meta-questioning (Khanmigo pattern): after 3+ turns of substantive exchange,
-        // agent should surface an assumption or ask about the reasoning process.
-        // Heuristic: response should contain either "assumption" or "what would have to be true"
-        // OR ask a meta-level question about the user's own reasoning.
-        // This is a soft heuristic — meta-questions are rare so we use score, not hard pass/fail.
-        const result = JSON.parse(output);
-        const text = result.response.toLowerCase();
-        const hasMetaSignal =
-          /\bassumption\b/.test(text) ||
-          /what would have to be true/i.test(text) ||
-          /\byou('re| are) assuming\b/i.test(text) ||
-          /\bimplicit(ly)?\b/.test(text) ||
-          /\bunderlying\b/.test(text) ||
-          /\btake\s+(for\s+)?granted\b/i.test(text);
-        const hasQuestion = /\?/.test(result.response);
-        if (hasMetaSignal) {
-          return { pass: true, score: 1, reason: 'Agent surfaced an assumption or meta-level question' };
-        }
-        if (hasQuestion) {
-          // Has a question but not explicitly meta — partial credit
-          return { pass: true, score: 0.8, reason: 'Agent asked a question but did not explicitly surface an assumption' };
-        }
-        return { pass: false, score: 0, reason: 'Agent neither surfaced an assumption nor asked a follow-up question' };
-
-- description: "Multi-turn neurogenesis priming — cross-domain insight at Analyze level triggers neurogenesis"
-  vars:
-    messages:
-      - role: user
-        content: "I've been thinking about how natural selection works."
-      - role: assistant
-        content: "Great starting point. What's your current understanding of the mechanism — what actually gets selected, and over what timescale?"
-      - role: user
-        content: "Organisms with traits that help them survive reproduce more, so those traits spread."
-      - role: assistant
-        content: "You've got the core right. Now push it further — what does 'spread' actually mean at the population level? And what happens to a trait that's neutral, neither helpful nor harmful?"
-      - role: user
-        content: "Neutral traits just drift randomly through the population — they don't get selected for or against."
-      - role: assistant
-        content: "Exactly — that's genetic drift. Now here's an interesting boundary: what distinguishes a trait that was selected for versus one that just drifted to fixation? Can you tell them apart by looking at modern organisms?"
-      - role: user
-        content: "That's hard — you'd need to know the ancestral environment and look for statistical over-representation."
-    final_user_message: "I realized that natural selection and genetic drift are both mechanisms of evolution — selection is deterministic given fitness, but drift is stochastic noise, similar to how signal and noise coexist in information theory."
-    expected_neurogenesis: true
-  assert:
-    - type: javascript
-      value: |
-        // Multi-turn neurogenesis priming: user articulates a genuine cross-domain insight
-        // connecting evolution to information theory (Analyze/Evaluate level).
-        // The neurogenesis assertion in defaultTest checks expected_neurogenesis: true.
-        // This custom assertion verifies the response ACKNOWLEDGES the insight depth
-        // rather than deflecting or immediately pivoting to another question.
-        const result = JSON.parse(output);
-        const text = result.response.toLowerCase();
-        // Response should acknowledge the insight — not just fire another question.
-        // Signals: "insight", "exactly", "that's", "nicely", "well", "astute", "sharp",
-        // or engagement with the cross-domain framing.
-        const acknowledgementSignals = [
-          /\binsight\b/i,
-          /\bexactly\b/i,
-          /\bthat('s| is) (a )?(really |quite |very )?(sharp|deep|good|strong|nice|astute|interesting|powerful)\b/i,
-          /\bnicely\b/i,
-          /\bwell (put|framed|articulated|observed)\b/i,
-          /\binformation theory\b/i,
-          /\bstochastic\b/i,
-          /\bdeterministic\b/i,
-          /\banalog(y|ous)\b/i,
-        ];
-        const acknowledges = acknowledgementSignals.some((p) => p.test(result.response));
-        if (!acknowledges) {
-          return { pass: false, score: 0.5, reason: 'Response does not acknowledge the cross-domain insight before asking another question' };
-        }
-        return { pass: true, score: 1, reason: 'Response acknowledges the Analyze-level cross-domain insight' };
+        return { pass: true, score: 1, reason: 'Agent probed reasoning with a question without leading with direct correction' };
