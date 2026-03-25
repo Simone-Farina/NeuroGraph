@@ -230,6 +230,6 @@ Plans:
 | 20. Editor Reliability | v2.0 | 1/1 | Complete | 2026-03-24 |
 | 21. Graph Performance & Bloom UI | v2.0 | 2/2 | Complete | 2026-03-24 |
 | 22. Observability Foundation | v2.1 | 1/2 | Complete    | 2026-03-25 |
-| 23. Pure Conversationalist | v2.1 | 2/2 | Complete   | 2026-03-25 |
+| 23. Pure Conversationalist | v2.1 | 2/2 | Complete    | 2026-03-25 |
 | 24. Silent Observer | v2.1 | 0/? | Not started | - |
 | 25. Decoupled Architect Pipeline | v2.1 | 0/? | Not started | - |
