@@ -7,7 +7,7 @@ import { CHAT_SYSTEM_PROMPT, MAX_CONTEXT_MESSAGES } from '@/lib/ai/prompts';
 import { getModelForRole } from '@/lib/ai/providers';
 import { suggestNeurogenesisTool } from '@/lib/ai/tools';
 
-import { getRelevantContext } from '@/lib/ai/rag';
+import { buildTelemetry, wrapRagWithObserve } from '@/lib/ai/tracing';
 
 function createConversationTitle(input: string) {
   const trimmed = input.trim();
@@ -182,7 +182,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: insertUserMessageError.message }, { status: 500 });
     }
 
-    const { ragContext, ragCatalog } = await getRelevantContext(latestUserText, user.id, supabase);
+    const { ragContext, ragCatalog } = await wrapRagWithObserve(latestUserText, user.id, supabase, conversationId);
 
     const systemPrompt = `${CHAT_SYSTEM_PROMPT}${ragContext}\n\n## Existing Neuron Catalog\nThe following neurons already exist in the user's graph. The Epistemological Inquisitor will determine prerequisite connections automatically — you do not need to suggest them.\n${ragCatalog}`;
 
@@ -197,6 +197,10 @@ export async function POST(request: NextRequest) {
       tools: {
         suggest_neurogenesis: suggestNeurogenesisTool,
       },
+      experimental_telemetry: buildTelemetry('conversationalist', {
+        userId: user.id,
+        conversationId: conversationId!,
+      }),
       maxRetries: 1,                             // Chat is interactive — 1 retry max (user is watching)
       abortSignal: AbortSignal.timeout(60_000),  // 60s — allows long Socratic exchanges
       onError: ({ error }) => {

@@ -9,6 +9,7 @@ import {
 import { getModelForRole } from '@/lib/ai/providers';
 import { ARCHITECT_SYSTEM_PROMPT } from '@/lib/ai/prompts';
 import { getAuthenticatedUser } from '@/lib/auth/server';
+import { buildTelemetry } from '@/lib/ai/tracing';
 
 const architectRequestSchema = z.object({
   target: z.string().trim().min(3).max(120),
@@ -39,6 +40,10 @@ export async function POST(request: NextRequest) {
       schema: architectResponseSchema,
       system: ARCHITECT_SYSTEM_PROMPT,
       prompt: buildArchitectPrompt(target),
+      experimental_telemetry: buildTelemetry('architect', {
+        userId: auth.user.id,
+        extra: { target },
+      }),
       maxRetries: 2,
       abortSignal: AbortSignal.timeout(25_000),
     });
