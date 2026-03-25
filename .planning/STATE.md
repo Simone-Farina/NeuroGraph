@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Core Flow Stability, Multi-Agent Architecture & Observability
-status: Ready to execute
-stopped_at: Completed 25-01-PLAN.md
-last_updated: "2026-03-25T22:49:25.238Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 25-02-PLAN.md
+last_updated: "2026-03-25T22:54:50.731Z"
 progress:
   total_phases: 8
-  completed_phases: 7
+  completed_phases: 8
   total_plans: 15
-  completed_plans: 14
+  completed_plans: 15
 ---
 
 # Project State
@@ -56,6 +56,7 @@ Plan: 2 of 2
 | Phase 24-silent-observer P01 | 3min | 2 tasks | 4 files |
 | Phase 24-silent-observer P02 | 15min | 2 tasks | 4 files |
 | Phase 25-decoupled-architect-pipeline P01 | 3min | 2 tasks | 2 files |
+| Phase 25-decoupled-architect-pipeline P02 | 12min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -92,6 +93,9 @@ Recent decisions affecting current work:
 - [Phase 25-decoupled-architect-pipeline]: 25-01-observe-hof: observe() from @langfuse/tracing is a HOF decorator; call pattern is const pipeline = observe(fn, opts); await pipeline()
 - [Phase 25-decoupled-architect-pipeline]: 25-01-bloom-level-analyze: Synthesizer-created neurons receive bloom_level='Analyze' as the minimum neurogenesis threshold
 - [Phase 25-decoupled-architect-pipeline]: 25-01-evaluator-model: Synthesizer uses getModelForRole('evaluator') for cheap/fast distillation
+- [Phase 25-decoupled-architect-pipeline]: 25-02-no-prop-threading: conversationId obtained via useConversationContext() inside GenerateNeuronButton — avoids ChatPanel.tsx modification
+- [Phase 25-decoupled-architect-pipeline]: 25-02-atomic-store-update: addNeurogenesisResult uses single set() call with spread for nodes+edges — triggers one re-render and one dagre re-layout
+- [Phase 25-decoupled-architect-pipeline]: 25-02-inline-feedback: inline span below button (not Sonner) matches SelectionToolbar pattern; 4s auto-clear with setTimeout
 
 ### Pending Todos
 
@@ -105,6 +109,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-25T22:49:25.236Z
-Stopped at: Completed 25-01-PLAN.md
+Last session: 2026-03-25T22:54:50.729Z
+Stopped at: Completed 25-02-PLAN.md
 Resume file: None

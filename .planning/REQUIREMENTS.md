@@ -29,7 +29,7 @@ Requirements for Core Flow Stability, Multi-Agent Architecture & Observability. 
 - [x] **ARCH-01**: User-triggered `POST /api/architect` runs a 3-step sequential pipeline: Synthesizer, RAG, Epistemological Inquisitor
 - [x] **ARCH-02**: Synthesizer agent distills conversation history into canonical `title`, `definition`, and `core_insight`
 - [x] **ARCH-03**: Each pipeline step (Synthesizer, RAG retrieval, Inquisitor) gets its own Langfuse span
-- [ ] **ARCH-04**: Architect response updates React Flow graph without freezing the chat UI
+- [x] **ARCH-04**: Architect response updates React Flow graph without freezing the chat UI
 
 ### Eval Suite
 
@@ -80,7 +80,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ARCH-01 | Phase 25 | Complete |
 | ARCH-02 | Phase 25 | Complete |
 | ARCH-03 | Phase 25 | Complete |
-| ARCH-04 | Phase 25 | Pending |
+| ARCH-04 | Phase 25 | Complete |
 | EVAL-01 | Phase 23 | Complete |
 | EVAL-02 | Phase 24 | Complete |
 | EVAL-03 | Phase 24 | Complete |
