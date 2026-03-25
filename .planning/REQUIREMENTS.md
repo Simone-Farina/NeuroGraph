@@ -10,10 +10,10 @@ Requirements for Core Flow Stability, Multi-Agent Architecture & Observability. 
 ### Observability
 
 - [ ] **OBS-01**: All AI call sites (streamText, generateObject) emit OpenTelemetry traces to Langfuse Cloud
-- [ ] **OBS-02**: Each agent (Conversationalist, Bloom Evaluator, Synthesizer, Inquisitor) produces a named span in Langfuse
+- [x] **OBS-02**: Each agent (Conversationalist, Bloom Evaluator, Synthesizer, Inquisitor) produces a named span in Langfuse
 - [ ] **OBS-03**: Traces are correlated by conversation session ID and authenticated user ID
 - [ ] **OBS-04**: RAG context (retrieved neurons/vectors) is logged as span metadata so debugging can confirm what the LLM actually saw
-- [ ] **OBS-05**: Langfuse Cloud integration with proper environment variables (no self-hosting)
+- [x] **OBS-05**: Langfuse Cloud integration with proper environment variables (no self-hosting)
 
 ### Multi-Agent Architecture
 
@@ -67,10 +67,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | OBS-01 | Phase 22 | Pending |
-| OBS-02 | Phase 22 | Pending |
+| OBS-02 | Phase 22 | Complete |
 | OBS-03 | Phase 22 | Pending |
 | OBS-04 | Phase 22 | Pending |
-| OBS-05 | Phase 22 | Pending |
+| OBS-05 | Phase 22 | Complete |
 | AGENT-01 | Phase 23 | Pending |
 | AGENT-02 | Phase 23 | Pending |
 | AGENT-03 | Phase 24 | Pending |

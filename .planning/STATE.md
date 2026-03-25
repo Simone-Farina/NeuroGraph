@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Core Flow Stability, Multi-Agent Architecture & Observability
-status: Ready to plan Phase 22
-stopped_at: Roadmap created — Phase 22 next
-last_updated: "2026-03-25"
+status: Ready to execute
+stopped_at: Completed 22-01-PLAN.md
+last_updated: "2026-03-25T20:19:22.206Z"
 progress:
-  total_phases: 4
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_phases: 8
+  completed_phases: 4
+  total_plans: 9
+  completed_plans: 8
 ---
 
 # Project State
@@ -23,12 +23,8 @@ See: .planning/PROJECT.md (updated 2026-03-25)
 
 ## Current Position
 
-Phase: 22 of 25 (Observability Foundation)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-03-25 — v2.1 roadmap created (Phases 22-25)
-
-Progress: [░░░░░░░░░░] 0% (v2.1 milestone)
+Phase: 22 (observability-foundation) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -53,6 +49,7 @@ Progress: [░░░░░░░░░░] 0% (v2.1 milestone)
 - Trend: Stable
 
 *Updated after each plan completion*
+| Phase 22-observability-foundation P01 | 3min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -68,6 +65,9 @@ Recent decisions affecting current work:
 - [v2.1 Constraints]: Use `immediateExport: true` in LangfuseSpanProcessor — `after()` requires Next.js 15+; project is on Next.js 14.2.35
 - [v2.1 Constraints]: Audit all routes for `runtime = 'edge'` before instrumentation — Edge runtime drops Langfuse Node.js SDK traces silently
 - [v2.1 Constraints]: Bloom evaluator is a UI hint layer only (0.75 confidence threshold) — Bouncer remains authoritative gate for Bloom classification
+- [Phase 22-observability-foundation]: flushAt: 1 replaces non-existent immediateExport option in LangfuseSpanProcessor v5.0.1
+- [Phase 22-observability-foundation]: shouldExportSpan replaces non-existent shouldExport — v5 signature is ({ otelSpan }) => boolean
+- [Phase 22-observability-foundation]: wrapRagWithObserve uses startActiveObservation (v5 API) not observe(options, fn) — observe() is a decorator in v5
 
 ### Pending Todos
 
@@ -81,6 +81,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-25
-Stopped at: v2.1 roadmap written — Phases 22-25 defined, REQUIREMENTS.md traceability pending
+Last session: 2026-03-25T20:19:22.204Z
+Stopped at: Completed 22-01-PLAN.md
 Resume file: None
