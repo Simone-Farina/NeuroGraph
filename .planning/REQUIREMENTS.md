@@ -66,30 +66,30 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| OBS-01 | — | Pending |
-| OBS-02 | — | Pending |
-| OBS-03 | — | Pending |
-| OBS-04 | — | Pending |
-| OBS-05 | — | Pending |
-| AGENT-01 | — | Pending |
-| AGENT-02 | — | Pending |
-| AGENT-03 | — | Pending |
-| AGENT-04 | — | Pending |
-| AGENT-05 | — | Pending |
-| AGENT-06 | — | Pending |
-| ARCH-01 | — | Pending |
-| ARCH-02 | — | Pending |
-| ARCH-03 | — | Pending |
-| ARCH-04 | — | Pending |
-| EVAL-01 | — | Pending |
-| EVAL-02 | — | Pending |
-| EVAL-03 | — | Pending |
+| OBS-01 | Phase 22 | Pending |
+| OBS-02 | Phase 22 | Pending |
+| OBS-03 | Phase 22 | Pending |
+| OBS-04 | Phase 22 | Pending |
+| OBS-05 | Phase 22 | Pending |
+| AGENT-01 | Phase 23 | Pending |
+| AGENT-02 | Phase 23 | Pending |
+| AGENT-03 | Phase 24 | Pending |
+| AGENT-04 | Phase 24 | Pending |
+| AGENT-05 | Phase 24 | Pending |
+| AGENT-06 | Phase 23 | Pending |
+| ARCH-01 | Phase 25 | Pending |
+| ARCH-02 | Phase 25 | Pending |
+| ARCH-03 | Phase 25 | Pending |
+| ARCH-04 | Phase 25 | Pending |
+| EVAL-01 | Phase 23 | Pending |
+| EVAL-02 | Phase 24 | Pending |
+| EVAL-03 | Phase 24 | Pending |
 
 **Coverage:**
 - v2.1 requirements: 18 total
-- Mapped to phases: 0
-- Unmapped: 18
+- Mapped to phases: 18
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-25*
-*Last updated: 2026-03-25 after initial definition*
+*Last updated: 2026-03-25 after roadmap creation*
