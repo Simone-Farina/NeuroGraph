@@ -5,6 +5,7 @@ import { generateObject, NoObjectGeneratedError, APICallError } from 'ai';
 import { createServerSupabaseClient } from '@/lib/auth/supabase';
 import { generateEmbedding } from '@/lib/ai/embeddings';
 import { getModelForRole } from '@/lib/ai/providers';
+import { buildTelemetry } from '@/lib/ai/tracing';
 
 /**
  * POST /api/neurons/curriculum
@@ -88,6 +89,10 @@ export async function POST(request: NextRequest) {
       schema: curriculumResponseSchema,
       maxRetries: 2,
       abortSignal: AbortSignal.timeout(25_000),
+      experimental_telemetry: buildTelemetry('curriculum', {
+        userId: user.id,
+        extra: { target: target_title },
+      }),
       system: `You are a pedagogical curriculum designer for NeuroGraph.
 Your task is to create a learning path from the user's current knowledge to a target concept.
 

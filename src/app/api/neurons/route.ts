@@ -207,7 +207,8 @@ export async function POST(request: NextRequest) {
           if (candidateNeurons && candidateNeurons.length > 0) {
             const inferenceResult = await inferPrerequisites(
               { title: neuron.title, definition: parsed.data.definition, core_insight: parsed.data.core_insight },
-              candidateNeurons
+              candidateNeurons,
+              user.id
             );
 
             prerequisiteLinks = await createPrerequisiteSynapses(

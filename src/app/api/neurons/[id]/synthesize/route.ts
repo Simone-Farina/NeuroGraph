@@ -5,6 +5,7 @@ import { generateText } from 'ai';
 import { createServerSupabaseClient } from '@/lib/auth/supabase';
 import { neuronQueries } from '@/lib/db/queries';
 import { getModelForRole } from '@/lib/ai/providers';
+import { buildTelemetry } from '@/lib/ai/tracing';
 
 const synthesizeSchema = z.object({
   newText: z.string().min(1).max(5000),
@@ -56,6 +57,10 @@ export async function POST(
       model: getModelForRole('synthesis_fast'),
       system: SYSTEM_PROMPT,
       prompt: userPrompt,
+      experimental_telemetry: buildTelemetry('synthesize', {
+        userId: user.id,
+        extra: { neuronId: id },
+      }),
     });
 
     const updatedNeuron = await neuronQueries.update(supabase, id, {

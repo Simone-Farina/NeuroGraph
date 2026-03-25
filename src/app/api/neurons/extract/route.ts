@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { generateObject, NoObjectGeneratedError, APICallError } from 'ai';
 import { createServerSupabaseClient } from '@/lib/auth/supabase';
 import { getModelForRole } from '@/lib/ai/providers';
+import { buildTelemetry } from '@/lib/ai/tracing';
 
 const extractionRequestSchema = z.object({
   title: z.string().min(1).max(120),
@@ -54,6 +55,7 @@ export async function POST(request: NextRequest) {
       schema: extractionResultSchema,
       maxRetries: 2,
       abortSignal: AbortSignal.timeout(25_000),
+      experimental_telemetry: buildTelemetry('bouncer-extract', { userId: user.id }),
       system: `You are a knowledge graph extraction engine for NeuroGraph.
 Your task is to analyze a free-form note and extract structured metadata.
 

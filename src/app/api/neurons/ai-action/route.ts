@@ -3,6 +3,7 @@ import { streamText } from 'ai';
 import { z } from 'zod';
 import { createServerSupabaseClient } from '@/lib/auth/supabase';
 import { getModelForRole } from '@/lib/ai/providers';
+import { buildTelemetry } from '@/lib/ai/tracing';
 
 const actionRequestSchema = z.object({
   type: z.enum(['summarize', 'expand', 'rewrite', 'challenge', 'connect', 'inline-chat']),
@@ -79,6 +80,10 @@ User request: Help me improve or understand this selected passage.`;
       prompt,
       maxOutputTokens: 600,
       abortSignal: AbortSignal.timeout(30_000),  // 30s — slash commands should be fast
+      experimental_telemetry: buildTelemetry('ai-action', {
+        userId: user.id,
+        extra: { actionType: type },
+      }),
       onError: ({ error }) => {
         console.error('[neurons/ai-action] Stream error:', error);
       },

@@ -3,6 +3,7 @@ import { generateObject } from 'ai';
 // NoObjectGeneratedError and APICallError are not caught here — errors propagate to the caller (neurons/route.ts)
 import { getModelForRole } from '@/lib/ai/providers';
 import { createServerSupabaseClient } from '@/lib/auth/supabase';
+import { buildTelemetry } from '@/lib/ai/tracing';
 
 /**
  * Zod schema for the AI prerequisite inference output.
@@ -32,6 +33,7 @@ export type PrerequisiteInferenceResult = z.infer<typeof prerequisiteInferenceSc
 export async function inferPrerequisites(
   newNeuron: { title: string; definition: string; core_insight: string },
   candidateNeurons: { id: string; title: string; definition: string }[],
+  userId?: string,
 ): Promise<PrerequisiteInferenceResult> {
   if (candidateNeurons.length === 0) {
     return { prerequisites: [], suggested_next: null };
@@ -48,6 +50,10 @@ export async function inferPrerequisites(
     schema: prerequisiteInferenceSchema,
     maxRetries: 2,
     abortSignal: AbortSignal.timeout(25_000),
+    experimental_telemetry: buildTelemetry('inquisitor', {
+      ...(userId ? { userId } : {}),
+      extra: { newNeuronTitle: newNeuron.title },
+    }),
     system: `You are a pedagogical graph engine for NeuroGraph.
 Your task is to determine which existing concepts are TRUE PREREQUISITES for a newly learned concept.
 

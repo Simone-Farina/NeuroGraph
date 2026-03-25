@@ -2,6 +2,7 @@ import { generateText } from 'ai';
 import { z } from 'zod';
 
 import { getModelForRole } from '@/lib/ai/providers';
+import { buildTelemetry } from '@/lib/ai/tracing';
 
 const seedSchema = z.object({
   briefing: z.string().min(1),
@@ -25,6 +26,7 @@ type GenerateCrystallizeSeedInput = {
   sourceDomain: string | null;
   sourceText: string;
   notes: string | null;
+  userId?: string; // for telemetry
 };
 
 type RenderCrystallizeAssistantMessageInput = {
@@ -64,6 +66,9 @@ Source: ${sourceDescriptor}
 
 ${notesBlock}Source text:
 ${input.sourceText}`,
+    experimental_telemetry: buildTelemetry('crystallize-seed', {
+      ...(input.userId ? { userId: input.userId } : {}),
+    }),
   });
 
   const seed = parseSeedResponse(text);
