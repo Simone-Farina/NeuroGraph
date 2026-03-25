@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { MarkerType } from '@xyflow/react';
 import type { Edge, Node } from '@xyflow/react';
 import type { ArchitectResponse } from '@/lib/ai/architect';
 import { createGhostNodeId } from '@/lib/ai/architect';
@@ -55,6 +56,7 @@ type GraphStore = {
   openNeuronDetail: (id: string) => void;
   openChat: () => void;
   openReview: (id?: string) => void;
+  addNeurogenesisResult: (neuron: Record<string, unknown>, synapses: Record<string, unknown>[]) => void;
 };
 
 function createGhostNodes(target: string, draft: ArchitectResponse) {
@@ -253,5 +255,48 @@ export const useGraphStore = create<GraphStore>((set) => ({
       activeNeuronId: id || null,
       activeGhostNodeId: null,
       shellPreset: 'deep_read',
+    }),
+  addNeurogenesisResult: (neuron, synapses) =>
+    set((state) => {
+      const newNode: Node = {
+        id: neuron.id as string,
+        type: 'neuron',
+        position: { x: 0, y: 0 },
+        draggable: false,
+        data: {
+          title: neuron.title,
+          retrievability: neuron.retrievability,
+          stability: neuron.stability,
+          last_review: neuron.last_review,
+          state: neuron.state,
+          is_ghost: false,
+          ghost_depth: null,
+          ghost_target_title: null,
+        },
+      };
+
+      const newEdges: Edge[] = synapses.map((synapse) => ({
+        id: synapse.id as string,
+        source: synapse.source_neuron_id as string,
+        target: synapse.target_neuron_id as string,
+        type: 'synapseEdge',
+        data: { typeLabel: synapse.type, is_ghost_edge: false },
+        style:
+          synapse.type === 'PREREQUISITE'
+            ? { stroke: 'rgba(255,255,255,0.15)', strokeWidth: 1 }
+            : undefined,
+        markerEnd:
+          synapse.type === 'RELATED'
+            ? undefined
+            : {
+                type: MarkerType.ArrowClosed,
+                color: synapse.type === 'PREREQUISITE' ? '#22d3ee' : '#f59e0b',
+              },
+      }));
+
+      return {
+        nodes: [...state.nodes, newNode],
+        edges: [...state.edges, ...newEdges],
+      };
     }),
 }));
