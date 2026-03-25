@@ -156,7 +156,11 @@ Plans:
   3. Clicking any trace shows the conversation session ID and authenticated user ID in the span metadata — enabling per-user cost analysis and filtering
   4. The RAG context injected into a prompt (retrieved neurons, vector results) is visible as span metadata in the trace — confirming exactly what the model received
   5. The `instrumentation.ts` file initializes `LangfuseSpanProcessor` with `immediateExport: true` so traces are not silently dropped on Vercel serverless termination
-**Plans**: TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 22-01-PLAN.md — OTel infrastructure: install packages, create instrumentation.ts + tracing.ts helper (OBS-05, OBS-02)
+- [ ] 22-02-PLAN.md — Instrument all 8 AI call sites with experimental_telemetry + RAG observe (OBS-01, OBS-02, OBS-03, OBS-04)
 
 ### Phase 23: Pure Conversationalist
 **Goal**: The `/api/chat` endpoint is a pure Socratic text streamer with zero tool-calling capability — and all existing sessions rehydrate correctly after the tool-call messages are migrated away
@@ -222,7 +226,7 @@ Plans:
 | 19. Enterprise Prompt Engineering | v2.0 | 1/2 | Complete | 2026-03-24 |
 | 20. Editor Reliability | v2.0 | 1/1 | Complete | 2026-03-24 |
 | 21. Graph Performance & Bloom UI | v2.0 | 2/2 | Complete | 2026-03-24 |
-| 22. Observability Foundation | v2.1 | 0/? | Not started | - |
+| 22. Observability Foundation | v2.1 | 0/2 | In Progress | - |
 | 23. Pure Conversationalist | v2.1 | 0/? | Not started | - |
 | 24. Silent Observer | v2.1 | 0/? | Not started | - |
 | 25. Decoupled Architect Pipeline | v2.1 | 0/? | Not started | - |
