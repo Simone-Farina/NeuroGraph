@@ -8,10 +8,10 @@
 // Override at runtime by setting the corresponding env var in .env.local.
 
 export const AI_AGENTS = {
-  conversationalist: { env: 'AI_MODEL_CHAT',         default: 'openai:gpt-4o' },
-  bloomEvaluator:    { env: 'AI_MODEL_EVALUATOR',    default: 'google:gemini-2.5-flash' },
-  synthesizer:       { env: 'AI_MODEL_SYNTHESIZER',  default: 'openai:gpt-4o-mini' },
-  inquisitor:        { env: 'AI_MODEL_INQUISITOR',   default: 'openrouter:anthropic/claude-3.5-sonnet' },
+  conversationalist: { env: 'AI_MODEL_CHAT',         default: 'openrouter:anthropic/claude-sonnet-4.5' },
+  bloomEvaluator:    { env: 'AI_MODEL_EVALUATOR',    default: 'openrouter:google/gemini-2.5-flash-lite' },
+  synthesizer:       { env: 'AI_MODEL_SYNTHESIZER',  default: 'openrouter:google/gemini-2.5-flash' },
+  inquisitor:        { env: 'AI_MODEL_INQUISITOR',   default: 'openrouter:anthropic/claude-sonnet-4.6' },
 } as const;
 
 export type AgentRole = keyof typeof AI_AGENTS;
