@@ -39,7 +39,7 @@ export async function inferPrerequisites(
     return { prerequisites: [], suggested_next: null };
   }
 
-  const model = getModelForRole('neurogenesis_heavy');
+  const model = getModelForRole('inquisitor');
 
   const candidateList = candidateNeurons
     .map((n, i) => `${i + 1}. [${n.id}] "${n.title}" — ${n.definition}`)

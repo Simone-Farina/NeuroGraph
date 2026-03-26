@@ -72,7 +72,7 @@ User request: Help me improve or understand this selected passage.`;
         : content;
     }
 
-    const model = getModelForRole('synthesis_fast');
+    const model = getModelForRole('synthesizer');
 
     const result = streamText({
       model,

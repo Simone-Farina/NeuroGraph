@@ -54,7 +54,7 @@ export async function POST(
     const userPrompt = `## Documento attuale\n\n${currentContent || '*(vuoto)*'}\n\n## Nuova Informazione\n\n${newText}`;
 
     const { text } = await generateText({
-      model: getModelForRole('synthesis_fast'),
+      model: getModelForRole('synthesizer'),
       system: SYSTEM_PROMPT,
       prompt: userPrompt,
       experimental_telemetry: buildTelemetry('synthesize', {

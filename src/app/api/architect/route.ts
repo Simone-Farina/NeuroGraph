@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const model = getModelForRole('neurogenesis_heavy');
+    const model = getModelForRole('inquisitor');
     const target = parsed.data.target;
 
     const { object } = await generateObject({
