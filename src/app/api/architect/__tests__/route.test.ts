@@ -92,7 +92,7 @@ describe('/api/architect', () => {
         synapses: [],
       },
     });
-    expect(mockGetModelForRole).toHaveBeenCalledWith('neurogenesis_heavy');
+    expect(mockGetModelForRole).toHaveBeenCalledWith('inquisitor');
     expect(mockGenerateObject).toHaveBeenCalledWith(
       expect.objectContaining({
         model: 'mock-model',

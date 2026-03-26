@@ -38,7 +38,7 @@ export async function synthesize(
   messages: { role: string; content: string }[],
   userId?: string,
 ): Promise<SynthesizerOutput> {
-  const model = getModelForRole('evaluator');
+  const model = getModelForRole('bloomEvaluator');
 
   // Take only the last 20 messages to keep prompt size bounded
   const recentMessages = messages.slice(-20);

@@ -184,7 +184,7 @@ export async function POST(request: NextRequest) {
 
     const systemPrompt = `${CHAT_SYSTEM_PROMPT}${ragContext}\n\n## Reference Catalog\nThe following concepts already exist in the user's knowledge base. Reference them when relevant to connect new ideas to established understanding.\n${ragCatalog}`;
 
-    const model = getModelForRole('chat');
+    const model = getModelForRole('conversationalist');
 
     const modelMessages = await convertToModelMessages(trimmedMessages);
 

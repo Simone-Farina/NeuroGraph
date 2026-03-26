@@ -59,7 +59,7 @@ export async function generateCrystallizeSeed(input: GenerateCrystallizeSeedInpu
   const notesBlock = input.notes?.trim() ? `Queue notes:\n${input.notes.trim()}\n\n` : '';
 
   const { text } = await generateText({
-    model: getModelForRole('synthesis_fast'),
+    model: getModelForRole('synthesizer'),
     system: SYSTEM_PROMPT,
     prompt: `Source title: ${input.sourceTitle}
 Source: ${sourceDescriptor}

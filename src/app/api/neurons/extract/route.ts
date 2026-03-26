@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
 
     const { title, content } = parsed.data;
 
-    const model = getModelForRole('synthesis_fast');
+    const model = getModelForRole('synthesizer');
 
     const { object } = await generateObject({
       model,

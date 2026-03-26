@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
         ? 'No user messages to evaluate.'
         : `Evaluate the cognitive depth of these user messages:\n\n${last3.map((m, i) => `User message ${i + 1}: "${m.content}"`).join('\n')}`;
 
-    const model = getModelForRole('evaluator');
+    const model = getModelForRole('bloomEvaluator');
 
     const { text } = await generateText({
       model,

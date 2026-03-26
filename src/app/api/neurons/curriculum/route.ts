@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     const existingTitles = (existingNeurons ?? []).map((n) => n.title);
 
     // Generate the curriculum path via AI
-    const model = getModelForRole('neurogenesis_heavy');
+    const model = getModelForRole('inquisitor');
 
     const { object } = await generateObject({
       model,
