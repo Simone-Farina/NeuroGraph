@@ -66,30 +66,55 @@ export function GenerateNeuronButton() {
 
   const isDisabled = !isReady || isGenerating || !currentConversationId;
 
+  // Bloom level color mapping for the status badge
+  const bloomColor = (() => {
+    if (!bloomLevel) return 'text-white/20';
+    switch (bloomLevel) {
+      case 'Remember': return 'text-sky-400/60';
+      case 'Understand': return 'text-teal-400/60';
+      case 'Apply': return 'text-emerald-400/60';
+      case 'Analyze': return 'text-amber-400/80';
+      case 'Evaluate': return 'text-orange-400/80';
+      case 'Create': return 'text-yellow-300/90';
+      default: return 'text-white/30';
+    }
+  })();
+
   return (
     <div className="flex flex-col items-start gap-1">
-      <button
-        type="button"
-        onClick={handleClick}
-        disabled={isDisabled}
-        className={[
-          'text-[11px] font-medium uppercase tracking-wider text-white/90',
-          'bg-white/[0.06] border px-4 py-2 rounded-none',
-          'transition-all duration-300 ease-out',
-          isReady && !isGenerating
-            ? 'opacity-100 scale-100 cursor-pointer'
-            : 'opacity-40 scale-[0.98] pointer-events-none',
-          isGenerating
-            ? 'border-white/30 animate-pulse'
-            : isBloomPending && !isReady
-              ? 'border-white/20 animate-pulse'
-              : 'border-white/10',
-        ]
-          .filter(Boolean)
-          .join(' ')}
-      >
-        {isGenerating ? 'Generating...' : 'Generate Neuron'}
-      </button>
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={handleClick}
+          disabled={isDisabled}
+          className={[
+            'text-[11px] font-medium uppercase tracking-wider text-white/90',
+            'bg-white/[0.06] border px-4 py-2 rounded-none',
+            'transition-all duration-300 ease-out',
+            isReady && !isGenerating
+              ? 'opacity-100 scale-100 cursor-pointer'
+              : 'opacity-40 scale-[0.98] pointer-events-none',
+            isGenerating
+              ? 'border-white/30 animate-pulse'
+              : isBloomPending && !isReady
+                ? 'border-white/20 animate-pulse'
+                : 'border-white/10',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+        >
+          {isGenerating ? 'Generating...' : 'Generate Neuron'}
+        </button>
+
+        {/* Bloom status indicator — shows current evaluator state */}
+        <span className={`text-[10px] font-mono tracking-wide transition-colors duration-300 ${bloomColor}`}>
+          {isBloomPending
+            ? 'evaluating...'
+            : bloomLevel
+              ? `${bloomLevel} (${Math.round(bloomConfidence * 100)}%)`
+              : 'no eval'}
+        </span>
+      </div>
 
       {feedback !== null && (
         <span

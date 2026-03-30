@@ -100,6 +100,23 @@ export async function POST(request: NextRequest) {
 
     const { messages, conversationId } = parsed.data;
 
+    // Debug cheat codes: if the last user message starts with /bloom:<Level>,
+    // short-circuit and return that level with 0.99 confidence.
+    // Only active when NODE_ENV !== 'production'.
+    if (process.env.NODE_ENV !== 'production') {
+      const userMessages = messages.filter((m) => m.role === 'user');
+      const lastUserMsg = userMessages[userMessages.length - 1]?.content ?? '';
+      const cheatMatch = lastUserMsg.match(/^\/bloom:(Remember|Understand|Apply|Analyze|Evaluate|Create)$/i);
+      if (cheatMatch) {
+        const level = cheatMatch[1].charAt(0).toUpperCase() + cheatMatch[1].slice(1).toLowerCase();
+        return NextResponse.json({
+          bloom_level: level,
+          confidence: 0.99,
+          reasoning: `[DEBUG CHEAT CODE] Forced to ${level} via /bloom: prefix`,
+        });
+      }
+    }
+
     // Extract the last 3 user messages for Bloom classification
     const userMessages = messages.filter((m) => m.role === 'user');
     const last3 = userMessages.slice(-3);
