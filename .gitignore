@@ -9,6 +9,9 @@ out/
 .env.local
 .env.*.local
 
+# Personal developer notes (not shared)
+MANUAL.md
+
 # Test artifacts
 playwright-report/
 test-results/
