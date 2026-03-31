@@ -14,9 +14,17 @@ const openrouter = createOpenAI({
 
 export type ModelRole = 'chat' | 'synthesis_fast' | 'neurogenesis_heavy' | 'evaluator';
 
+/** Human-readable labels for error messages. */
+const ROLE_LABEL: Record<ModelRole, string> = {
+  chat:               'Chat (Conversationalist)',
+  synthesis_fast:     'Synthesizer',
+  neurogenesis_heavy: 'Inquisitor / Architect',
+  evaluator:          'Bloom Evaluator',
+};
+
 /**
- * Maps each role to its environment variable name(s).
- * First entry is the canonical name, second is a legacy alias.
+ * Environment variable names per role (checked in order, first found wins).
+ * Canonical name first, legacy alias second.
  */
 const ROLE_ENV: Record<ModelRole, string[]> = {
   chat:               ['AI_MODEL_CHAT'],
@@ -25,24 +33,19 @@ const ROLE_ENV: Record<ModelRole, string[]> = {
   evaluator:          ['AI_MODEL_EVALUATOR'],
 };
 
-/** Safe defaults used when no env var is set. */
-const ROLE_DEFAULT: Record<ModelRole, string> = {
-  chat:               'openai:gpt-4o',
-  synthesis_fast:     'openai:gpt-4o-mini',
-  neurogenesis_heavy: 'openai:gpt-4o',
-  evaluator:          'openai:gpt-4o-mini',
-};
-
 // ─── Core resolver ────────────────────────────────────────────────────────────
+
+const SUPPORTED_PROVIDERS = ['openai', 'anthropic', 'google', 'openrouter'] as const;
 
 function resolveFromString(raw: string, role: ModelRole) {
   const sep = raw.indexOf(':');
 
   if (sep <= 0 || sep === raw.length - 1) {
-    console.warn(
-      `[providers] Malformed model string "${raw}" for role "${role}" — falling back to gpt-4o-mini`
+    throw new Error(
+      `[providers] Malformed model string "${raw}" for role "${ROLE_LABEL[role]}". ` +
+      `Expected format: "provider:model-name" (e.g. "openrouter:anthropic/claude-sonnet-4.5"). ` +
+      `Supported providers: ${SUPPORTED_PROVIDERS.join(', ')}`
     );
-    return openai('gpt-4o-mini');
   }
 
   const provider = raw.slice(0, sep).toLowerCase();
@@ -58,10 +61,10 @@ function resolveFromString(raw: string, role: ModelRole) {
     case 'openrouter':
       return openrouter(modelName);
     default:
-      console.warn(
-        `[providers] Unknown provider "${provider}" in "${raw}" for role "${role}" — falling back to gpt-4o-mini`
+      throw new Error(
+        `[providers] Unknown provider "${provider}" in "${raw}" for role "${ROLE_LABEL[role]}". ` +
+        `Supported providers: ${SUPPORTED_PROVIDERS.join(', ')}`
       );
-      return openai('gpt-4o-mini');
   }
 }
 
@@ -70,13 +73,20 @@ function resolveFromString(raw: string, role: ModelRole) {
 /**
  * Returns the language model configured for the given role.
  *
- * Resolution order:
- *   1. If AI_PROVIDER=mock → returns the shared mock model (test/CI mode)
- *   2. Reads env vars in priority order (e.g. AI_MODEL_SYNTHESIZER, then AI_MODEL_SYNTHESIS_FAST)
- *   3. Falls back to ROLE_DEFAULT if no var is set
+ * Resolution:
+ *   1. AI_PROVIDER=mock → mock model (test/CI)
+ *   2. Reads env var(s) for the role (first found wins)
+ *   3. Throws if no env var is set — no silent fallbacks
  *
- * Supported provider prefixes: openai, anthropic, google, openrouter
- * OpenRouter format: "openrouter:anthropic/claude-sonnet-4.5"
+ * Required env vars (set all four in .env.local or Vercel):
+ *   AI_MODEL_CHAT         — Socratic conversationalist (streaming)
+ *   AI_MODEL_SYNTHESIZER  — conversation → neuron extraction
+ *   AI_MODEL_INQUISITOR   — prerequisite inference + Architect
+ *   AI_MODEL_EVALUATOR    — Bloom cognitive depth classification
+ *
+ * Format: "provider:model-name"
+ * Example: "openrouter:anthropic/claude-sonnet-4.5"
+ * Supported providers: openai, anthropic, google, openrouter
  */
 export function getModelForRole(role: ModelRole) {
   if (process.env.AI_PROVIDER === 'mock') {
@@ -84,7 +94,16 @@ export function getModelForRole(role: ModelRole) {
   }
 
   const envKeys = ROLE_ENV[role];
-  const raw = envKeys.map((key) => process.env[key]).find(Boolean) || ROLE_DEFAULT[role];
+  const raw = envKeys.map((key) => process.env[key]).find(Boolean);
+
+  if (!raw) {
+    throw new Error(
+      `[providers] No model configured for role "${ROLE_LABEL[role]}". ` +
+      `Set ${envKeys[0]} in your .env.local or Vercel environment variables. ` +
+      `Example: ${envKeys[0]}=openrouter:anthropic/claude-sonnet-4.5`
+    );
+  }
+
   return resolveFromString(raw, role);
 }
 
