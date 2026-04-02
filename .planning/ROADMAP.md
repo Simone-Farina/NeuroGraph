@@ -229,11 +229,12 @@ Plans:
   2. The Conversationalist responds with 1-2 paragraphs on at least half of turns, never defaulting to a rigid 3-paragraph structure
   3. The Phase 21 client-side Bloom keyword heuristic is absent from the codebase — only the async `/api/bloom-evaluate` LLM path remains
   4. The Bloom depth meter in the chat UI still updates correctly after the heuristic removal, driven solely by Zustand bloomLevel state set by the LLM evaluator
-**Plans**: TBD
+**Plans:** 2 plans
 **UI hint**: yes
 
 Plans:
-- [ ] TBD
+- [ ] 26-01-PLAN.md — Sentinel scroll with stick-to-bottom and jump button (CHAT-01)
+- [ ] 26-02-PLAN.md — Prompt length calibration, paragraph eval assertion, Bloom verification + worktree cleanup (CHAT-02, BLOOM-01)
 
 ### Phase 27: Neurogenesis UX & Operational Polish
 **Goal**: Neurogenesis is triggered by an in-chat contextual suggestion that appears when depth is reached (not a static button), all static UI copy is free of internal platform jargon, and no extraneous API calls fire during active chat sessions
@@ -282,7 +283,7 @@ Plans:
 | 23. Pure Conversationalist | v2.1 | 2/2 | Complete | 2026-03-25 |
 | 24. Silent Observer | v2.1 | 2/2 | Complete | 2026-03-25 |
 | 25. Decoupled Architect Pipeline | v2.1 | 2/2 | Complete | 2026-03-25 |
-| 26. Chat Quality & Bloom Unification | v2.2 | 0/? | Not started | - |
+| 26. Chat Quality & Bloom Unification | v2.2 | 0/2 | Not started | - |
 | 27. Neurogenesis UX & Operational Polish | v2.2 | 0/? | Not started | - |
 
 ---
