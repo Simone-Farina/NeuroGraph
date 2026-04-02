@@ -1,5 +1,6 @@
 'use client';
 
+import type { RefObject } from 'react';
 import type { UIMessage } from 'ai';
 import ReactMarkdown from 'react-markdown';
 import rehypeHighlight from 'rehype-highlight';
@@ -8,6 +9,7 @@ import remarkGfm from 'remark-gfm';
 type MessageListProps = {
   messages: UIMessage[];
   isLoading?: boolean;
+  sentinelRef?: RefObject<HTMLDivElement | null>;
 };
 
 function ThinkingIndicator() {
@@ -25,7 +27,7 @@ function ThinkingIndicator() {
   );
 }
 
-export function MessageList({ messages, isLoading }: MessageListProps) {
+export function MessageList({ messages, isLoading, sentinelRef }: MessageListProps) {
   if (!messages.length) {
     return (
       <div className="flex h-full flex-col items-center justify-center px-8 text-center">
@@ -107,6 +109,7 @@ export function MessageList({ messages, isLoading }: MessageListProps) {
       })}
 
       {showThinking && <ThinkingIndicator />}
+      <div ref={sentinelRef} aria-hidden="true" />
     </div>
   );
 }

@@ -82,6 +82,7 @@ export function ChatPanel() {
   const [input, setInput] = useState('');
   const [isFetchingTranscript, setIsFetchingTranscript] = useState(false);
   const [isCrystallizing, setIsCrystallizing] = useState(false);
+  const [showJumpButton, setShowJumpButton] = useState(false);
   const [crystallizeNotice, setCrystallizeNotice] = useState<string | null>(null);
   const [activeCrystallizeSession, setActiveCrystallizeSession] =
     useState<ActiveCrystallizeSession>(null);
@@ -92,6 +93,10 @@ export function ChatPanel() {
   const skipNextLoadRef = useRef(false);
   // Debounce ref for bloom evaluator fire-and-forget calls
   const bloomDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  // Sentinel-based scroll refs
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const isAtBottomRef = useRef(true);
+  const scrollDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Keep the ref in sync
   conversationIdRef.current = currentConversationId;
@@ -392,6 +397,7 @@ Let's break it down. Start by asking me one focused question.`;
           <MessageList
             messages={messages}
             isLoading={isLoading}
+            sentinelRef={sentinelRef}
           />
         </div>
 
