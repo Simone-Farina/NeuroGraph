@@ -213,6 +213,9 @@ export function ChatPanel() {
     setIsCrystallizing(false);
     setCrystallizeNotice(null);
     resetBloomEval();
+    // D-06: reset stick-to-bottom state on conversation switch
+    isAtBottomRef.current = true;
+    setShowJumpButton(false);
 
     if (!currentConversationId) {
       setMessages([]);
@@ -227,7 +230,12 @@ export function ChatPanel() {
       return;
     }
 
-    loadMessages(currentConversationId);
+    loadMessages(currentConversationId).then(() => {
+      // D-06: instant scroll to bottom on conversation switch
+      requestAnimationFrame(() => {
+        sentinelRef.current?.scrollIntoView({ behavior: 'instant' });
+      });
+    });
   }, [currentConversationId, loadMessages, resetBloomEval, setMessages]);
 
   // Extract conversation ID from the first response (if new chat)
@@ -270,11 +278,36 @@ Let's break it down. Start by asking me one focused question.`;
     status,
   ]);
 
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  const scrollToBottom = useCallback((instant = false) => {
+    if (!isAtBottomRef.current) return;
+    if (scrollDebounceRef.current) clearTimeout(scrollDebounceRef.current);
+    if (instant) {
+      sentinelRef.current?.scrollIntoView({ behavior: 'instant' });
+      return;
     }
-  }, [messages]);
+    scrollDebounceRef.current = setTimeout(() => {
+      sentinelRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 16); // 16ms debounce — within D-05's 15-20ms window
+  }, []);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, scrollToBottom]);
+
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+    isAtBottomRef.current = atBottom;
+    setShowJumpButton(!atBottom);
+  }, []);
+
+  // Cleanup scroll debounce on unmount
+  useEffect(() => {
+    return () => {
+      if (scrollDebounceRef.current) clearTimeout(scrollDebounceRef.current);
+    };
+  }, []);
 
   const handleSend = useCallback(async () => {
     const text = input.trim();
@@ -393,13 +426,29 @@ Let's break it down. Start by asking me one focused question.`;
           </div>
         ) : null}
 
-        <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto scroll-smooth">
+        <div ref={scrollRef} onScroll={handleScroll} className="min-h-0 flex-1 overflow-y-auto">
           <MessageList
             messages={messages}
             isLoading={isLoading}
             sentinelRef={sentinelRef}
           />
         </div>
+
+        {showJumpButton && (
+          <button
+            type="button"
+            onClick={() => {
+              isAtBottomRef.current = true;
+              setShowJumpButton(false);
+              sentinelRef.current?.scrollIntoView({ behavior: 'instant' });
+            }}
+            className="absolute bottom-24 right-6 text-[11px] font-medium uppercase tracking-wider
+                       text-white/50 bg-white/[0.05] border border-white/10 px-3 py-1.5
+                       transition-opacity duration-300 opacity-100 hover:opacity-80 z-10"
+          >
+            Jump to latest
+          </button>
+        )}
 
         {isManualPasteActive && currentConversationId ? (
           <CrystallizePasteComposer
