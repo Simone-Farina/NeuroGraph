@@ -8,6 +8,18 @@ NeuroGraph 2.0 is a MicroSaaS platform for Active Generative Mastery. It is a co
 
 The system enforces "Active Extraction" and rigorous retention over passive reading; users only create nodes when they reach a "Deep Insight," and the AI acts as a bouncer to prevent hallucinated or disconnected knowledge graphs.
 
+## Current Milestone: v2.2 QA Refinement III
+
+**Goal:** Fix 6 bugs and regressions found during v2.1 manual QA testing — no new features.
+
+**Target fixes:**
+- Restore in-chat neurogenesis experience (replace static button with contextual suggestion)
+- Fix chat streaming jank (smooth auto-scroll during AI response)
+- Remove "crystallize" jargon from graph empty state
+- Calibrate AI response length (shorter, sharper turns)
+- Eliminate excessive API polling during chat sessions
+- Unify Bloom classification systems (remove old heuristic, keep LLM evaluator)
+
 ## Current State
 
 **Shipped:** v2.1 Core Flow Stability, Multi-Agent Architecture & Observability (2026-03-25)
@@ -55,6 +67,13 @@ The system enforces "Active Extraction" and rigorous retention over passive read
 - ✓ Bloom evaluator eval suite (6 golden cases) + conversationalist eval rebuild (4 cases) — v2.1
 
 ### Active
+
+- [ ] Restore in-chat neurogenesis experience (contextual suggestion vs static button)
+- [ ] Fix chat streaming auto-scroll jank
+- [ ] Remove platform jargon from static UI copy
+- [ ] Calibrate Conversationalist response length
+- [ ] Eliminate excessive API polling during chat
+- [ ] Unify Bloom classification (remove Phase 21 heuristic)
 
 ### Deferred (from previous milestones)
 
@@ -119,4 +138,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-25 after v2.1 milestone complete*
+*Last updated: 2026-04-03 after v2.2 milestone start*
