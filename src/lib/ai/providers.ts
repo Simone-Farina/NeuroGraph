@@ -60,7 +60,7 @@ function resolveFromString(raw: string, role: ModelRole) {
     case 'openai':
       return openai(modelName);
     case 'openrouter':
-      return openrouter(modelName);
+      return openrouter.chat(modelName);
     default:
       throw new Error(
         `[providers] Unknown provider "${provider}" in "${raw}" for role "${ROLE_LABEL[role]}". ` +
