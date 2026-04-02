@@ -13,7 +13,7 @@ Requirements for QA Refinement III. Bug fixes and regressions found during v2.1 
 
 ### Chat Quality
 
-- [ ] **CHAT-01**: Chat streaming auto-scrolls smoothly without scrollbar jank or UI blocking
+- [x] **CHAT-01**: Chat streaming auto-scrolls smoothly without scrollbar jank or UI blocking
 - [ ] **CHAT-02**: Conversationalist sometimes responds with 1-2 paragraphs instead of always 3 — sharper, more varied turns
 
 ### UI Consistency
@@ -56,7 +56,7 @@ Deferred to future milestones.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CHAT-01 | Phase 26 | Pending |
+| CHAT-01 | Phase 26 | Complete |
 | CHAT-02 | Phase 26 | Pending |
 | BLOOM-01 | Phase 26 | Pending |
 | NGEN-01 | Phase 27 | Pending |
