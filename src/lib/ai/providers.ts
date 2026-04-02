@@ -8,6 +8,7 @@ import { mockModel, mockEmbeddingModel } from '@/lib/ai/mock-provider';
 const openrouter = createOpenAI({
   baseURL: 'https://openrouter.ai/api/v1',
   apiKey: process.env.OPENROUTER_API_KEY ?? '',
+  compatibility: 'compatible', // Use /chat/completions, not /responses (OpenRouter doesn't support the Responses API)
 });
 
 // ─── Role registry ────────────────────────────────────────────────────────────
