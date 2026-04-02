@@ -240,3 +240,25 @@ Plans:
 | 23. Pure Conversationalist | v2.1 | 2/2 | Complete    | 2026-03-25 |
 | 24. Silent Observer | v2.1 | 2/2 | Complete    | 2026-03-25 |
 | 25. Decoupled Architect Pipeline | v2.1 | 2/2 | Complete    | 2026-03-25 |
+
+---
+
+## Backlog
+
+### Phase 999.1: Bloom Keyword Highlighting Animation (BACKLOG)
+
+**Goal:** After user sends a message, animate/highlight the keywords the Bloom evaluator considered for classification. Provides real-time cognitive depth feedback to the user. Requires UI/UX ideation phase.
+**Requirements:** TBD
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (promote with /gsd:review-backlog when ready)
+
+### Phase 999.2: Evaluate Pretext (chenglou) Integration (BACKLOG)
+
+**Goal:** Evaluate https://github.com/chenglou/pretext for potential integration into NeuroGraph's conversational AI layer. Research feasibility and benefits.
+**Requirements:** TBD
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (promote with /gsd:review-backlog when ready)
