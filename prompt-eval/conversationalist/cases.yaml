@@ -139,3 +139,34 @@
           return { pass: false, score: 0, reason: 'Agent opened with direct correction — should ask about reasoning first' };
         }
         return { pass: true, score: 1, reason: 'Agent probed reasoning with a question without leading with direct correction' };
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Case 5: Response length — shorter default (Phase 26 CHAT-02 regression guard)
+# ──────────────────────────────────────────────────────────────────────────────
+
+- description: "response-length — model should produce 1-2 paragraphs on a short conversational turn, not always 3+"
+  vars:
+    messages:
+      - role: user
+        content: "What is a closure in JavaScript?"
+      - role: assistant
+        content: "Good question to dig into. When you hear the word 'closure,' what picture comes to mind — is it about functions, variables, or something else entirely?"
+    final_user_message: "So it's like the function remembers its outer scope?"
+  assert:
+    - type: javascript
+      value: |
+        // Paragraph count check: count \n\n-separated blocks (standard paragraph delimiter).
+        // FAIL if response has 3+ paragraphs — this short conversational turn should elicit
+        // a 1-2 paragraph reply. The provider caps output at 600 tokens, which comfortably
+        // fits even a 3-paragraph response, so truncation is not a concern here.
+        const result = JSON.parse(output);
+        const text = result.response.trim();
+        const paragraphs = text.split(/\n\n+/).filter(p => p.trim().length > 0);
+        if (paragraphs.length >= 3) {
+          return {
+            pass: false,
+            score: 0,
+            reason: `Response has ${paragraphs.length} paragraphs — expected 1-2 for a short conversational turn`
+          };
+        }
+        return { pass: true, score: 1, reason: `Response has ${paragraphs.length} paragraph(s) — matches shorter-default expectation` };
