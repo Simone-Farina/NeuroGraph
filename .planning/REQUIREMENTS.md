@@ -56,18 +56,18 @@ Deferred to future milestones.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| NGEN-01 | — | Pending |
-| CHAT-01 | — | Pending |
-| CHAT-02 | — | Pending |
-| UI-01 | — | Pending |
-| PERF-01 | — | Pending |
-| BLOOM-01 | — | Pending |
+| CHAT-01 | Phase 26 | Pending |
+| CHAT-02 | Phase 26 | Pending |
+| BLOOM-01 | Phase 26 | Pending |
+| NGEN-01 | Phase 27 | Pending |
+| UI-01 | Phase 27 | Pending |
+| PERF-01 | Phase 27 | Pending |
 
 **Coverage:**
 - v2.2 requirements: 6 total
-- Mapped to phases: 0
-- Unmapped: 6
+- Mapped to phases: 6
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-03*
-*Last updated: 2026-04-03 after initial definition*
+*Last updated: 2026-04-03 after roadmap creation — all 6 requirements mapped*

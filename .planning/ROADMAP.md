@@ -8,7 +8,8 @@
 - [x] **v1.3 QA Refinement** — Phases 14-15 (shipped 2026-03-24) [archived](milestones/v1.3-ROADMAP.md)
 - [x] **v1.4 QA Refinement II** — Phases 16-17 (shipped 2026-03-24) [archived](milestones/v1.4-ROADMAP.md)
 - [x] **v2.0 MVP Core Stability** — Phases 18-21 (shipped 2026-03-24) [archived](milestones/v2.0-ROADMAP.md)
-- [ ] **v2.1 Core Flow Stability, Multi-Agent Architecture & Observability** — Phases 22-25 (in progress)
+- [x] **v2.1 Core Flow Stability, Multi-Agent Architecture & Observability** — Phases 22-25 (shipped 2026-03-25) [archived](milestones/v2.1-ROADMAP.md)
+- [ ] **v2.2 QA Refinement III** — Phases 26-27 (in progress)
 
 ---
 
@@ -72,16 +73,25 @@
 
 </details>
 
----
-
-### v2.1 Core Flow Stability, Multi-Agent Architecture & Observability (Phases 22-25) — In Progress
-
-**Milestone Goal:** Deconstruct the monolithic chat endpoint into an Asynchronous Multi-Agent Architecture with deep LLM observability — fix the core loop, no new product features.
+<details>
+<summary>v2.1 Core Flow Stability, Multi-Agent Architecture & Observability (Phases 22-25) — SHIPPED 2026-03-25</summary>
 
 - [x] **Phase 22: Observability Foundation** - Langfuse Cloud integration, OpenTelemetry spans across all AI call sites, session/user trace correlation (completed 2026-03-25)
 - [x] **Phase 23: Pure Conversationalist** - Strip tool-calling from /api/chat, rewrite as natural Socratic tutor, DB migration for persisted tool-call messages, conversationalist eval suite (completed 2026-03-25)
 - [x] **Phase 24: Silent Observer** - Async Bloom Evaluator (Gemini Flash), Zustand bloomLevel state, Generate Neuron button illumination, Bloom eval suite (completed 2026-03-25)
 - [x] **Phase 25: Decoupled Architect Pipeline** - POST /api/architect 3-step pipeline (Synthesizer → RAG → Inquisitor), independent Langfuse spans per step, non-blocking React Flow update (completed 2026-03-25)
+
+</details>
+
+---
+
+### v2.2 QA Refinement III (Phases 26-27) — In Progress
+
+**Milestone Goal:** Fix 6 regressions found during v2.1 manual QA — no new features. Chat UX, Bloom system unification, UI copy, and polling are all addressed.
+
+- [ ] **Phase 26: Chat Quality & Bloom Unification** - Smooth streaming auto-scroll, shorter AI turns, single Bloom classification source (LLM evaluator only)
+- [ ] **Phase 27: Neurogenesis UX & Operational Polish** - In-chat contextual neurogenesis suggestion, jargon-free UI copy, polling elimination
+**UI hint**: yes
 
 ---
 
@@ -210,6 +220,38 @@ Plans:
 
 ---
 
+### Phase 26: Chat Quality & Bloom Unification
+**Goal**: Chat streaming is jank-free, AI turns are sharp and varied in length, and a single authoritative Bloom classification source (Phase 24 LLM evaluator) replaces the now-redundant Phase 21 client-side heuristic
+**Depends on**: Phase 25
+**Requirements**: CHAT-01, CHAT-02, BLOOM-01
+**Success Criteria** (what must be TRUE):
+  1. The chat message list auto-scrolls smoothly to the latest token during AI streaming — the scrollbar does not jump, stutter, or block user interaction
+  2. The Conversationalist responds with 1-2 paragraphs on at least half of turns, never defaulting to a rigid 3-paragraph structure
+  3. The Phase 21 client-side Bloom keyword heuristic is absent from the codebase — only the async `/api/bloom-evaluate` LLM path remains
+  4. The Bloom depth meter in the chat UI still updates correctly after the heuristic removal, driven solely by Zustand bloomLevel state set by the LLM evaluator
+**Plans**: TBD
+**UI hint**: yes
+
+Plans:
+- [ ] TBD
+
+### Phase 27: Neurogenesis UX & Operational Polish
+**Goal**: Neurogenesis is triggered by an in-chat contextual suggestion that appears when depth is reached (not a static button), all static UI copy is free of internal platform jargon, and no extraneous API calls fire during active chat sessions
+**Depends on**: Phase 26
+**Requirements**: NGEN-01, UI-01, PERF-01
+**Success Criteria** (what must be TRUE):
+  1. When the Bloom evaluator detects Analyze+ depth, a contextual suggestion appears inline in the chat stream — not as a standalone button in a fixed UI location
+  2. A new user reading the graph empty state sees plain, welcoming language — the words "crystallize," "neuron," and "Bloom" do not appear in any static copy
+  3. Network DevTools during an active chat session show zero calls to `/api/queue`, `/api/review`, or `/api/neurons` — polling is absent while chat is focused
+  4. The contextual neurogenesis suggestion triggers the same POST /api/neurogenesis pipeline as the previous button — no regression in the actual Neurogenesis flow
+**Plans**: TBD
+**UI hint**: yes
+
+Plans:
+- [ ] TBD
+
+---
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -236,10 +278,12 @@ Plans:
 | 19. Enterprise Prompt Engineering | v2.0 | 1/2 | Complete | 2026-03-24 |
 | 20. Editor Reliability | v2.0 | 1/1 | Complete | 2026-03-24 |
 | 21. Graph Performance & Bloom UI | v2.0 | 2/2 | Complete | 2026-03-24 |
-| 22. Observability Foundation | v2.1 | 1/2 | Complete    | 2026-03-25 |
-| 23. Pure Conversationalist | v2.1 | 2/2 | Complete    | 2026-03-25 |
-| 24. Silent Observer | v2.1 | 2/2 | Complete    | 2026-03-25 |
-| 25. Decoupled Architect Pipeline | v2.1 | 2/2 | Complete    | 2026-03-25 |
+| 22. Observability Foundation | v2.1 | 1/2 | Complete | 2026-03-25 |
+| 23. Pure Conversationalist | v2.1 | 2/2 | Complete | 2026-03-25 |
+| 24. Silent Observer | v2.1 | 2/2 | Complete | 2026-03-25 |
+| 25. Decoupled Architect Pipeline | v2.1 | 2/2 | Complete | 2026-03-25 |
+| 26. Chat Quality & Bloom Unification | v2.2 | 0/? | Not started | - |
+| 27. Neurogenesis UX & Operational Polish | v2.2 | 0/? | Not started | - |
 
 ---
 
