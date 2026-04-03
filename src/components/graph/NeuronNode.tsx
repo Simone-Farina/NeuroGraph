@@ -255,7 +255,7 @@ export const NeuronNode = React.memo(function NeuronNode({ id, data, selected }:
 
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-1.5">
-          <p className="text-[10px] font-medium uppercase tracking-wider text-white/30">Neuron</p>
+          <p className="text-[10px] font-medium uppercase tracking-wider text-white/30">Concept</p>
           {isUnstableFoundation && (
             <span className="text-[10px] text-[#c4785a] font-bold" title="Crumbling foundation">⚠</span>
           )}

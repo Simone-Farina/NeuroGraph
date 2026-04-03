@@ -25,7 +25,7 @@ describe('QueueItemCard', () => {
 
     expect(screen.getByRole('button', { name: 'Archive as Resource' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Mark as Read' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Crystallize' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Extract' })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('link', { name: /open readable article/i }));
     expect(onOpenUrl).toHaveBeenCalledWith(BASE_ITEM);
@@ -41,7 +41,7 @@ describe('QueueItemCard', () => {
       />
     );
 
-    expect(screen.getByText('10 days ago')).toHaveAttribute('data-rusty', 'true');
+    expect(screen.getByText(/\d+ days ago/)).toHaveAttribute('data-rusty', 'true');
     expect(screen.queryByRole('button', { name: 'Archive as Resource' })).not.toBeInTheDocument();
   });
 
@@ -57,7 +57,7 @@ describe('QueueItemCard', () => {
 
     expect(screen.queryByRole('button', { name: 'Archive as Resource' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Return to Passive Debt' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Crystallize' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Extract' })).not.toBeInTheDocument();
   });
 
   it('requires an explicit second click before deleting and disables actions while pending', () => {

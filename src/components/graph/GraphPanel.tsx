@@ -174,6 +174,7 @@ function GraphCanvas() {
   const openNeuronDetail = useGraphStore((state) => state.openNeuronDetail);
   const openGhostBriefing = useGraphStore((state) => state.openGhostBriefing);
   const activeNeuronId = useGraphStore((state) => state.activeNeuronId);
+  const leftPanelMode = useGraphStore((state) => state.leftPanelMode);
   const { fitView, setCenter, getNode } = useReactFlow();
   const router = useRouter();
   const pathname = usePathname();
@@ -205,6 +206,8 @@ function GraphCanvas() {
   }, [combinedNodes, combinedEdges, onLayout]);
 
   useEffect(() => {
+    if (leftPanelMode === 'chat') return;
+
     const updateRetrievability = () => {
       const now = new Date();
       const currentNodes = useGraphStore.getState().nodes;
@@ -233,9 +236,11 @@ function GraphCanvas() {
     const interval = setInterval(updateRetrievability, 60 * 1000);
 
     return () => clearInterval(interval);
-  }, [updateNode]);
+  }, [updateNode, leftPanelMode]);
 
   useEffect(() => {
+    if (leftPanelMode === 'chat') return;
+
     const loadGraph = async () => {
       const response = await fetch('/api/neurons', { cache: 'no-store' });
       if (!response.ok) return;
@@ -318,7 +323,7 @@ function GraphCanvas() {
     const interval = setInterval(loadGraph, 5 * 60 * 1000);
 
     return () => clearInterval(interval);
-  }, [setGraph]);
+  }, [setGraph, leftPanelMode]);
 
   useEffect(() => {
     if (activeNeuronId) {
@@ -410,11 +415,10 @@ function GraphCanvas() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.02)_0%,_transparent_70%)]" />
         <div className="relative z-10 max-w-md">
           <h3 className="mb-4 font-serif text-3xl font-normal tracking-tight text-white/40">
-            An empty space.
+            Your knowledge graph is empty.
           </h3>
           <p className="font-serif text-[17px] leading-relaxed text-white/30">
-            Set a target or crystallize ideas in chat. This graph will hold your durable neurons,
-            while the Horizon lets you inspect a draft path before anything becomes permanent.
+            Set a learning target or start a conversation to explore ideas. Each deep insight you save here becomes a permanent node in your knowledge network.
           </p>
         </div>
         <div className={`absolute left-5 top-5 z-20 ${isTargetOpen ? 'w-[min(420px,calc(100%-2.5rem))]' : ''}`}>

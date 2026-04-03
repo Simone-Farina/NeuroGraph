@@ -47,7 +47,7 @@ export function HorizonBriefingPanel() {
             </span>
           ) : null}
           <span className="rounded-full border border-white/8 bg-white/[0.02] px-3 py-1">
-            Bloom {data.bloomLevel}
+            Depth: {data.bloomLevel}
           </span>
         </div>
       </div>
@@ -76,7 +76,7 @@ export function HorizonBriefingPanel() {
             onClick={beginHorizonLearning}
             className="rounded-full border border-white/16 bg-white/[0.06] px-4 py-2.5 text-sm font-medium text-white/84 transition hover:border-white/24 hover:bg-white/[0.09]"
           >
-            Start Learning (Crystallize)
+            Start Learning
           </button>
           <button
             type="button"

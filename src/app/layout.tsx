@@ -19,7 +19,7 @@ const newsreader = Newsreader({
 
 export const metadata: Metadata = {
   title: 'NeuroGraph',
-  description: 'Organic Discovery → Neuron Knowledge → Rigorous Retention',
+  description: 'Organic Discovery → Deep Knowledge → Rigorous Retention',
 };
 
 export default function RootLayout({
