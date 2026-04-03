@@ -101,3 +101,12 @@ None — all data is wired from live Zustand bloom state and the real /api/neuro
 ---
 *Phase: 27-neurogenesis-ux-operational-polish*
 *Completed: 2026-04-03*
+
+## Self-Check: PASSED
+
+- FOUND: src/components/chat/ChatNeurogenesisPrompt.tsx
+- FOUND: src/components/chat/ChatPanel.tsx (modified)
+- CONFIRMED DELETED: src/components/chat/GenerateNeuronButton.tsx
+- FOUND: .planning/phases/27-neurogenesis-ux-operational-polish/27-01-SUMMARY.md
+- FOUND commit ae7980e (Task 1: create ChatNeurogenesisPrompt)
+- FOUND commit 191ca9e (Task 2: wire + delete GenerateNeuronButton)
