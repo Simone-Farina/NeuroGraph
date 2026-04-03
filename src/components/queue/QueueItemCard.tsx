@@ -163,7 +163,7 @@ export function QueueItemCard({
             onClick={() => onCrystallize?.(item)}
             className={actionClassName(isPending)}
           >
-            Crystallize
+            Extract
           </button>
         ) : null}
 

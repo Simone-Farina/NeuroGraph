@@ -76,7 +76,7 @@ export function NeurogenesisSuggestion({
 
   // Stato di successo: generazione avvenuta (locale o proveniente dal DB)
   if (isSuccess || state === 'output-available') {
-    const title = input?.title ?? 'Neuron';
+    const title = input?.title ?? 'Concept';
     return (
       <div className="neurogenesis-suggestion my-8 pl-5 border-l-2 border-emerald-700/30 animate-in fade-in duration-500">
         <p className="text-[10px] font-medium uppercase tracking-widest text-emerald-500/50 mb-2">
@@ -97,13 +97,13 @@ export function NeurogenesisSuggestion({
       <div className="neurogenesis-suggestion my-8 pl-5 border-l border-amber-500/20">
         <p className="text-[14px] font-serif italic text-white/40 flex items-center gap-3">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500/40 animate-pulse" />
-          {input?.title ? `Crystallizing "${input.title}"...` : 'Synthesizing new neuron...'}
+          {input?.title ? `Extracting "${input.title}"...` : 'Extracting insight...'}
         </p>
       </div>
     );
   }
 
-  const title = input.title ?? 'New Neuron';
+  const title = input.title ?? 'New Concept';
   const definition = input.definition ?? '';
   const coreInsight = input.core_insight ?? '';
   const bloomLevel = input.bloom_level ?? 'Understand';
@@ -112,7 +112,7 @@ export function NeurogenesisSuggestion({
   return (
     <div className="neurogenesis-suggestion my-10 pl-5 border-l-2 border-white/10 group transition-colors hover:border-white/20">
       <div className="mb-5 flex items-center justify-between">
-        <h3 className="text-[10px] font-medium uppercase tracking-widest text-amber-500/60">Candidate Neuron</h3>
+        <h3 className="text-[10px] font-medium uppercase tracking-widest text-amber-500/60">Candidate Concept</h3>
         <span className="text-[10px] font-medium uppercase tracking-widest text-white/30">
           {bloomLevel}
         </span>

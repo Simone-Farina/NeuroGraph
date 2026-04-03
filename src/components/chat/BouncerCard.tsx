@@ -55,7 +55,7 @@ export function BouncerCard({ matchId, matchTitle, insightText, onAppendSuccess,
         <div className="flex-1 space-y-3">
           <h3 className="text-xs font-medium uppercase tracking-wider text-white/40">Bouncer Rejection</h3>
           <p className="text-[15px] font-serif leading-relaxed text-white/90">
-            This insight closely matches your existing Neuron: <span className="font-semibold text-white/100 underline decoration-white/20 underline-offset-4">&quot;{matchTitle}&quot;</span>.
+            This insight closely matches your existing concept: <span className="font-semibold text-white/100 underline decoration-white/20 underline-offset-4">&quot;{matchTitle}&quot;</span>.
           </p>
           
           <div className="pt-6 flex flex-wrap gap-3">
