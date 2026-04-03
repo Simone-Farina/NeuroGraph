@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { QueueBootstrap } from '../QueueBootstrap';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { useQueueStore } from '@/stores/queueStore';
+import { useGraphStore } from '@/stores/graphStore';
 
 vi.mock('@/lib/auth/AuthContext', () => ({
   useAuth: vi.fn(),
@@ -13,6 +14,10 @@ vi.mock('@/stores/queueStore', () => ({
   useQueueStore: vi.fn(),
 }));
 
+vi.mock('@/stores/graphStore', () => ({
+  useGraphStore: vi.fn(),
+}));
+
 function mockQueueStore(overrides: Record<string, unknown> = {}) {
   const store = {
     refreshQueue: vi.fn(),
@@ -20,6 +25,18 @@ function mockQueueStore(overrides: Record<string, unknown> = {}) {
   };
 
   vi.mocked(useQueueStore).mockImplementation(((selector: any) =>
+    selector ? selector(store) : store) as any);
+
+  return store;
+}
+
+function mockGraphStore(overrides: Record<string, unknown> = {}) {
+  const store = {
+    leftPanelMode: 'graph',
+    ...overrides,
+  };
+
+  vi.mocked(useGraphStore).mockImplementation(((selector: any) =>
     selector ? selector(store) : store) as any);
 
   return store;
@@ -45,6 +62,7 @@ describe('QueueBootstrap', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     setVisibilityState('visible');
+    mockGraphStore(); // default: leftPanelMode = 'graph'
   });
 
   it('refreshes once when an authenticated user becomes available', () => {
@@ -99,5 +117,39 @@ describe('QueueBootstrap', () => {
     });
 
     expect(store.refreshQueue).toHaveBeenCalledTimes(3);
+  });
+
+  it('does not refresh on focus when leftPanelMode is chat', () => {
+    const store = mockQueueStore();
+    mockAuthState();
+    mockGraphStore({ leftPanelMode: 'chat' });
+
+    render(<QueueBootstrap />);
+
+    // Initial mount refresh still fires (first useEffect has no panel guard)
+    const initialCalls = store.refreshQueue.mock.calls.length;
+
+    act(() => {
+      window.dispatchEvent(new Event('focus'));
+    });
+
+    expect(store.refreshQueue).toHaveBeenCalledTimes(initialCalls);
+  });
+
+  it('does not refresh on visibility change when leftPanelMode is chat', () => {
+    const store = mockQueueStore();
+    mockAuthState();
+    mockGraphStore({ leftPanelMode: 'chat' });
+
+    render(<QueueBootstrap />);
+
+    const initialCalls = store.refreshQueue.mock.calls.length;
+
+    setVisibilityState('visible');
+    act(() => {
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+
+    expect(store.refreshQueue).toHaveBeenCalledTimes(initialCalls);
   });
 });
