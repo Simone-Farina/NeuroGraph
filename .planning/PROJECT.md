@@ -8,28 +8,14 @@ NeuroGraph 2.0 is a MicroSaaS platform for Active Generative Mastery. It is a co
 
 The system enforces "Active Extraction" and rigorous retention over passive reading; users only create nodes when they reach a "Deep Insight," and the AI acts as a bouncer to prevent hallucinated or disconnected knowledge graphs.
 
-## Current Milestone: v2.2 QA Refinement III
-
-**Goal:** Fix 6 bugs and regressions found during v2.1 manual QA testing — no new features.
-
-**Target fixes:**
-- Restore in-chat neurogenesis experience (replace static button with contextual suggestion)
-- Fix chat streaming jank (smooth auto-scroll during AI response)
-- Remove "crystallize" jargon from graph empty state
-- Calibrate AI response length (shorter, sharper turns)
-- Eliminate excessive API polling during chat sessions
-- Unify Bloom classification systems (remove old heuristic, keep LLM evaluator)
-
 ## Current State
 
-**Shipped:** v2.1 Core Flow Stability, Multi-Agent Architecture & Observability (2026-03-25)
-**Codebase:** ~19,800 LOC TypeScript/TSX
+**Shipped:** v2.2 QA Refinement III (2026-04-03)
+**Codebase:** ~20,100 LOC TypeScript/TSX
 **Tech Stack:** Next.js 14, React Flow, Zustand, Vercel AI SDK v6, Supabase (pgvector), TipTap v3, ts-fsrs, promptfoo, Langfuse
 **Eval Suite:** 4 agent suites (bouncer 13 + architect 8 + conversationalist 5 + bloom-evaluator 6 = 32 golden cases)
 **Architecture:** Multi-agent (Pure Conversationalist + Silent Observer + Decoupled Architect Pipeline) with full Langfuse OTel tracing
-**Phase 26 complete:** Chat scroll jank fixed (sentinel pattern), response length calibrated to 1-2 paragraphs, Bloom unification verified
-**Phase 999.1 complete:** Bloom keyword highlighting — key phrases in user messages get transient colored background tints based on Bloom taxonomy level, with 700ms fade transitions
-**Phase 27 complete:** In-chat contextual neurogenesis suggestion replaces static button, jargon-free UI copy, polling elimination during chat
+**Milestones shipped:** v1.0 through v2.2 (27 phases, 8 milestones)
 
 ## Requirements
 
@@ -67,19 +53,19 @@ The system enforces "Active Extraction" and rigorous retention over passive read
 - ✓ Async Bloom Evaluator (background Gemini Flash cognitive state detection) — v2.1
 - ✓ Decoupled Architect Endpoint (user-triggered POST /api/neurogenesis pipeline) — v2.1
 - ✓ Generate Neuron button with Danish Computation illumination at Analyze+ — v2.1
+- ✓ Bloom evaluator eval suite (6 golden cases) + conversationalist eval rebuild (4 cases) — v2.1
+
+<!-- Shipped in v2.2 QA Refinement III -->
+- ✓ Smooth chat streaming auto-scroll (sentinel pattern) — v2.2
+- ✓ Varied 1-2 paragraph Conversationalist responses — v2.2
+- ✓ Single Bloom classification source (LLM evaluator only, heuristic removed) — v2.2
 - ✓ In-chat contextual neurogenesis suggestion (replaces static button) — v2.2
 - ✓ Jargon-free static UI copy (plain language throughout) — v2.2
 - ✓ Polling elimination during active chat sessions — v2.2
-- ✓ Bloom evaluator eval suite (6 golden cases) + conversationalist eval rebuild (4 cases) — v2.1
 
 ### Active
 
-- [x] Restore in-chat neurogenesis experience (contextual suggestion vs static button) — Phase 27
-- [x] Fix chat streaming auto-scroll jank — Phase 26
-- [x] Remove platform jargon from static UI copy — Phase 27
-- [x] Calibrate Conversationalist response length — Phase 26
-- [x] Eliminate excessive API polling during chat — Phase 27
-- [x] Unify Bloom classification (remove Phase 21 heuristic) — Phase 26
+(No active milestone — run `/gsd:new-milestone` to start next)
 
 ### Deferred (from previous milestones)
 
@@ -125,6 +111,9 @@ The system enforces "Active Extraction" and rigorous retention over passive read
 | Observability First | Langfuse tracing before any AI logic changes | ✓ Good |
 | Separate POST /api/neurogenesis | User-triggered pipeline vs AI-triggered tool call | ✓ Good |
 | Chain-of-thought Bloom evaluation | Force LLM reasoning before classification | ✓ Good |
+| Sentinel scroll pattern | Replace CSS scroll-smooth with scrollIntoView + debounce | ✓ Good |
+| Contextual neurogenesis suggestion | In-chat card vs static button — appears only at depth | ✓ Good |
+| leftPanelMode polling guard | Suppress API calls during chat via Zustand selector | ✓ Good |
 
 ## Evolution
 
@@ -144,4 +133,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-03 after Phase 27 completion*
+*Last updated: 2026-04-03 after v2.2 milestone*

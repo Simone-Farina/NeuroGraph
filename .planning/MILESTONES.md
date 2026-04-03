@@ -1,5 +1,23 @@
 # Milestones
 
+## v2.2 QA Refinement III (Shipped: 2026-04-03)
+
+**Phases completed:** 2 phases, 4 plans, 10 tasks
+**Requirements:** 6/6 satisfied (CHAT-01, CHAT-02, BLOOM-01, NGEN-01, UI-01, PERF-01)
+
+**Delivered:** Fixed 6 regressions from v2.1 manual QA — chat streaming jank, response length rigidity, dual Bloom classification sources, static neurogenesis button, platform jargon in UI copy, and excessive API polling during chat.
+
+**Key accomplishments:**
+
+- Sentinel scroll with 16ms debounce replaces broken scroll-smooth CSS queuing, adds stick-to-bottom detection and Jump to latest button
+- CHAT_SYSTEM_PROMPT rewritten to default 1-2 paragraphs with varied openings and flexible closings; paragraph-count promptfoo regression guard added
+- Phase 21 client-side Bloom heuristic formally verified absent; sole source is POST /api/bloom-evaluate LLM evaluator
+- Replaced static GenerateNeuronButton with inline ChatNeurogenesisPrompt card that appears in the chat flow when Bloom depth reaches Analyze+ (>=0.75 confidence) and auto-dismisses on message send
+- Polling guards on GraphPanel and QueueBootstrap eliminate /api/neurons and /api/queue calls during active chat sessions
+- Jargon purge across 8 files — zero user-facing "crystallize"/"neuron"/"Bloom" remaining in static copy
+
+---
+
 ## v2.1 Core Flow Stability, Multi-Agent Architecture & Observability (Shipped: 2026-03-25)
 
 **Phases completed:** 8 phases, 15 plans, 31 tasks

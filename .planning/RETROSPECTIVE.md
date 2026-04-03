@@ -9,6 +9,41 @@ Living document capturing lessons, trends, and execution metrics across mileston
 | v1.0      | 4      | 5     | 0     | GPT-4o, Cl. | < 5  |
 | v1.1      | 5      | 15    | 24    | Claude       | ~2   |
 | v1.2      | 5      | 13    | 35    | Claude       | ~1   |
+| v2.2      | 2      | 4     | 10    | Claude       | 1    |
+
+---
+
+## Milestone: v2.2 — QA Refinement III
+
+**Shipped:** 2026-04-03
+**Phases:** 2 | **Plans:** 4
+
+### What Was Built
+- Sentinel scroll pattern replacing broken CSS scroll-smooth queuing for jank-free AI streaming
+- CHAT_SYSTEM_PROMPT rewritten for varied 1-2 paragraph responses with flexible closings
+- Phase 21 client-side Bloom heuristic fully removed; sole source is POST /api/bloom-evaluate LLM evaluator
+- ChatNeurogenesisPrompt inline card replaces static GenerateNeuronButton
+- Polling guards on GraphPanel and QueueBootstrap suppress unnecessary API calls during chat
+- Jargon purge across 8 files — zero user-facing "crystallize"/"neuron"/"Bloom" remaining
+
+### What Worked
+- **Audit-driven gap closure**: First audit found 3 gaps (jargon miss, stale test, mock value); all resolved in one commit before re-audit passed
+- **leftPanelMode guard pattern**: Using Zustand selector in useEffect dep arrays ensures clean React cleanup + re-run on panel switch — intervals resume immediately
+- **Sentinel scroll**: Replacing scrollTop manipulation with scrollIntoView + debounce eliminated the scroll-smooth animation queue buildup entirely
+- **Rapid turnaround**: Entire milestone (6 regressions) completed in a single day
+
+### What Was Inefficient
+- **SUMMARY frontmatter gaps**: 27-02-SUMMARY.md missing `requirements_completed` for PERF-01 and UI-01 — caught only by 3-source cross-reference during audit
+- **First audit missed a jargon instance**: MessageList.tsx empty-state "crystallize" was not in the initial purge table — needed a second pass
+
+### Patterns Established
+- **3-source requirement verification**: VERIFICATION.md + SUMMARY frontmatter + REQUIREMENTS.md traceability cross-reference catches documentation gaps
+- **Contextual UI triggers**: In-chat suggestion cards (ChatNeurogenesisPrompt) over static buttons — appears only when relevant state is met
+- **Panel-mode polling guards**: leftPanelMode === 'chat' early-return in useEffect intervals is the standard pattern for suppressing background work
+
+### Key Lessons
+- Jargon purges need codebase-wide grep verification, not just the 8 files in the plan — empty states in unrelated components can slip through
+- The sentinel scroll pattern (scrollIntoView on a zero-height div) is simpler and more reliable than scrollTop manipulation for streaming content
 
 ---
 
