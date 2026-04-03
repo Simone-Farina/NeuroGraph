@@ -129,7 +129,7 @@ describe('QueuePageClient', () => {
     } as any);
 
     render(<QueuePageClient />);
-    fireEvent.click(screen.getAllByRole('button', { name: 'Crystallize' })[0]);
+    fireEvent.click(screen.getAllByRole('button', { name: 'Extract' })[0]);
 
     expect(beginCrystallize).toHaveBeenCalledWith('item-1');
     expect(mockPush).toHaveBeenCalledWith('/app');

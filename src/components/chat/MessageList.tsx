@@ -103,7 +103,7 @@ export function MessageList({ messages, isLoading, sentinelRef }: MessageListPro
           A blank page.
         </h2>
         <p className="max-w-md font-serif text-[17px] leading-relaxed text-white/30">
-          Start a conversation. NeuroGraph will help you crystallize scattered ideas into durable, structured knowledge.
+          Start a conversation. Explore ideas, build understanding, and grow your knowledge graph.
         </p>
       </div>
     );

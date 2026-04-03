@@ -32,7 +32,7 @@ function mockQueueStore(overrides: Record<string, unknown> = {}) {
 
 function mockGraphStore(overrides: Record<string, unknown> = {}) {
   const store = {
-    leftPanelMode: 'graph',
+    leftPanelMode: 'neuron',
     ...overrides,
   };
 
