@@ -446,7 +446,7 @@ Let's break it down. Start by asking me one focused question.`;
             }}
             className="absolute bottom-24 right-6 text-[11px] font-medium uppercase tracking-wider
                        text-white/50 bg-white/[0.05] border border-white/10 px-3 py-1.5
-                       transition-opacity duration-300 opacity-100 hover:opacity-80 z-10"
+                       transition-opacity duration-300 opacity-100 hover:opacity-80 z-20"
           >
             Jump to latest
           </button>
