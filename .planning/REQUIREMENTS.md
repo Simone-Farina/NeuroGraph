@@ -9,7 +9,7 @@ Requirements for QA Refinement III. Bug fixes and regressions found during v2.1 
 
 ### Neurogenesis UX
 
-- [ ] **NGEN-01**: Neurogenesis trigger appears as an in-chat contextual suggestion (not a static button) when Bloom evaluator detects Analyze+ depth
+- [x] **NGEN-01**: Neurogenesis trigger appears as an in-chat contextual suggestion (not a static button) when Bloom evaluator detects Analyze+ depth
 
 ### Chat Quality
 
@@ -18,11 +18,11 @@ Requirements for QA Refinement III. Bug fixes and regressions found during v2.1 
 
 ### UI Consistency
 
-- [ ] **UI-01**: Graph empty state and all static UI copy contain zero platform jargon ("crystallize", "neuron", "Bloom")
+- [x] **UI-01**: Graph empty state and all static UI copy contain zero platform jargon ("crystallize", "neuron", "Bloom")
 
 ### Performance
 
-- [ ] **PERF-01**: No unnecessary API calls (/api/queue, /api/review, /api/neurons) fire during active chat sessions
+- [x] **PERF-01**: No unnecessary API calls (/api/queue, /api/review, /api/neurons) fire during active chat sessions
 
 ### Bloom System
 
@@ -59,9 +59,9 @@ Deferred to future milestones.
 | CHAT-01 | Phase 26 | Complete |
 | CHAT-02 | Phase 26 | Complete |
 | BLOOM-01 | Phase 26 | Complete |
-| NGEN-01 | Phase 27 | Pending |
-| UI-01 | Phase 27 | Pending |
-| PERF-01 | Phase 27 | Pending |
+| NGEN-01 | Phase 27 | Complete |
+| UI-01 | Phase 27 | Complete |
+| PERF-01 | Phase 27 | Complete |
 
 **Coverage:**
 - v2.2 requirements: 6 total

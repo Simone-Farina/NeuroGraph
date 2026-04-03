@@ -307,7 +307,7 @@ Plans:
 
 **Goal:** Evaluate https://github.com/chenglou/pretext for potential integration into NeuroGraph. Produce a Go/No-Go recommendation based on library capabilities vs. current stack needs.
 **Requirements:** TBD (backlog evaluation)
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
-- [ ] 999.2-01-PLAN.md — Write No-Go evaluation report (Pretext is a text measurement library with zero NeuroGraph overlap)
+- [x] 999.2-01-PLAN.md — Write No-Go evaluation report (Pretext is a text measurement library with zero NeuroGraph overlap)
