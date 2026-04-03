@@ -245,11 +245,12 @@ Plans:
   2. A new user reading the graph empty state sees plain, welcoming language — the words "crystallize," "neuron," and "Bloom" do not appear in any static copy
   3. Network DevTools during an active chat session show zero calls to `/api/queue`, `/api/review`, or `/api/neurons` — polling is absent while chat is focused
   4. The contextual neurogenesis suggestion triggers the same POST /api/neurogenesis pipeline as the previous button — no regression in the actual Neurogenesis flow
-**Plans**: TBD
+**Plans:** 2 plans
 **UI hint**: yes
 
 Plans:
-- [ ] TBD
+- [ ] 27-01-PLAN.md — Contextual neurogenesis trigger: ChatNeurogenesisPrompt component + ChatPanel wiring (NGEN-01)
+- [ ] 27-02-PLAN.md — Polling guard (GraphPanel + QueueBootstrap) + jargon purge across 8 files + test updates (PERF-01, UI-01)
 
 ---
 
@@ -284,7 +285,7 @@ Plans:
 | 24. Silent Observer | v2.1 | 2/2 | Complete | 2026-03-25 |
 | 25. Decoupled Architect Pipeline | v2.1 | 2/2 | Complete | 2026-03-25 |
 | 26. Chat Quality & Bloom Unification | v2.2 | 2/2 | Complete    | 2026-04-02 |
-| 27. Neurogenesis UX & Operational Polish | v2.2 | 0/? | Not started | - |
+| 27. Neurogenesis UX & Operational Polish | v2.2 | 0/2 | Not started | - |
 
 ---
 
