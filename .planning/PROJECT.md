@@ -29,6 +29,7 @@ The system enforces "Active Extraction" and rigorous retention over passive read
 **Architecture:** Multi-agent (Pure Conversationalist + Silent Observer + Decoupled Architect Pipeline) with full Langfuse OTel tracing
 **Phase 26 complete:** Chat scroll jank fixed (sentinel pattern), response length calibrated to 1-2 paragraphs, Bloom unification verified
 **Phase 999.1 complete:** Bloom keyword highlighting — key phrases in user messages get transient colored background tints based on Bloom taxonomy level, with 700ms fade transitions
+**Phase 27 complete:** In-chat contextual neurogenesis suggestion replaces static button, jargon-free UI copy, polling elimination during chat
 
 ## Requirements
 
@@ -66,16 +67,19 @@ The system enforces "Active Extraction" and rigorous retention over passive read
 - ✓ Async Bloom Evaluator (background Gemini Flash cognitive state detection) — v2.1
 - ✓ Decoupled Architect Endpoint (user-triggered POST /api/neurogenesis pipeline) — v2.1
 - ✓ Generate Neuron button with Danish Computation illumination at Analyze+ — v2.1
+- ✓ In-chat contextual neurogenesis suggestion (replaces static button) — v2.2
+- ✓ Jargon-free static UI copy (plain language throughout) — v2.2
+- ✓ Polling elimination during active chat sessions — v2.2
 - ✓ Bloom evaluator eval suite (6 golden cases) + conversationalist eval rebuild (4 cases) — v2.1
 
 ### Active
 
-- [ ] Restore in-chat neurogenesis experience (contextual suggestion vs static button)
-- [ ] Fix chat streaming auto-scroll jank
-- [ ] Remove platform jargon from static UI copy
-- [ ] Calibrate Conversationalist response length
-- [ ] Eliminate excessive API polling during chat
-- [ ] Unify Bloom classification (remove Phase 21 heuristic)
+- [x] Restore in-chat neurogenesis experience (contextual suggestion vs static button) — Phase 27
+- [x] Fix chat streaming auto-scroll jank — Phase 26
+- [x] Remove platform jargon from static UI copy — Phase 27
+- [x] Calibrate Conversationalist response length — Phase 26
+- [x] Eliminate excessive API polling during chat — Phase 27
+- [x] Unify Bloom classification (remove Phase 21 heuristic) — Phase 26
 
 ### Deferred (from previous milestones)
 
@@ -140,4 +144,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-03 after Phase 999.1 completion*
+*Last updated: 2026-04-03 after Phase 27 completion*
