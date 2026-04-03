@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: QA Refinement III
 status: Ready to plan
-stopped_at: Phase 999.2 context gathered
-last_updated: "2026-04-03T14:55:10.460Z"
+stopped_at: Completed 27-02-PLAN.md
+last_updated: "2026-04-03T16:17:19.164Z"
 progress:
-  total_phases: 12
-  completed_phases: 10
-  total_plans: 19
-  completed_plans: 19
+  total_phases: 13
+  completed_phases: 11
+  total_plans: 21
+  completed_plans: 21
 ---
 
 # Project State
@@ -23,7 +23,7 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 
 ## Current Position
 
-Phase: 999.2
+Phase: 999.1
 Plan: Not started
 
 ## Performance Metrics
@@ -44,6 +44,8 @@ Plan: Not started
 | Phase 26-chat-quality-bloom-unification P01 | 2min | 2 tasks | 2 files |
 | Phase 26-chat-quality-bloom-unification P02 | 2min | 3 tasks | 2 files |
 | Phase 999.1-bloom-keyword-highlighting-animation P01 | 8min | 2 tasks | 5 files |
+| Phase 27-neurogenesis-ux-operational-polish P01 | 2min | 2 tasks | 3 files |
+| Phase 27-neurogenesis-ux-operational-polish P02 | 12min | 3 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -63,6 +65,12 @@ Plan: Not started
 - [Phase 999.1-bloom-keyword-highlighting-animation]: 999.1-01-key-phrases-verbatim: Prompt instructs LLM to return verbatim substrings from user messages for exact text matching in highlight rendering
 - [Phase 999.1-bloom-keyword-highlighting-animation]: 999.1-01-safelist-opacity: /10 opacity for cool-toned Bloom levels (Remember/Understand/Apply), /15 for warm-toned (Analyze/Evaluate/Create) per UI-SPEC color table
 - [Phase 999.1-bloom-keyword-highlighting-animation]: 999.1-01-safe-defaults: setBloomEval optional params ([], null) preserve backward compatibility with all existing callers
+- [Phase 27-neurogenesis-ux-operational-polish]: 27-01-props-based-card: ChatNeurogenesisPrompt takes conversationId as prop from ChatPanel — keeps component pure and testable
+- [Phase 27-neurogenesis-ux-operational-polish]: 27-01-auto-dismiss-on-send: resetBloomEval() at start of handleSend auto-dismisses suggestion card when user sends next message
+- [Phase 27-neurogenesis-ux-operational-polish]: 27-01-isBloomPending-guard: isNeurogenesisReady includes !isBloomPending to prevent card flash during mid-evaluation state transitions
+- [Phase 27]: 27-02-polling-guard: leftPanelMode in useEffect dep arrays causes React to cleanup+re-run on panel switch — interval resumes immediately on chat→graph transition
+- [Phase 27]: 27-02-jargon-scope: Only user-facing string literals replaced; prop names, variable names, API routes, imports unchanged
+- [Phase 27]: 27-02-test-regex: QueueItemCard date-relative assertion changed to regex — hardcoded '10 days ago' was date-sensitive and broke at today's date
 
 ### Pending Todos
 
@@ -74,6 +82,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-03T14:55:10.457Z
-Stopped at: Phase 999.2 context gathered
-Resume file: .planning/phases/999.2-evaluate-pretext-integration/999.2-CONTEXT.md
+Last session: 2026-04-03T16:13:07.506Z
+Stopped at: Completed 27-02-PLAN.md
+Resume file: None

@@ -90,7 +90,7 @@
 **Milestone Goal:** Fix 6 regressions found during v2.1 manual QA — no new features. Chat UX, Bloom system unification, UI copy, and polling are all addressed.
 
 - [x] **Phase 26: Chat Quality & Bloom Unification** - Smooth streaming auto-scroll, shorter AI turns, single Bloom classification source (LLM evaluator only) (completed 2026-04-02)
-- [ ] **Phase 27: Neurogenesis UX & Operational Polish** - In-chat contextual neurogenesis suggestion, jargon-free UI copy, polling elimination
+- [x] **Phase 27: Neurogenesis UX & Operational Polish** - In-chat contextual neurogenesis suggestion, jargon-free UI copy, polling elimination (completed 2026-04-03)
 **UI hint**: yes
 
 ---
@@ -245,7 +245,7 @@ Plans:
   2. A new user reading the graph empty state sees plain, welcoming language — the words "crystallize," "neuron," and "Bloom" do not appear in any static copy
   3. Network DevTools during an active chat session show zero calls to `/api/queue`, `/api/review`, or `/api/neurons` — polling is absent while chat is focused
   4. The contextual neurogenesis suggestion triggers the same POST /api/neurogenesis pipeline as the previous button — no regression in the actual Neurogenesis flow
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 **UI hint**: yes
 
 Plans:
@@ -285,7 +285,7 @@ Plans:
 | 24. Silent Observer | v2.1 | 2/2 | Complete | 2026-03-25 |
 | 25. Decoupled Architect Pipeline | v2.1 | 2/2 | Complete | 2026-03-25 |
 | 26. Chat Quality & Bloom Unification | v2.2 | 2/2 | Complete    | 2026-04-02 |
-| 27. Neurogenesis UX & Operational Polish | v2.2 | 0/2 | Not started | - |
+| 27. Neurogenesis UX & Operational Polish | v2.2 | 0/2 | Complete    | 2026-04-03 |
 
 ---
 
