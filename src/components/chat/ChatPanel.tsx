@@ -7,7 +7,7 @@ import { DefaultChatTransport, type UIMessage } from 'ai';
 import { ChatInput } from '@/components/chat/ChatInput';
 import { CrystallizeBootstrap } from '@/components/chat/CrystallizeBootstrap';
 import { CrystallizePasteComposer } from '@/components/chat/CrystallizePasteComposer';
-import { GenerateNeuronButton } from '@/components/chat/GenerateNeuronButton';
+import { ChatNeurogenesisPrompt } from '@/components/chat/ChatNeurogenesisPrompt';
 import { MessageList } from '@/components/chat/MessageList';
 import { SelectionToolbar } from '@/components/chat/SelectionToolbar';
 import type { CrystallizeMetadata, StartCrystallizeResponse } from '@/lib/crystallize/types';
@@ -79,6 +79,10 @@ export function ChatPanel() {
   const setBloomEval = useGraphStore((state) => state.setBloomEval);
   const setBloomPending = useGraphStore((state) => state.setBloomPending);
   const resetBloomEval = useGraphStore((state) => state.resetBloomEval);
+  const bloomLevel = useGraphStore((state) => state.bloomLevel);
+  const bloomConfidence = useGraphStore((state) => state.bloomConfidence);
+  const isBloomPending = useGraphStore((state) => state.isBloomPending);
+  const addNeurogenesisResult = useGraphStore((s) => s.addNeurogenesisResult);
   const [input, setInput] = useState('');
   const [isFetchingTranscript, setIsFetchingTranscript] = useState(false);
   const [isCrystallizing, setIsCrystallizing] = useState(false);
@@ -312,6 +316,7 @@ Let's break it down. Start by asking me one focused question.`;
   }, []);
 
   const handleSend = useCallback(async () => {
+    resetBloomEval();
     const text = input.trim();
     if (!text || status !== 'ready' || isFetchingTranscript || isCrystallizing) return;
 
@@ -366,7 +371,7 @@ Let's break it down. Start by asking me one focused question.`;
 
     sendMessage({ text: finalText });
     setInput('');
-  }, [input, status, isFetchingTranscript, isCrystallizing, sendMessage, currentConversationId, setCurrentConversationId]);
+  }, [input, status, isFetchingTranscript, isCrystallizing, sendMessage, currentConversationId, setCurrentConversationId, resetBloomEval]);
 
   const handleCrystallizeSuccess = useCallback(
     async (response: StartCrystallizeResponse) => {
@@ -403,6 +408,13 @@ Let's break it down. Start by asking me one focused question.`;
   const isLoading = status === 'streaming' || status === 'submitted' || isFetchingTranscript || isCrystallizing;
   const isManualPasteActive =
     Boolean(currentConversationId) && activeCrystallizeSession?.status === 'awaiting_manual_paste';
+
+  const ANALYZE_LEVELS = ['Analyze', 'Evaluate', 'Create'];
+  const isNeurogenesisReady =
+    bloomLevel !== null &&
+    ANALYZE_LEVELS.includes(bloomLevel) &&
+    bloomConfidence >= 0.75 &&
+    !isBloomPending;
 
   return (
     <section className="chat-panel flex h-full overflow-hidden border-r border-neural-gray-700 bg-neural-gray-900/30">
@@ -460,7 +472,16 @@ Let's break it down. Start by asking me one focused question.`;
           />
         ) : null}
 
-        <GenerateNeuronButton />
+        {isNeurogenesisReady && currentConversationId && (
+          <ChatNeurogenesisPrompt
+            conversationId={currentConversationId}
+            onSuccess={(neuron, synapses) => {
+              addNeurogenesisResult(neuron, synapses);
+              resetBloomEval();
+            }}
+            onDismiss={resetBloomEval}
+          />
+        )}
         <ChatInput
           value={input}
           onChange={setInput}
