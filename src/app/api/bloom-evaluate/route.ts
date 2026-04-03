@@ -61,8 +61,11 @@ Return a JSON object with exactly these fields:
 {
   "reasoning": "<your step-by-step chain of thought>",
   "bloom_level": "<one of: Remember, Understand, Apply, Analyze, Evaluate, Create>",
-  "confidence": <float between 0.0 and 1.0>
+  "confidence": <float between 0.0 and 1.0>,
+  "key_phrases": ["<short phrase 1>", "<short phrase 2>", ...]
 }
+
+key_phrases: Extract 1-4 short phrases (2-6 words each) directly quoted from the user messages that most clearly demonstrate the classified Bloom level. Return verbatim substrings from the user messages — do not paraphrase or normalize. If no clear phrases exist, return an empty array.
 
 Do not include any text outside the JSON object.`;
 
@@ -93,7 +96,7 @@ export async function POST(request: NextRequest) {
     const parsed = bloomEvalSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { bloom_level: null, confidence: 0, reasoning: 'Invalid request payload' },
+        { bloom_level: null, confidence: 0, reasoning: 'Invalid request payload', key_phrases: [] },
         { status: 200 }
       );
     }
@@ -134,6 +137,7 @@ export async function POST(request: NextRequest) {
     let bloom_level: string | null = null;
     let confidence = 0;
     let reasoning = 'Evaluation failed';
+    let key_phrases: string[] = [];
 
     try {
       const result = JSON.parse(jsonText) as unknown;
@@ -150,17 +154,21 @@ export async function POST(request: NextRequest) {
         bloom_level = (result as { bloom_level: string }).bloom_level;
         confidence = (result as { confidence: number }).confidence;
         reasoning = (result as { reasoning: string }).reasoning;
+        key_phrases = Array.isArray((result as Record<string, unknown>).key_phrases)
+          ? ((result as Record<string, unknown>).key_phrases as unknown[])
+              .filter((p): p is string => typeof p === 'string' && p.trim().length > 0)
+          : [];
       }
     } catch {
       // JSON parse failed — fall through to graceful degradation response
     }
 
-    return NextResponse.json({ bloom_level, confidence, reasoning });
+    return NextResponse.json({ bloom_level, confidence, reasoning, key_phrases });
   } catch {
     // Per CONTEXT.md anti-pattern: "better false positive than blocked user"
     // NEVER return 500 — failures degrade gracefully with bloom_level: null
     return NextResponse.json(
-      { bloom_level: null, confidence: 0, reasoning: 'Evaluation failed' },
+      { bloom_level: null, confidence: 0, reasoning: 'Evaluation failed', key_phrases: [] },
       { status: 200 }
     );
   } finally {
