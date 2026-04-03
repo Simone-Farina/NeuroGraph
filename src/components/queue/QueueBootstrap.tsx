@@ -4,11 +4,13 @@ import { useEffect } from 'react';
 
 import { useAuth } from '@/lib/auth/AuthContext';
 import { useQueueStore } from '@/stores/queueStore';
+import { useGraphStore } from '@/stores/graphStore';
 
 export function QueueBootstrap() {
   const { user, loading } = useAuth();
   const refreshQueue = useQueueStore((state) => state.refreshQueue);
   const userId = user?.id ?? null;
+  const leftPanelMode = useGraphStore((state) => state.leftPanelMode);
 
   useEffect(() => {
     if (loading || !userId) return;
@@ -19,11 +21,12 @@ export function QueueBootstrap() {
     if (loading || !userId) return;
 
     const handleFocus = () => {
+      if (leftPanelMode === 'chat') return;
       void refreshQueue();
     };
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
+      if (document.visibilityState === 'visible' && leftPanelMode !== 'chat') {
         void refreshQueue();
       }
     };
@@ -35,7 +38,7 @@ export function QueueBootstrap() {
       window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [loading, refreshQueue, userId]);
+  }, [loading, refreshQueue, userId, leftPanelMode]);
 
   return null;
 }

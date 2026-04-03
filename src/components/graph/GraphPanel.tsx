@@ -174,6 +174,7 @@ function GraphCanvas() {
   const openNeuronDetail = useGraphStore((state) => state.openNeuronDetail);
   const openGhostBriefing = useGraphStore((state) => state.openGhostBriefing);
   const activeNeuronId = useGraphStore((state) => state.activeNeuronId);
+  const leftPanelMode = useGraphStore((state) => state.leftPanelMode);
   const { fitView, setCenter, getNode } = useReactFlow();
   const router = useRouter();
   const pathname = usePathname();
@@ -205,6 +206,8 @@ function GraphCanvas() {
   }, [combinedNodes, combinedEdges, onLayout]);
 
   useEffect(() => {
+    if (leftPanelMode === 'chat') return;
+
     const updateRetrievability = () => {
       const now = new Date();
       const currentNodes = useGraphStore.getState().nodes;
@@ -233,9 +236,11 @@ function GraphCanvas() {
     const interval = setInterval(updateRetrievability, 60 * 1000);
 
     return () => clearInterval(interval);
-  }, [updateNode]);
+  }, [updateNode, leftPanelMode]);
 
   useEffect(() => {
+    if (leftPanelMode === 'chat') return;
+
     const loadGraph = async () => {
       const response = await fetch('/api/neurons', { cache: 'no-store' });
       if (!response.ok) return;
@@ -318,7 +323,7 @@ function GraphCanvas() {
     const interval = setInterval(loadGraph, 5 * 60 * 1000);
 
     return () => clearInterval(interval);
-  }, [setGraph]);
+  }, [setGraph, leftPanelMode]);
 
   useEffect(() => {
     if (activeNeuronId) {
