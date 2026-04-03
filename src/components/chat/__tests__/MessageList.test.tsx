@@ -36,15 +36,22 @@ describe('renderHighlightedText', () => {
     expect(highlightedSpan?.textContent).toBe('joins become the bottleneck');
   });
 
-  it('returns plain text string when isHighlighted is false', () => {
-    const result = renderHighlightedText(
-      'The tradeoff between SQL and NoSQL',
-      ['tradeoff'],
-      false,
-      'bg-amber-400/15'
+  it('returns spans without highlight class when isHighlighted is false', () => {
+    const { container } = render(
+      <div>{renderHighlightedText(
+        'The tradeoff between SQL and NoSQL',
+        ['tradeoff'],
+        false,
+        'bg-amber-400/15'
+      )}</div>
     );
-    // When not highlighted, returns the raw string (not JSX)
-    expect(result).toBe('The tradeoff between SQL and NoSQL');
+    // Spans are still in the DOM (for CSS transition), but without the highlight class
+    const highlightedSpan = container.querySelector('.bg-amber-400\\/15');
+    expect(highlightedSpan).toBeNull();
+    // The matched phrase is still wrapped in a span
+    const spans = container.querySelectorAll('span');
+    expect(spans.length).toBeGreaterThan(0);
+    expect(container.textContent).toBe('The tradeoff between SQL and NoSQL');
   });
 
   it('returns plain text string when phrases array is empty', () => {

@@ -32,7 +32,7 @@ export function renderHighlightedText(
   isHighlighted: boolean,
   highlightClass: string
 ): React.ReactNode {
-  if (!isHighlighted || phrases.length === 0) return text;
+  if (phrases.length === 0) return text;
 
   // Escape regex metacharacters in each phrase, then build a single capturing-group pattern
   const escaped = phrases.map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
@@ -40,12 +40,13 @@ export function renderHighlightedText(
   const parts = text.split(pattern);
 
   // String.split() with a capturing group places matches at odd indices
+  // Always render spans so CSS transition can animate the fade-out
   return parts.map((part, i) => {
     const isMatch = i % 2 === 1;
     return isMatch ? (
       <span
         key={i}
-        className={`rounded-sm transition-colors duration-300 motion-reduce:transition-none ${highlightClass}`}
+        className={`rounded-sm transition-colors duration-300 motion-reduce:transition-none ${isHighlighted ? highlightClass : ''}`}
       >
         {part}
       </span>
@@ -132,14 +133,14 @@ export function MessageList({ messages, isLoading, sentinelRef }: MessageListPro
                     if (!part.text) return null;
                     // D-07: Only highlight the most recent user message (matched by ID)
                     // D-09: Assistant messages are never highlighted (this block is user-only)
-                    const shouldHighlight = isHighlighted && message.id === latestBloomMessageId;
+                    const isBloomTarget = message.id === latestBloomMessageId && bloomKeyPhrases.length > 0;
                     return (
                       <div
                         key={index}
                         className="inline-block text-[15px] leading-relaxed text-white/50 font-sans transition-all duration-300"
                       >
-                        {shouldHighlight
-                          ? renderHighlightedText(part.text, bloomKeyPhrases, true, highlightClass)
+                        {isBloomTarget
+                          ? renderHighlightedText(part.text, bloomKeyPhrases, isHighlighted, highlightClass)
                           : part.text}
                       </div>
                     );
