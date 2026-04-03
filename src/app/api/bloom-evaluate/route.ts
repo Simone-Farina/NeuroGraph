@@ -116,6 +116,7 @@ export async function POST(request: NextRequest) {
           bloom_level: level,
           confidence: 0.99,
           reasoning: `[DEBUG CHEAT CODE] Forced to ${level} via /bloom: prefix`,
+          key_phrases: ['debug cheat'],
         });
       }
     }
