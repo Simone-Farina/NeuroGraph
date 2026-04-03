@@ -126,11 +126,13 @@ export function ChatPanel() {
         }),
       })
         .then((res) => res.json())
-        .then((result: { bloom_level: string | null; confidence: number }) => {
-          setBloomEval(result.bloom_level, result.confidence);
+        .then((result: { bloom_level: string | null; confidence: number; key_phrases?: string[] }) => {
+          const userMessages = messagesRef.current.filter((m) => m.role === 'user');
+          const latestUserMessageId = userMessages.at(-1)?.id ?? null;
+          setBloomEval(result.bloom_level, result.confidence, result.key_phrases ?? [], latestUserMessageId);
         })
         .catch(() => {
-          setBloomEval(null, 0);
+          setBloomEval(null, 0, [], null);
         });
     }, 500);
   }, [setBloomEval, setBloomPending]);
