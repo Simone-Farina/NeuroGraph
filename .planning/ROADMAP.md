@@ -292,12 +292,15 @@ Plans:
 
 ### Phase 999.1: Bloom Keyword Highlighting Animation (BACKLOG)
 
-**Goal:** After user sends a message, animate/highlight the keywords the Bloom evaluator considered for classification. Provides real-time cognitive depth feedback to the user. Requires UI/UX ideation phase.
-**Requirements:** TBD
-**Plans:** 0 plans
+**Goal:** After the user sends a message and the Bloom evaluator classifies it, transiently highlight the key phrases the evaluator considered with a soft background tint in the Bloom level color. Provides real-time cognitive depth feedback directly in the chat message text.
+**Depends on**: Phase 26
+**Requirements:** TBD (backlog feature)
+**Plans:** 2 plans
+**UI hint**: yes
 
 Plans:
-- [ ] TBD (promote with /gsd:review-backlog when ready)
+- [ ] 999.1-01-PLAN.md — Bloom evaluator key_phrases extraction + Zustand store extension + ChatPanel wiring + Tailwind safelist
+- [ ] 999.1-02-PLAN.md — MessageList keyword highlight rendering + promptfoo eval case updates + visual verification
 
 ### Phase 999.2: Evaluate Pretext (chenglou) Integration (BACKLOG)
 
