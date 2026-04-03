@@ -28,6 +28,7 @@ The system enforces "Active Extraction" and rigorous retention over passive read
 **Eval Suite:** 4 agent suites (bouncer 13 + architect 8 + conversationalist 5 + bloom-evaluator 6 = 32 golden cases)
 **Architecture:** Multi-agent (Pure Conversationalist + Silent Observer + Decoupled Architect Pipeline) with full Langfuse OTel tracing
 **Phase 26 complete:** Chat scroll jank fixed (sentinel pattern), response length calibrated to 1-2 paragraphs, Bloom unification verified
+**Phase 999.1 complete:** Bloom keyword highlighting — key phrases in user messages get transient colored background tints based on Bloom taxonomy level, with 700ms fade transitions
 
 ## Requirements
 
@@ -139,4 +140,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-03 after Phase 26 completion*
+*Last updated: 2026-04-03 after Phase 999.1 completion*
