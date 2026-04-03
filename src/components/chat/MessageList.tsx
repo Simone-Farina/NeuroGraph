@@ -46,7 +46,7 @@ export function renderHighlightedText(
     return isMatch ? (
       <span
         key={i}
-        className={`rounded-sm transition-colors duration-300 motion-reduce:transition-none ${isHighlighted ? highlightClass : ''}`}
+        className={`rounded-sm transition-colors duration-700 motion-reduce:duration-200 ${isHighlighted ? highlightClass : ''}`}
       >
         {part}
       </span>
