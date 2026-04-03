@@ -98,6 +98,15 @@ None — both features are fully wired. The key masking display reads from live 
 - BUG-05 and BUG-08 are closed; horizon controls and API key masking meet production design quality
 - 13 pre-existing test failures remain in the suite — should be addressed in a separate hardening pass (out of scope for this plan)
 
+## Self-Check: PASSED
+
+- SUMMARY.md: FOUND at .planning/phases/15-ui-ux-polish-security/15-02-SUMMARY.md
+- Task 1 commit 59ede2d: FOUND in worktree-agent-ac8a339c branch
+- Task 2 commit ac5748b: FOUND in worktree-agent-ac8a339c branch
+- No rounded-full or border-white/12 classes remain in GraphPanel.tsx horizon controls
+- ng_****... masking string present in AppSidebar.tsx line 342
+- isKeyPrefixVisible state and timer present in AppSidebar.tsx
+
 ---
 *Phase: 15-ui-ux-polish-security*
 *Completed: 2026-03-24*

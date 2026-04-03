@@ -295,11 +295,11 @@ Plans:
 **Goal:** After the user sends a message and the Bloom evaluator classifies it, transiently highlight the key phrases the evaluator considered with a soft background tint in the Bloom level color. Provides real-time cognitive depth feedback directly in the chat message text.
 **Depends on**: Phase 26
 **Requirements:** TBD (backlog feature)
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 **UI hint**: yes
 
 Plans:
-- [ ] 999.1-01-PLAN.md — Bloom evaluator key_phrases extraction + Zustand store extension + ChatPanel wiring + Tailwind safelist
+- [x] 999.1-01-PLAN.md — Bloom evaluator key_phrases extraction + Zustand store extension + ChatPanel wiring + Tailwind safelist
 - [ ] 999.1-02-PLAN.md — MessageList keyword highlight rendering + promptfoo eval case updates + visual verification
 
 ### Phase 999.2: Evaluate Pretext (chenglou) Integration (BACKLOG)

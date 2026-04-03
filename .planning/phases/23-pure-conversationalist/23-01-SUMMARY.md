@@ -111,3 +111,14 @@ None - no external service configuration required. The migration runs via standa
 ---
 *Phase: 23-pure-conversationalist*
 *Completed: 2026-03-25*
+
+## Self-Check: PASSED
+
+- FOUND: prompt-eval/conversationalist/cases.yaml (141 lines, 4 cases)
+- FOUND: prompt-eval/conversationalist/promptfooconfig.yaml
+- FOUND: prompt-eval/shared/neurograph-conversationalist-provider.mjs
+- FOUND: supabase/migrations/20260325000000_truncate_chat_tables.sql
+- FOUND: .planning/phases/23-pure-conversationalist/23-01-SUMMARY.md
+- COMMIT 3a3a0f1: feat(23-01): rebuild conversationalist eval suite
+- COMMIT 18610b3: chore(23-01): add TRUNCATE migration
+- COMMIT 262f4f7: docs(23-01): complete plan metadata

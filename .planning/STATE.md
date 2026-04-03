@@ -1,102 +1,65 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.1
-milestone_name: Core Flow Stability, Multi-Agent Architecture & Observability
-status: v2.1 milestone complete
+milestone: v2.2
+milestone_name: QA Refinement III
+status: Ready to execute
 stopped_at: Completed 999.1-01-PLAN.md
-last_updated: "2026-04-03T02:47:00.000Z"
+last_updated: "2026-04-03T00:48:32.223Z"
 progress:
-  total_phases: 8
-  completed_phases: 8
-  total_plans: 15
-  completed_plans: 15
+  total_phases: 12
+  completed_phases: 9
+  total_plans: 19
+  completed_plans: 18
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-25)
+See: .planning/PROJECT.md (updated 2026-04-03)
 
 **Core value**: The system enforces "Active Extraction" and rigorous retention over passive reading; users only create nodes when they reach a "Deep Insight," and the AI acts as a bouncer to prevent hallucinated or disconnected knowledge graphs.
-**Current focus**: Phase 22 — Observability Foundation
+**Current focus**: Phase 26 — Chat Quality & Bloom Unification
 
 ## Current Position
 
-Phase: 25
-Plan: Not started
+Phase: 999.1 (bloom-keyword-highlighting-animation) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
-**Velocity (v2.0 reference):**
+**Velocity:**
 
-- Total plans completed: 7 (v2.0)
-- Average duration: ~7 min/plan
-- Total execution time: ~50 min
+- Total plans completed: 0 (this milestone)
+- Average duration: —
+- Total execution time: —
 
-**By Phase (v2.0):**
+**By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| Phase 18 AI Reliability | 2 | ~18m | ~9m |
-| Phase 19 Enterprise Prompts | 2 | ~17m | ~8m |
-| Phase 20 Editor Reliability | 1 | ~7m | 7m |
-| Phase 21 Graph + Bloom UI | 2 | ~10m | ~5m |
-
-**Recent Trend:**
-
-- Last 5 plans: 8m, 10m, 15m, 2m, 7m
-- Trend: Stable
+| - | - | - | - |
 
 *Updated after each plan completion*
-| Phase 22-observability-foundation P01 | 3min | 2 tasks | 4 files |
-| Phase 22-observability-foundation P02 | 3min | 2 tasks | 9 files |
-| Phase 23-pure-conversationalist P01 | 3min | 2 tasks | 4 files |
-| Phase 23-pure-conversationalist P02 | 4min | 2 tasks | 4 files |
-| Phase 24-silent-observer P01 | 3min | 2 tasks | 4 files |
-| Phase 24-silent-observer P02 | 15min | 2 tasks | 4 files |
-| Phase 25-decoupled-architect-pipeline P01 | 3min | 2 tasks | 2 files |
-| Phase 25-decoupled-architect-pipeline P02 | 12min | 2 tasks | 2 files |
+| Phase 26-chat-quality-bloom-unification P01 | 2min | 2 tasks | 2 files |
+| Phase 26-chat-quality-bloom-unification P02 | 2min | 3 tasks | 2 files |
 | Phase 999.1-bloom-keyword-highlighting-animation P01 | 8min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
 ### Decisions
 
-Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
-
-- [v2.1 Roadmap]: Observability first — traces must be live before any agent refactoring so every code change in Phases 23-25 is debuggable from day one
-- [v2.1 Roadmap]: DB migration (AGENT-06) ships in Phase 23 with the Pure Conversationalist — tool-call message cleanup is a hard prerequisite for Phase 24 session rehydration
-- [v2.1 Roadmap]: Eval suites (EVAL-01, EVAL-02) ship before production code — evals gate each agent's implementation, not the other way around
-- [v2.1 Roadmap]: Architect pipeline is last (Phase 25) — highest latency change, depends on bloomLevel output from Phase 24, lands after interactive path is proven stable
-- [v2.1 Constraints]: Use `immediateExport: true` in LangfuseSpanProcessor — `after()` requires Next.js 15+; project is on Next.js 14.2.35
-- [v2.1 Constraints]: Audit all routes for `runtime = 'edge'` before instrumentation — Edge runtime drops Langfuse Node.js SDK traces silently
-- [v2.1 Constraints]: Bloom evaluator is a UI hint layer only (0.75 confidence threshold) — Bouncer remains authoritative gate for Bloom classification
-- [Phase 22-observability-foundation]: flushAt: 1 replaces non-existent immediateExport option in LangfuseSpanProcessor v5.0.1
-- [Phase 22-observability-foundation]: shouldExportSpan replaces non-existent shouldExport — v5 signature is ({ otelSpan }) => boolean
-- [Phase 22-observability-foundation]: wrapRagWithObserve uses startActiveObservation (v5 API) not observe(options, fn) — observe() is a decorator in v5
-- [Phase 22-observability-foundation]: 22-02: inferPrerequisites userId? is optional — existing crystallize callers compile unchanged; neurons/route.ts updated to pass user.id
-- [Phase 22-observability-foundation]: 22-02: GenerateCrystallizeSeedInput.userId? optional to avoid breaking crystallize/route.ts and manual/route.ts call sites
-- [Phase 23-pure-conversationalist]: 23-01-cases-full-replace: All 17 old eval cases replaced with 4 new ones — neurogenesis_triggered no longer exists in pure-text architecture
-- [Phase 23-pure-conversationalist]: 23-01-socratic-threshold: Socratic tone threshold lowered from 0.8 to 0.7 — natural paragraph-form responses score lower on teach-then-ask heuristic
-- [Phase 23-pure-conversationalist]: 23-01-tool-removal-eval: Eval provider generateText call stripped of all tools — provider must mirror production chat architecture exactly
-- [Phase 23-pure-conversationalist]: 23-01-truncate-migration: TRUNCATE TABLE messages/conversations CASCADE — no JSON parsing migration needed, single-user beta data is disposable
-- [Phase 23-pure-conversationalist]: 23-02-depth-encouragement: Depth Encouragement directive pushes users to analyze mechanisms and tradeoffs without naming Bloom's Taxonomy or cognitive levels — strict separation of concerns
-- [Phase 23-pure-conversationalist]: 23-02-reference-catalog: Renamed Existing Neuron Catalog to Reference Catalog in system prompt construction — strips internal architecture language from AI context
-- [Phase 23-pure-conversationalist]: 23-02-loadMessages-text-only: loadMessages simplified to text-only parts — no tool part rehydration since TRUNCATE migration wiped all legacy tool_invocations metadata
-- [Phase 24-silent-observer]: 24-01: Provider uses google:gemini-2.5-flash as primary Bloom evaluator (best cost/speed), falls back to heuristic keyword-count offline mode for CI
-- [Phase 24-silent-observer]: 24-01: Chain-of-thought reasoning field mandatory in Bloom evaluator output — prevents hallucinated classifications (checked in every assertion block)
-- [Phase 24-silent-observer]: 24-01: generateText used over generateObject — provider parses JSON manually with code-fence stripping for robustness
-- [Phase 24-silent-observer]: 24-02-inline-prompt: BLOOM_EVALUATOR_PROMPT defined inline in route.ts — evaluator is self-contained, no import from prompts.ts
-- [Phase 24-silent-observer]: 24-02-never-500: bloom-evaluate route returns 200 even on parse/timeout failure — better false positive than blocked user
-- [Phase 24-silent-observer]: 24-02-messagesref: messagesRef pattern for closure-safe message access in triggerBloomEval without adding messages to useCallback deps
-- [Phase 25-decoupled-architect-pipeline]: 25-01-observe-hof: observe() from @langfuse/tracing is a HOF decorator; call pattern is const pipeline = observe(fn, opts); await pipeline()
-- [Phase 25-decoupled-architect-pipeline]: 25-01-bloom-level-analyze: Synthesizer-created neurons receive bloom_level='Analyze' as the minimum neurogenesis threshold
-- [Phase 25-decoupled-architect-pipeline]: 25-01-evaluator-model: Synthesizer uses getModelForRole('evaluator') for cheap/fast distillation
-- [Phase 25-decoupled-architect-pipeline]: 25-02-no-prop-threading: conversationId obtained via useConversationContext() inside GenerateNeuronButton — avoids ChatPanel.tsx modification
-- [Phase 25-decoupled-architect-pipeline]: 25-02-atomic-store-update: addNeurogenesisResult uses single set() call with spread for nodes+edges — triggers one re-render and one dagre re-layout
-- [Phase 25-decoupled-architect-pipeline]: 25-02-inline-feedback: inline span below button (not Sonner) matches SelectionToolbar pattern; 4s auto-clear with setTimeout
+- [v2.2]: Pure bug fix milestone — no new features
+- [v2.2]: OpenRouter is the provider gateway (configured in v2.1 post-milestone)
+- [v2.2]: Phase 21 client-side Bloom heuristic to be removed; Phase 24 LLM evaluator is the sole classification source
+- [v2.2]: Neurogenesis trigger moves from static GenerateNeuronButton to contextual in-chat suggestion
+- [Phase 26-chat-quality-bloom-unification]: 26-01-sentinel-pattern: Replace scrollTop=scrollHeight with sentinel div + scrollIntoView — eliminates scroll-smooth animation queue buildup during rapid streaming
+- [Phase 26-chat-quality-bloom-unification]: 26-01-16ms-debounce: 16ms setTimeout debounce on smooth scroll prevents per-chunk stutter while staying responsive
+- [Phase 26-chat-quality-bloom-unification]: 26-01-instant-on-switch: Conversation switch scrolls instantly via requestAnimationFrame after loadMessages resolves
+- [Phase 26-chat-quality-bloom-unification]: 26-01-80px-threshold: isAtBottom detection uses 80px slack threshold — handles minor rubber-band scroll offsets without false positives
+- [Phase 26-chat-quality-bloom-unification]: 26-02-shorter-default: CHAT_SYSTEM_PROMPT rewritten to default 1-2 paragraphs; 'One tight paragraph is often enough' as primary guidance (D-08)
+- [Phase 26-chat-quality-bloom-unification]: 26-02-flexible-closing: Replaced mandatory question with 'Usually close with a question, but occasionally a brief observation or reframe' (D-10)
+- [Phase 26-chat-quality-bloom-unification]: 26-02-bloom-verified: BLOOM-01 confirmed satisfied by grep audit — classifyBloomLevel/BLOOM_ANALYZE_SIGNALS/BloomDepthMeter all absent from src/
 - [Phase 999.1-bloom-keyword-highlighting-animation]: 999.1-01-key-phrases-verbatim: Prompt instructs LLM to return verbatim substrings from user messages for exact text matching in highlight rendering
 - [Phase 999.1-bloom-keyword-highlighting-animation]: 999.1-01-safelist-opacity: /10 opacity for cool-toned Bloom levels (Remember/Understand/Apply), /15 for warm-toned (Analyze/Evaluate/Create) per UI-SPEC color table
 - [Phase 999.1-bloom-keyword-highlighting-animation]: 999.1-01-safe-defaults: setBloomEval optional params ([], null) preserve backward compatibility with all existing callers
@@ -107,12 +70,10 @@ None yet.
 
 ### Blockers/Concerns
 
-- [Phase 22]: Langfuse Cloud vs self-host decision must be made before the first trace is sent — affects env var config, GDPR posture, and operational burden
-- [Phase 24]: Evaluator calibration baseline unknown — run 31 golden promptfoo cases through gemini-2.5-flash for Bloom classification before wiring to UI; if false positive rate at Understand/Analyze boundary exceeds 20%, adjust confidence threshold or model choice
-- [Phase 22]: Known issue #12643 — trace-level input/output appears empty in Langfuse Traces tab with ai@6.0.82 + @langfuse/otel@5.0.1; data is present in Observations tab; monitor for patch
+None.
 
 ## Session Continuity
 
-Last session: 2026-04-03T02:47:00.000Z
+Last session: 2026-04-03T00:48:32.221Z
 Stopped at: Completed 999.1-01-PLAN.md
 Resume file: None

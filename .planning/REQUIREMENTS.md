@@ -14,7 +14,7 @@ Requirements for QA Refinement III. Bug fixes and regressions found during v2.1 
 ### Chat Quality
 
 - [x] **CHAT-01**: Chat streaming auto-scrolls smoothly without scrollbar jank or UI blocking
-- [ ] **CHAT-02**: Conversationalist sometimes responds with 1-2 paragraphs instead of always 3 — sharper, more varied turns
+- [x] **CHAT-02**: Conversationalist sometimes responds with 1-2 paragraphs instead of always 3 — sharper, more varied turns
 
 ### UI Consistency
 
@@ -26,7 +26,7 @@ Requirements for QA Refinement III. Bug fixes and regressions found during v2.1 
 
 ### Bloom System
 
-- [ ] **BLOOM-01**: Single Bloom classification source — Phase 24 LLM evaluator only. Phase 21 client-side heuristic removed or replaced.
+- [x] **BLOOM-01**: Single Bloom classification source — Phase 24 LLM evaluator only. Phase 21 client-side heuristic removed or replaced.
 
 ## Future Requirements
 
@@ -57,8 +57,8 @@ Deferred to future milestones.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | CHAT-01 | Phase 26 | Complete |
-| CHAT-02 | Phase 26 | Pending |
-| BLOOM-01 | Phase 26 | Pending |
+| CHAT-02 | Phase 26 | Complete |
+| BLOOM-01 | Phase 26 | Complete |
 | NGEN-01 | Phase 27 | Pending |
 | UI-01 | Phase 27 | Pending |
 | PERF-01 | Phase 27 | Pending |
