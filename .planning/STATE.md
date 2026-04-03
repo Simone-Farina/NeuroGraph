@@ -83,6 +83,12 @@ None yet.
 
 None.
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260403-q04 | Fix v2.2 audit gaps: MessageList jargon, QueuePageClient test, QueueBootstrap mock | 2026-04-03 | 74e9619 | [260403-q04](./quick/260403-q04-fix-v2-2-audit-gaps-messagelist-jargon-q/) |
+
 ## Session Continuity
 
 Last session: 2026-04-03T16:29:10.146Z
