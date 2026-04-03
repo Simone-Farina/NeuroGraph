@@ -25,8 +25,9 @@ The system enforces "Active Extraction" and rigorous retention over passive read
 **Shipped:** v2.1 Core Flow Stability, Multi-Agent Architecture & Observability (2026-03-25)
 **Codebase:** ~19,800 LOC TypeScript/TSX
 **Tech Stack:** Next.js 14, React Flow, Zustand, Vercel AI SDK v6, Supabase (pgvector), TipTap v3, ts-fsrs, promptfoo, Langfuse
-**Eval Suite:** 4 agent suites (bouncer 13 + architect 8 + conversationalist 4 + bloom-evaluator 6 = 31 golden cases)
+**Eval Suite:** 4 agent suites (bouncer 13 + architect 8 + conversationalist 5 + bloom-evaluator 6 = 32 golden cases)
 **Architecture:** Multi-agent (Pure Conversationalist + Silent Observer + Decoupled Architect Pipeline) with full Langfuse OTel tracing
+**Phase 26 complete:** Chat scroll jank fixed (sentinel pattern), response length calibrated to 1-2 paragraphs, Bloom unification verified
 
 ## Requirements
 
@@ -138,4 +139,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-03 after v2.2 milestone start*
+*Last updated: 2026-04-03 after Phase 26 completion*
