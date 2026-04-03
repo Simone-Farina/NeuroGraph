@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Core Flow Stability, Multi-Agent Architecture & Observability
 status: v2.1 milestone complete
-stopped_at: Completed 25-02-PLAN.md
-last_updated: "2026-03-25T23:08:14.881Z"
+stopped_at: Completed 999.1-01-PLAN.md
+last_updated: "2026-04-03T02:47:00.000Z"
 progress:
   total_phases: 8
   completed_phases: 8
@@ -57,6 +57,7 @@ Plan: Not started
 | Phase 24-silent-observer P02 | 15min | 2 tasks | 4 files |
 | Phase 25-decoupled-architect-pipeline P01 | 3min | 2 tasks | 2 files |
 | Phase 25-decoupled-architect-pipeline P02 | 12min | 2 tasks | 2 files |
+| Phase 999.1-bloom-keyword-highlighting-animation P01 | 8min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -96,6 +97,9 @@ Recent decisions affecting current work:
 - [Phase 25-decoupled-architect-pipeline]: 25-02-no-prop-threading: conversationId obtained via useConversationContext() inside GenerateNeuronButton — avoids ChatPanel.tsx modification
 - [Phase 25-decoupled-architect-pipeline]: 25-02-atomic-store-update: addNeurogenesisResult uses single set() call with spread for nodes+edges — triggers one re-render and one dagre re-layout
 - [Phase 25-decoupled-architect-pipeline]: 25-02-inline-feedback: inline span below button (not Sonner) matches SelectionToolbar pattern; 4s auto-clear with setTimeout
+- [Phase 999.1-bloom-keyword-highlighting-animation]: 999.1-01-key-phrases-verbatim: Prompt instructs LLM to return verbatim substrings from user messages for exact text matching in highlight rendering
+- [Phase 999.1-bloom-keyword-highlighting-animation]: 999.1-01-safelist-opacity: /10 opacity for cool-toned Bloom levels (Remember/Understand/Apply), /15 for warm-toned (Analyze/Evaluate/Create) per UI-SPEC color table
+- [Phase 999.1-bloom-keyword-highlighting-animation]: 999.1-01-safe-defaults: setBloomEval optional params ([], null) preserve backward compatibility with all existing callers
 
 ### Pending Todos
 
@@ -109,6 +113,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-25T22:54:50.729Z
-Stopped at: Completed 25-02-PLAN.md
+Last session: 2026-04-03T02:47:00.000Z
+Stopped at: Completed 999.1-01-PLAN.md
 Resume file: None
