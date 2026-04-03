@@ -35,7 +35,9 @@ type GraphStore = {
   bloomLevel: string | null;       // 'Remember' | 'Understand' | 'Apply' | 'Analyze' | 'Evaluate' | 'Create' | null
   bloomConfidence: number;          // 0.0-1.0
   isBloomPending: boolean;          // true while evaluator is running
-  setBloomEval: (level: string | null, confidence: number) => void;
+  bloomKeyPhrases: string[];        // verbatim substrings from user messages demonstrating Bloom level
+  latestBloomMessageId: string | null; // ID of the latest user message that triggered the eval
+  setBloomEval: (level: string | null, confidence: number, keyPhrases?: string[], messageId?: string | null) => void;
   setBloomPending: (pending: boolean) => void;
   resetBloomEval: () => void;
   setGraph: (nodes: Node[], edges: Edge[]) => void;
@@ -131,9 +133,12 @@ export const useGraphStore = create<GraphStore>((set) => ({
   bloomLevel: null,
   bloomConfidence: 0,
   isBloomPending: false,
-  setBloomEval: (level, confidence) => set({ bloomLevel: level, bloomConfidence: confidence, isBloomPending: false }),
+  bloomKeyPhrases: [],
+  latestBloomMessageId: null,
+  setBloomEval: (level, confidence, keyPhrases = [], messageId = null) =>
+    set({ bloomLevel: level, bloomConfidence: confidence, isBloomPending: false, bloomKeyPhrases: keyPhrases, latestBloomMessageId: messageId }),
   setBloomPending: (pending) => set({ isBloomPending: pending }),
-  resetBloomEval: () => set({ bloomLevel: null, bloomConfidence: 0, isBloomPending: false }),
+  resetBloomEval: () => set({ bloomLevel: null, bloomConfidence: 0, isBloomPending: false, bloomKeyPhrases: [], latestBloomMessageId: null }),
   setGraph: (nodes, edges) => set({ nodes, edges }),
   addNode: (node) =>
     set((state) => ({

@@ -6,6 +6,14 @@ const config: Config = {
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  safelist: [
+    'bg-sky-400/10',
+    'bg-teal-400/10',
+    'bg-emerald-400/10',
+    'bg-amber-400/15',
+    'bg-orange-400/15',
+    'bg-yellow-300/15',
+  ],
   theme: {
     extend: {
       colors: {

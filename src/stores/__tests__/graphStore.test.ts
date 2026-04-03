@@ -91,3 +91,48 @@ describe('graphStore horizon state', () => {
     expect(state.ghostNodes).toHaveLength(0);
   });
 });
+
+describe('graphStore bloom state', () => {
+  beforeEach(() => {
+    useGraphStore.setState({
+      bloomLevel: null,
+      bloomConfidence: 0,
+      isBloomPending: false,
+      bloomKeyPhrases: [],
+      latestBloomMessageId: null,
+    });
+  });
+
+  it('stores bloomKeyPhrases and latestBloomMessageId via setBloomEval', () => {
+    useGraphStore.getState().setBloomEval('Analyze', 0.85, ['compared tradeoffs', 'because the bottleneck'], 'msg-123');
+    const state = useGraphStore.getState();
+    expect(state.bloomLevel).toBe('Analyze');
+    expect(state.bloomConfidence).toBe(0.85);
+    expect(state.bloomKeyPhrases).toEqual(['compared tradeoffs', 'because the bottleneck']);
+    expect(state.latestBloomMessageId).toBe('msg-123');
+    expect(state.isBloomPending).toBe(false);
+  });
+
+  it('defaults keyPhrases to [] and messageId to null when not provided', () => {
+    useGraphStore.getState().setBloomEval('Remember', 0.9);
+    const state = useGraphStore.getState();
+    expect(state.bloomKeyPhrases).toEqual([]);
+    expect(state.latestBloomMessageId).toBeNull();
+  });
+
+  it('resetBloomEval clears bloomKeyPhrases and latestBloomMessageId', () => {
+    useGraphStore.getState().setBloomEval('Create', 0.95, ['novel framework'], 'msg-456');
+    useGraphStore.getState().resetBloomEval();
+    const state = useGraphStore.getState();
+    expect(state.bloomLevel).toBeNull();
+    expect(state.bloomConfidence).toBe(0);
+    expect(state.bloomKeyPhrases).toEqual([]);
+    expect(state.latestBloomMessageId).toBeNull();
+  });
+
+  it('initial state has empty bloomKeyPhrases and null latestBloomMessageId', () => {
+    const state = useGraphStore.getState();
+    expect(state.bloomKeyPhrases).toEqual([]);
+    expect(state.latestBloomMessageId).toBeNull();
+  });
+});
