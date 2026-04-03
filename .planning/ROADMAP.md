@@ -305,9 +305,9 @@ Plans:
 
 ### Phase 999.2: Evaluate Pretext (chenglou) Integration (BACKLOG)
 
-**Goal:** Evaluate https://github.com/chenglou/pretext for potential integration into NeuroGraph's conversational AI layer. Research feasibility and benefits.
-**Requirements:** TBD
-**Plans:** 0 plans
+**Goal:** Evaluate https://github.com/chenglou/pretext for potential integration into NeuroGraph. Produce a Go/No-Go recommendation based on library capabilities vs. current stack needs.
+**Requirements:** TBD (backlog evaluation)
+**Plans:** 1 plan
 
 Plans:
-- [ ] TBD (promote with /gsd:review-backlog when ready)
+- [ ] 999.2-01-PLAN.md — Write No-Go evaluation report (Pretext is a text measurement library with zero NeuroGraph overlap)
