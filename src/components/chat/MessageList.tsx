@@ -1,16 +1,80 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import type { RefObject } from 'react';
 import type { UIMessage } from 'ai';
 import ReactMarkdown from 'react-markdown';
 import rehypeHighlight from 'rehype-highlight';
 import remarkGfm from 'remark-gfm';
+import { useGraphStore } from '@/stores/graphStore';
 
 type MessageListProps = {
   messages: UIMessage[];
   isLoading?: boolean;
   sentinelRef?: RefObject<HTMLDivElement | null>;
 };
+
+export function bloomToHighlightClass(level: string | null): string {
+  switch (level) {
+    case 'Remember':   return 'bg-sky-400/10';
+    case 'Understand': return 'bg-teal-400/10';
+    case 'Apply':      return 'bg-emerald-400/10';
+    case 'Analyze':    return 'bg-amber-400/15';
+    case 'Evaluate':   return 'bg-orange-400/15';
+    case 'Create':     return 'bg-yellow-300/15';
+    default:           return '';
+  }
+}
+
+export function renderHighlightedText(
+  text: string,
+  phrases: string[],
+  isHighlighted: boolean,
+  highlightClass: string
+): React.ReactNode {
+  if (!isHighlighted || phrases.length === 0) return text;
+
+  // Escape regex metacharacters in each phrase, then build a single capturing-group pattern
+  const escaped = phrases.map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const pattern = new RegExp(`(${escaped.join('|')})`, 'gi');
+  const parts = text.split(pattern);
+
+  // String.split() with a capturing group places matches at odd indices
+  return parts.map((part, i) => {
+    const isMatch = i % 2 === 1;
+    return isMatch ? (
+      <span
+        key={i}
+        className={`rounded-sm transition-colors duration-300 motion-reduce:transition-none ${highlightClass}`}
+      >
+        {part}
+      </span>
+    ) : (
+      <span key={i}>{part}</span>
+    );
+  });
+}
+
+export function useBloomHighlight() {
+  const bloomKeyPhrases = useGraphStore((s) => s.bloomKeyPhrases);
+  const latestBloomMessageId = useGraphStore((s) => s.latestBloomMessageId);
+  const bloomLevel = useGraphStore((s) => s.bloomLevel);
+  const [isHighlighted, setIsHighlighted] = useState(false);
+
+  useEffect(() => {
+    if (bloomKeyPhrases.length === 0) {
+      setIsHighlighted(false);
+      return;
+    }
+    // D-10: fade in when evaluator returns
+    setIsHighlighted(true);
+    // D-11: fade out after 5 seconds
+    const timer = setTimeout(() => setIsHighlighted(false), 5000);
+    return () => clearTimeout(timer);
+  }, [bloomKeyPhrases]);
+
+  return { isHighlighted, bloomKeyPhrases, latestBloomMessageId, bloomLevel };
+}
 
 function ThinkingIndicator() {
   return (
@@ -28,6 +92,9 @@ function ThinkingIndicator() {
 }
 
 export function MessageList({ messages, isLoading, sentinelRef }: MessageListProps) {
+  const { isHighlighted, bloomKeyPhrases, latestBloomMessageId, bloomLevel } = useBloomHighlight();
+  const highlightClass = bloomToHighlightClass(bloomLevel);
+
   if (!messages.length) {
     return (
       <div className="flex h-full flex-col items-center justify-center px-8 text-center">
@@ -63,12 +130,17 @@ export function MessageList({ messages, isLoading, sentinelRef }: MessageListPro
                 {message.parts.map((part, index) => {
                   if (part.type === 'text') {
                     if (!part.text) return null;
+                    // D-07: Only highlight the most recent user message (matched by ID)
+                    // D-09: Assistant messages are never highlighted (this block is user-only)
+                    const shouldHighlight = isHighlighted && message.id === latestBloomMessageId;
                     return (
                       <div
                         key={index}
                         className="inline-block text-[15px] leading-relaxed text-white/50 font-sans transition-all duration-300"
                       >
-                        {part.text}
+                        {shouldHighlight
+                          ? renderHighlightedText(part.text, bloomKeyPhrases, true, highlightClass)
+                          : part.text}
                       </div>
                     );
                   }
