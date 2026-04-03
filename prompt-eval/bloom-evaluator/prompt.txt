@@ -51,7 +51,10 @@ Return a JSON object with exactly these fields:
 {
   "reasoning": "<your step-by-step chain of thought>",
   "bloom_level": "<one of: Remember, Understand, Apply, Analyze, Evaluate, Create>",
-  "confidence": <float between 0.0 and 1.0>
+  "confidence": <float between 0.0 and 1.0>,
+  "key_phrases": ["<short phrase 1>", "<short phrase 2>", ...]
 }
+
+key_phrases: Extract 1-4 short phrases (2-6 words each) directly quoted from the user messages that most clearly demonstrate the classified Bloom level. Return verbatim substrings from the user messages — do not paraphrase or normalize. If no clear phrases exist, return an empty array.
 
 Do not include any text outside the JSON object.

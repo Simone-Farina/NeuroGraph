@@ -53,6 +53,23 @@
           score: 1,
           reason: `Correctly classified as "${result.bloom_level}" (confidence: ${result.confidence.toFixed(2)})`,
         };
+    - type: javascript
+      value: |
+        const result = JSON.parse(output);
+        if (!Array.isArray(result.key_phrases)) {
+          return { pass: false, score: 0, reason: 'key_phrases must be an array' };
+        }
+        if (result.key_phrases.length === 0) {
+          return { pass: false, score: 0.5, reason: 'key_phrases should not be empty — at least one phrase expected for a classifiable message' };
+        }
+        if (result.key_phrases.length > 4) {
+          return { pass: false, score: 0.5, reason: `key_phrases has ${result.key_phrases.length} elements — prompt instructs 1-4` };
+        }
+        const allStrings = result.key_phrases.every(p => typeof p === 'string' && p.trim().length > 0);
+        if (!allStrings) {
+          return { pass: false, score: 0, reason: 'All key_phrases elements must be non-empty strings' };
+        }
+        return { pass: true, score: 1, reason: `key_phrases returned ${result.key_phrases.length} phrase(s): ${JSON.stringify(result.key_phrases)}` };
 
 - description: "paraphrase-comprehension — textbook paraphrase scores Remember or Understand"
   vars:
@@ -99,6 +116,23 @@
           score: 1,
           reason: `Correctly classified as "${result.bloom_level}" (confidence: ${result.confidence.toFixed(2)})`,
         };
+    - type: javascript
+      value: |
+        const result = JSON.parse(output);
+        if (!Array.isArray(result.key_phrases)) {
+          return { pass: false, score: 0, reason: 'key_phrases must be an array' };
+        }
+        if (result.key_phrases.length === 0) {
+          return { pass: false, score: 0.5, reason: 'key_phrases should not be empty — at least one phrase expected for a classifiable message' };
+        }
+        if (result.key_phrases.length > 4) {
+          return { pass: false, score: 0.5, reason: `key_phrases has ${result.key_phrases.length} elements — prompt instructs 1-4` };
+        }
+        const allStrings = result.key_phrases.every(p => typeof p === 'string' && p.trim().length > 0);
+        if (!allStrings) {
+          return { pass: false, score: 0, reason: 'All key_phrases elements must be non-empty strings' };
+        }
+        return { pass: true, score: 1, reason: `key_phrases returned ${result.key_phrases.length} phrase(s): ${JSON.stringify(result.key_phrases)}` };
 
 # ──────────────────────────────────────────────────────────────────────────────
 # At Threshold — Analyze
@@ -153,6 +187,23 @@
           score: 1,
           reason: `Correctly classified as "${result.bloom_level}" with confidence ${result.confidence.toFixed(2)}`,
         };
+    - type: javascript
+      value: |
+        const result = JSON.parse(output);
+        if (!Array.isArray(result.key_phrases)) {
+          return { pass: false, score: 0, reason: 'key_phrases must be an array' };
+        }
+        if (result.key_phrases.length === 0) {
+          return { pass: false, score: 0.5, reason: 'key_phrases should not be empty — at least one phrase expected for a classifiable message' };
+        }
+        if (result.key_phrases.length > 4) {
+          return { pass: false, score: 0.5, reason: `key_phrases has ${result.key_phrases.length} elements — prompt instructs 1-4` };
+        }
+        const allStrings = result.key_phrases.every(p => typeof p === 'string' && p.trim().length > 0);
+        if (!allStrings) {
+          return { pass: false, score: 0, reason: 'All key_phrases elements must be non-empty strings' };
+        }
+        return { pass: true, score: 1, reason: `key_phrases returned ${result.key_phrases.length} phrase(s): ${JSON.stringify(result.key_phrases)}` };
 
 - description: "mechanism-dissection — causal mechanism with novel hypothesis scores Analyze or higher"
   vars:
@@ -200,6 +251,23 @@
           score: 1,
           reason: `Correctly classified as "${result.bloom_level}" with confidence ${result.confidence.toFixed(2)}`,
         };
+    - type: javascript
+      value: |
+        const result = JSON.parse(output);
+        if (!Array.isArray(result.key_phrases)) {
+          return { pass: false, score: 0, reason: 'key_phrases must be an array' };
+        }
+        if (result.key_phrases.length === 0) {
+          return { pass: false, score: 0.5, reason: 'key_phrases should not be empty — at least one phrase expected for a classifiable message' };
+        }
+        if (result.key_phrases.length > 4) {
+          return { pass: false, score: 0.5, reason: `key_phrases has ${result.key_phrases.length} elements — prompt instructs 1-4` };
+        }
+        const allStrings = result.key_phrases.every(p => typeof p === 'string' && p.trim().length > 0);
+        if (!allStrings) {
+          return { pass: false, score: 0, reason: 'All key_phrases elements must be non-empty strings' };
+        }
+        return { pass: true, score: 1, reason: `key_phrases returned ${result.key_phrases.length} phrase(s): ${JSON.stringify(result.key_phrases)}` };
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Above Threshold — Evaluate / Create
@@ -254,6 +322,23 @@
           score: 1,
           reason: `Correctly classified as "${result.bloom_level}" with confidence ${result.confidence.toFixed(2)}`,
         };
+    - type: javascript
+      value: |
+        const result = JSON.parse(output);
+        if (!Array.isArray(result.key_phrases)) {
+          return { pass: false, score: 0, reason: 'key_phrases must be an array' };
+        }
+        if (result.key_phrases.length === 0) {
+          return { pass: false, score: 0.5, reason: 'key_phrases should not be empty — at least one phrase expected for a classifiable message' };
+        }
+        if (result.key_phrases.length > 4) {
+          return { pass: false, score: 0.5, reason: `key_phrases has ${result.key_phrases.length} elements — prompt instructs 1-4` };
+        }
+        const allStrings = result.key_phrases.every(p => typeof p === 'string' && p.trim().length > 0);
+        if (!allStrings) {
+          return { pass: false, score: 0, reason: 'All key_phrases elements must be non-empty strings' };
+        }
+        return { pass: true, score: 1, reason: `key_phrases returned ${result.key_phrases.length} phrase(s): ${JSON.stringify(result.key_phrases)}` };
 
 - description: "novel-synthesis — original cross-domain framework scores Create or Evaluate"
   vars:
@@ -302,3 +387,20 @@
           score: 1,
           reason: `Correctly classified as "${result.bloom_level}" with confidence ${result.confidence.toFixed(2)}`,
         };
+    - type: javascript
+      value: |
+        const result = JSON.parse(output);
+        if (!Array.isArray(result.key_phrases)) {
+          return { pass: false, score: 0, reason: 'key_phrases must be an array' };
+        }
+        if (result.key_phrases.length === 0) {
+          return { pass: false, score: 0.5, reason: 'key_phrases should not be empty — at least one phrase expected for a classifiable message' };
+        }
+        if (result.key_phrases.length > 4) {
+          return { pass: false, score: 0.5, reason: `key_phrases has ${result.key_phrases.length} elements — prompt instructs 1-4` };
+        }
+        const allStrings = result.key_phrases.every(p => typeof p === 'string' && p.trim().length > 0);
+        if (!allStrings) {
+          return { pass: false, score: 0, reason: 'All key_phrases elements must be non-empty strings' };
+        }
+        return { pass: true, score: 1, reason: `key_phrases returned ${result.key_phrases.length} phrase(s): ${JSON.stringify(result.key_phrases)}` };
